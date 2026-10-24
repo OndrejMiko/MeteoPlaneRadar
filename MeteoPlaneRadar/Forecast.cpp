@@ -35,7 +35,7 @@ static bool  s_aqOk = false;
 static int   s_aqi = -1;
 static float s_pm25 = 0, s_pm10 = 0;
 static float s_pollen = -1;
-static const char* s_pollenWorst = "";
+static StrId s_pollenWorst = STR_COUNT;
 static unsigned long s_aqLastTry = 0;
 static bool          s_aqEverTried = false;
 
@@ -255,11 +255,11 @@ static bool fetchAirQuality() {
   // data" and "no pollen" have to stay distinguishable: a missing key means we
   // show nothing at all rather than a confident zero.
   s_pollen = -1;
-  s_pollenWorst = "";
-  struct { const char* key; const char* cz; const char* en; } P[] = {
-    { "alder_pollen", "olse",  "alder" },
-    { "birch_pollen", "briza", "birch" },
-    { "grass_pollen", "travy", "grass" },
+  s_pollenWorst = STR_COUNT;
+  struct { const char* key; StrId label; } P[] = {
+    { "alder_pollen", S_ALDER },
+    { "birch_pollen", S_BIRCH },
+    { "grass_pollen", S_GRASS },
   };
   for (auto& p : P) {
     JsonVariantConst v = cur[p.key];
@@ -267,7 +267,7 @@ static bool fetchAirQuality() {
     float f = v.as<float>();
     if (f > s_pollen) {
       s_pollen = f;
-      s_pollenWorst = (Lang_Get() == LANG_EN) ? p.en : p.cz;
+      s_pollenWorst = p.label;
     }
   }
 
@@ -280,7 +280,7 @@ bool  AirQuality_Valid()  { return s_aqOk; }
 int   AirQuality_Aqi()    { return s_aqi; }
 float AirQuality_Pm25()   { return s_pm25; }
 float AirQuality_PollenMax() { return s_pollen; }
-const char* AirQuality_PollenWorst() { return s_pollenWorst; }
+const char* AirQuality_PollenWorst() { return T(s_pollenWorst); }
 
 // -----------------------------------------------------------------------------
 void Forecast_Tick() {

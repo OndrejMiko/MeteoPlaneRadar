@@ -31,7 +31,7 @@ void WiFi_DrawApScreen() {
 
   UI_TextCentered("MeteoPlaneRadar", 34, C_CYAN, 2);
   UI_TextCentered("chiptron.cz", 58, C_GRAY, 1);
-  UI_TextCentered(en ? "Scan with your phone:" : "Naskenuj mobilem:", 78, C_GRAY, 1);
+  UI_TextCentered(en ? "Scan with your phone:" : (Lang_Get() == LANG_SK ? "Naskenuj mobilom:" : "Naskenuj mobilem:"), 78, C_GRAY, 1);
 
   const int qrSize = 190;
   UI_DrawWifiQR(AP_SSID, AP_PASSWORD, /*open=*/true,
@@ -39,16 +39,16 @@ void WiFi_DrawApScreen() {
 
   UI_TextCentered(AP_SSID, 300, C_WHITE, 1);
   UI_TextCentered(en ? "no password  |  then open 192.168.4.1"
-                     : "bez hesla  |  pak otevri 192.168.4.1", 322, C_GRAY, 1);
+                     : (Lang_Get() == LANG_SK ? "bez hesla  |  potom otvor 192.168.4.1" : "bez hesla  |  pak otevri 192.168.4.1"), 322, C_GRAY, 1);
   UI_TextCentered(en ? "Waiting for your network..."
-                     : "Cekam na zadani site...", 348, C_YELLOW, 1);
+                     : (Lang_Get() == LANG_SK ? "Cakam na zadanie siete..." : "Cekam na zadani site..."), 348, C_YELLOW, 1);
   gfx->flush();
 }
 
 static void drawConnecting(const char* ssid) {
   const bool en = (Lang_Get() == LANG_EN);
   gfx->fillScreen(C_BLACK);
-  UI_TextCentered(en ? "Connecting to WiFi..." : "Pripojuji k WiFi...",
+  UI_TextCentered(en ? "Connecting to WiFi..." : (Lang_Get() == LANG_SK ? "Pripajam k WiFi..." : "Pripojuji k WiFi..."),
                   LCD_HEIGHT / 2 - 20, C_WHITE, 2);
   if (ssid && *ssid) UI_TextCentered(ssid, LCD_HEIGHT / 2 + 12, C_CYAN, 2);
   gfx->flush();

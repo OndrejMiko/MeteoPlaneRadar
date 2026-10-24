@@ -33,23 +33,11 @@ static bool    s_isNight   = false;
 static bool    s_metric = false;
 static uint8_t s_lang   = LANG_CZ;
 
-// Bit per data screen (bit 0 = clock ... bit 5 = generation mix). The default
-// leaves the two energy screens OFF, which is the same courtesy the forecast
-// screen got when it was new: an updated device looks exactly as it did, and
-// the new screens are found in the web UI rather than sprung on the user.
-//
-// It also means Energy_Tick() makes no requests at all on a device whose owner
-// never asked for them - the enabled bits are what that decision is read from.
 static uint8_t s_scrMask = (1 << SCREEN_CLOCK_I) | (1 << SCREEN_PLANES_I) |
                            (1 << SCREEN_METEO_I) | (1 << SCREEN_FORECAST_I);
 static uint16_t s_autoRot = 0;
 static uint8_t s_radarSrc = RADAR_SRC_CHMU;
 static bool    s_mtLegend = true;
-
-// --- Energy ---
-static uint16_t s_priceFee = 0;     // CZK/MWh on top of the spot price
-static uint8_t  s_priceVat = 0;     // per cent, 0 = none
-static char     s_mixCC[4] = MIX_COUNTRY_DEFAULT;
 
 // --- Clock appearance ---
 static uint8_t  s_secStyle = SEC_STYLE_DOTS;
@@ -105,7 +93,9 @@ void Settings_Begin() {
     s_nightOff  = (int8_t)prefs.getChar("nOff", 0);
     s_metric = prefs.getBool("metric", false);
     s_lang   = prefs.getUChar("lang", LANG_CZ);
-    s_scrMask = prefs.getUChar("scrM", s_scrMask);
+    // Ignore retired screen bits; an older device may have enabled only those.
+    s_scrMask = prefs.getUChar("scrM", s_scrMask) & ((1 << SCREEN_SETTINGS_I) - 1);
+    if (!s_scrMask) s_scrMask = 1 << SCREEN_CLOCK_I;
     // Cycling interval moved from minutes to seconds - see Settings.h. The old
     // key is converted exactly once, so an updated device keeps its setting.
     if (prefs.isKey("autoRS")) {
@@ -116,10 +106,6 @@ void Settings_Begin() {
     }
     s_radarSrc = prefs.getUChar("radSrc", RADAR_SRC_CHMU);
     s_mtLegend = prefs.getBool("mtLeg", true);
-    s_priceFee = prefs.getUShort("priceFee", 0);
-    s_priceVat = prefs.getUChar("priceVat", 0);
-    if (prefs.getString("mixCC", s_mixCC, sizeof(s_mixCC)) == 0)
-      strncpy(s_mixCC, MIX_COUNTRY_DEFAULT, sizeof(s_mixCC) - 1);
     s_secStyle = prefs.getUChar("secSt", SEC_STYLE_DOTS);
     s_clockCol = prefs.getUShort("clkC", 0xFFFF);
     s_secCol   = prefs.getUShort("secC", 0x05FF);
@@ -131,6 +117,8 @@ void Settings_Begin() {
     s_rngP   = prefs.getUChar("rngP", 1);
     s_rngM   = prefs.getUChar("rngM", 1);
     s_scr    = prefs.getUChar("scr", SCREEN_PLANES_I);
+    // Map any retired screen or the previous Settings index to Settings.
+    if (s_scr >= SCREEN_SETTINGS_I) s_scr = SCREEN_SETTINGS_I;
     s_top    = prefs.getUShort("topb", 0);
     prefs.getString("pw", s_pw, sizeof(s_pw));
     prefs.getString("ssid", s_ssid, sizeof(s_ssid));
@@ -146,6 +134,7 @@ void Settings_Begin() {
     if (s_autoRot) Serial.printf("Nastaveni: stridani prevedeno na %u s\n", s_autoRot);
   }
   Lang_Set(s_lang);
+  s_lang = Lang_Get();
 }
 
 // --- WiFi -------------------------------------------------------------------
@@ -214,7 +203,7 @@ bool Settings_MetricUnits() { return s_metric; }
 void Settings_SetMetricUnits(bool metric) { s_metric = metric; putBool("metric", metric); }
 uint8_t Settings_Language() { return s_lang; }
 void    Settings_SetLanguage(uint8_t l) {
-  s_lang = (l == LANG_EN) ? LANG_EN : LANG_CZ;
+  s_lang = (l <= LANG_SK) ? l : LANG_CZ;
   Lang_Set(s_lang);
   putU8("lang", s_lang);
 }
@@ -259,42 +248,6 @@ void    Settings_SetRadarSource(uint8_t s) {
 
 bool Settings_MeteoLegend() { return s_mtLegend; }
 void Settings_SetMeteoLegend(bool on) { s_mtLegend = on; putBool("mtLeg", on); }
-
-// --- Energy -----------------------------------------------------------------
-uint16_t Settings_PriceFee() { return s_priceFee; }
-void     Settings_SetPriceFee(uint16_t czkPerMwh) {
-  // A surcharge larger than the highest spot price ever recorded is a typo -
-  // almost always CZK/kWh typed into a CZK/MWh field. Clamping keeps it from
-  // turning the whole ring one colour without silently discarding the value.
-  if (czkPerMwh > 20000) czkPerMwh = 20000;
-  s_priceFee = czkPerMwh;
-  putU16("priceFee", czkPerMwh);
-}
-uint8_t Settings_PriceVat() { return s_priceVat; }
-void    Settings_SetPriceVat(uint8_t pct) {
-  if (pct > 100) pct = 100;
-  s_priceVat = pct;
-  putU8("priceVat", pct);
-}
-
-const char* Settings_MixCountry() { return s_mixCC; }
-void Settings_SetMixCountry(const char* code) {
-  // Exactly two letters, lower cased. Anything else is refused rather than
-  // stored: a bad code would turn into a 404 every fifteen minutes and the
-  // screen would look broken with no clue why.
-  if (!code) return;
-  char c[4] = {0};
-  int n = 0;
-  for (const char* p = code; *p && n < 2; p++) {
-    if (*p >= 'A' && *p <= 'Z')      c[n++] = (char)(*p - 'A' + 'a');
-    else if (*p >= 'a' && *p <= 'z') c[n++] = *p;
-    else return;
-  }
-  if (n != 2) return;
-  strncpy(s_mixCC, c, sizeof(s_mixCC) - 1);
-  s_mixCC[sizeof(s_mixCC) - 1] = '\0';
-  putStr("mixCC", s_mixCC);
-}
 
 // --- Clock appearance -------------------------------------------------------
 uint8_t  Settings_SecondsStyle() { return s_secStyle; }
@@ -384,9 +337,6 @@ void Settings_ToJson(JsonObject o) {
   o["nightOffset"] = s_nightOff;
   o["radarSrc"] = s_radarSrc;
   o["meteoLegend"] = s_mtLegend;
-  o["priceFee"] = s_priceFee;
-  o["priceVat"] = s_priceVat;
-  o["mixCountry"] = s_mixCC;
   o["autoRotate"] = s_autoRot;   // seconds
   o["topBearing"] = s_top;
   o["secStyle"] = s_secStyle;
@@ -403,8 +353,6 @@ void Settings_ToJson(JsonObject o) {
   scr["planes"]   = Settings_ScreenEnabled(SCREEN_PLANES_I);
   scr["meteo"]    = Settings_ScreenEnabled(SCREEN_METEO_I);
   scr["forecast"] = Settings_ScreenEnabled(SCREEN_FORECAST_I);
-  scr["price"]    = Settings_ScreenEnabled(SCREEN_PRICE_I);
-  scr["mix"]      = Settings_ScreenEnabled(SCREEN_MIX_I);
 }
 
 bool Settings_FromJson(JsonObjectConst in) {
@@ -431,9 +379,6 @@ bool Settings_FromJson(JsonObjectConst in) {
   setIf("nightOffset",  [](JsonVariantConst v){ Settings_SetNightOffsetMin(v.as<int8_t>()); });
   setIf("radarSrc",     [](JsonVariantConst v){ Settings_SetRadarSource(v.as<uint8_t>()); });
   setIf("meteoLegend",  [](JsonVariantConst v){ Settings_SetMeteoLegend(v.as<bool>()); });
-  setIf("priceFee",     [](JsonVariantConst v){ Settings_SetPriceFee(v.as<uint16_t>()); });
-  setIf("priceVat",     [](JsonVariantConst v){ Settings_SetPriceVat(v.as<uint8_t>()); });
-  setIf("mixCountry",   [](JsonVariantConst v){ Settings_SetMixCountry(v.as<const char*>()); });
   setIf("autoRotate",   [](JsonVariantConst v){ Settings_SetAutoRotateSec(v.as<uint16_t>()); });
   setIf("topBearing",   [](JsonVariantConst v){ Settings_SetTopBearing(v.as<uint16_t>()); });
   setIf("secStyle",     [](JsonVariantConst v){ Settings_SetSecondsStyle(v.as<uint8_t>()); });
@@ -457,8 +402,6 @@ bool Settings_FromJson(JsonObjectConst in) {
       { "planes",   SCREEN_PLANES_I },
       { "meteo",    SCREEN_METEO_I },
       { "forecast", SCREEN_FORECAST_I },
-      { "price",    SCREEN_PRICE_I },
-      { "mix",      SCREEN_MIX_I },
     };
     for (auto& m : M) {
       JsonVariantConst v = scr[m.key];
@@ -492,8 +435,6 @@ void Settings_ClearAll() {
   s_scrMask = (1 << SCREEN_CLOCK_I) | (1 << SCREEN_PLANES_I) |
               (1 << SCREEN_METEO_I) | (1 << SCREEN_FORECAST_I);
   s_autoRot = 0; s_radarSrc = RADAR_SRC_CHMU; s_mtLegend = true;
-  s_priceFee = 0; s_priceVat = 0;
-  strncpy(s_mixCC, MIX_COUNTRY_DEFAULT, sizeof(s_mixCC) - 1);
   s_secStyle = SEC_STYLE_DOTS; s_clockCol = 0xFFFF; s_secCol = 0x05FF;
   s_altMin = 0; s_altMax = 60000; s_onlyCs = false; s_sqAlert = true; s_watch[0] = '\0';
   s_rngP = 1; s_rngM = 1; s_scr = SCREEN_PLANES_I; s_top = 0;

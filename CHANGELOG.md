@@ -11,6 +11,24 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.1] - 2026-10-24
+
+### Přidáno
+
+- Slovenština pro displej, webové nastavení, WiFi portál, aktualizaci firmwaru,
+  kalendář a názvy pylů. Jazyk se ukládá a lze jej přepínat i na zařízení.
+
+### Odstraněno
+
+- Obrazovky ceny a výroby elektřiny včetně zdrojového kódu, síťových požadavků,
+  nastavení, API, záloh a webové záložky Energie. Staré uložené nastavení
+  bezpečně přejde na dostupné obrazovky; zbývající čtyři obrazovky zachovávají indexy.
+
+### Opraveno
+
+- Arduino profil je ve složce sketchu, aby fungoval dokumentovaný příkaz sestavení.
+- Signatury Canvas16::flush a PNG callbacku odpovídají verzím knihoven v profilu.
+
 ## [0.7.0]
 
 ### Přidáno

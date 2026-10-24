@@ -17,8 +17,6 @@
 
 enum StatusSlot : uint8_t {
   ST_ADSB = 0, ST_RADAR, ST_FORECAST,
-  ST_PRICE,        // spot electricity price
-  ST_MIX,          // generation mix
   ST_COUNT
 };
 

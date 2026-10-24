@@ -6,7 +6,7 @@
 //  cannot be translated, and it blocks the whole sketch while it runs - which
 //  meant suspending the watchdog and freezing the display. The replacement is a
 //  plain access point plus the project's own web page, so the portal speaks the
-//  same two languages as the rest of the device and the main loop keeps
+//  same three languages as the rest of the device and the main loop keeps
 //  running the whole time.
 //
 //  The access point has NO timeout. Without a network the device cannot fetch

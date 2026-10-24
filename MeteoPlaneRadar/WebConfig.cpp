@@ -8,7 +8,6 @@
 #include "WebPage.h"
 #include "ScreenPlanes.h"
 #include "ScreenWeather.h"
-#include "ScreenPrice.h"
 #include "Settings.h"
 #include "Status.h"
 #include "Version.h"
@@ -16,7 +15,6 @@
 #include "Lang.h"
 #include "Net.h"
 #include "Forecast.h"
-#include "Energy.h"
 #include "NightMode.h"
 #include "UI.h"
 #include "Display_ST7701.h"
@@ -71,8 +69,7 @@ static bool readBody(JsonDocument& doc) {
 
 // The set of enabled data screens as one value, so "did this change?" is one
 // comparison. Built from the loop rather than written out screen by screen -
-// the hand-written version had to be edited in two places every time a screen
-// was added, and was quietly wrong for the two energy screens until it was not.
+// the hand-written version needed two edits whenever a screen was added.
 static uint8_t screenMask() {
   uint8_t m = 0;
   for (uint8_t i = 0; i < SCREEN_SETTINGS_I && i < 8; i++)
@@ -146,34 +143,6 @@ static void handlePostConfig() {
                      (fabs(oldLon - Settings_Lon()) > 1e-6);
   if (moved) {
     Forecast_Invalidate();
-    Energy_Invalidate();
-
-    // Moving the device out of the area a source covers switches that screen
-    // off, ONCE, at the moment the location changes. Not a permanent lock: the
-    // checkbox is still there and turning it back on sticks, which matters
-    // because the boxes in Config.h are rectangles and somebody just over the
-    // border may well want Czech prices on purpose.
-    //
-    // Doing it here rather than in the drawing code is deliberate. A screen
-    // that shows "not available here" every time the cycling reaches it is a
-    // screen that has to be switched off by hand anyway; the device may as well
-    // do the obvious thing and say so in the log.
-    if (!Energy_PriceInArea() && Settings_ScreenEnabled(SCREEN_PRICE_I)) {
-      Settings_SetScreenEnabled(SCREEN_PRICE_I, false);
-      Serial.println("Poloha mimo CR: vypinam obrazovku s cenou elektriny");
-    }
-    if (!Energy_MixInArea() && Settings_ScreenEnabled(SCREEN_MIX_I)) {
-      Settings_SetScreenEnabled(SCREEN_MIX_I, false);
-      Serial.println("Poloha mimo Evropu: vypinam obrazovku s vyrobou");
-    }
-    // Still on the Czech default after moving abroad? Europe as a whole is a
-    // better guess than a country the user does not live in. An explicit choice
-    // is left alone.
-    if (!Energy_PriceInArea() && Energy_MixInArea() &&
-        !strcmp(Settings_MixCountry(), MIX_COUNTRY_DEFAULT)) {
-      Settings_SetMixCountry("eu");
-      Serial.println("Poloha mimo CR: mix prepnut na celou Evropu");
-    }
   }
 
   // These reach too far into cached state (decoded radar frames, allocated
@@ -276,10 +245,6 @@ static void handleStatus() {
   char rb[24] = "";
   if      (scr == SCREEN_PLANES_I) ScreenPlanes_RangeText(rb, sizeof(rb));
   else if (scr == SCREEN_METEO_I)  ScreenWeather_RangeText(rb, sizeof(rb));
-  // The price screen has no range in kilometres, but it does have two states
-  // the remote control can step through, so it answers here too and the -/+
-  // buttons stay live instead of greying out.
-  else if (scr == SCREEN_PRICE_I)  ScreenPrice_RangeText(rb, sizeof(rb));
   doc["range"] = rb;                       // empty on screens without one
 
   JsonArray en = doc["enabled"].to<JsonArray>();
@@ -289,8 +254,6 @@ static void handleStatus() {
   Status_Text(ST_ADSB, b, sizeof(b));     doc["adsb"] = b;
   Status_Text(ST_RADAR, b, sizeof(b));    doc["radar"] = b;
   Status_Text(ST_FORECAST, b, sizeof(b)); doc["forecast"] = b;
-  Status_Text(ST_PRICE, b, sizeof(b));    doc["price"] = b;
-  Status_Text(ST_MIX, b, sizeof(b));      doc["mix"] = b;
   sendJson(200, doc);
 }
 
@@ -335,7 +298,7 @@ static void handleGeocode() {
 
   char url[220];
   snprintf(url, sizeof(url), "%s?name=%s&count=8&language=%s&format=json",
-           GEOCODE_URL, enc.c_str(), Lang_Get() == LANG_EN ? "en" : "cs");
+           GEOCODE_URL, enc.c_str(), Lang_Get() == LANG_EN ? "en" : (Lang_Get() == LANG_SK ? "sk" : "cs"));
 
   String body;
   if (!Net_GetString(url, body, "GEOKOD")) { s_srv.send(502, "application/json", "[]"); return; }
@@ -424,9 +387,9 @@ static void otaStart() {
   const bool en = (Lang_Get() == LANG_EN);
   s_updating = true;
   gfx->fillScreen(C_BLACK);
-  UI_TextCentered(en ? "Updating firmware..." : "Probiha aktualizace...",
+  UI_TextCentered(en ? "Updating firmware..." : (Lang_Get() == LANG_SK ? "Prebieha aktualizacia..." : "Probiha aktualizace..."),
                   LCD_HEIGHT / 2 - 10, C_WHITE, 2);
-  UI_TextCentered(en ? "Do not disconnect power" : "Neodpojuj napajeni",
+  UI_TextCentered(en ? "Do not disconnect power" : (Lang_Get() == LANG_SK ? "Neodpajaj napajanie" : "Neodpojuj napajeni"),
                   LCD_HEIGHT / 2 + 20, C_GRAY, 1);
   gfx->flush();
   delay(700);
@@ -437,8 +400,8 @@ static void otaEnd(bool ok) {
   const bool en = (Lang_Get() == LANG_EN);
   Set_Backlight(Settings_Backlight());
   gfx->fillScreen(C_BLACK);
-  UI_TextCentered(ok ? (en ? "Done, restarting..." : "Hotovo, restartuji...")
-                     : (en ? "Update failed"       : "Aktualizace selhala"),
+  UI_TextCentered(ok ? (en ? "Done, restarting..." : (Lang_Get() == LANG_SK ? "Hotovo, restartujem..." : "Hotovo, restartuji..."))
+                     : (en ? "Update failed"       : (Lang_Get() == LANG_SK ? "Aktualizacia zlyhala" : "Aktualizace selhala")),
                   LCD_HEIGHT / 2, ok ? C_GREEN : C_RED, 2);
   gfx->flush();
   s_updating = false;
@@ -505,20 +468,22 @@ static void handleUpdatePage() {
   if (!updateAuthed()) { s_srv.requestAuthentication(); return; }
   const bool en = (Lang_Get() == LANG_EN);
   String p = FPSTR(UPDATE_HTML);
-  p.replace("{{LANG}}",  en ? "en" : "cs");
-  p.replace("{{TITLE}}", en ? "Firmware update" : "Aktualizace firmwaru");
+  p.replace("{{LANG}}",  en ? "en" : (Lang_Get() == LANG_SK ? "sk" : "cs"));
+  p.replace("{{TITLE}}", en ? "Firmware update" : (Lang_Get() == LANG_SK ? "Aktualizácia firmvéru" : "Aktualizace firmwaru"));
   p.replace("{{HINT}}",  en ? "Pick the <b>.ino.bin</b> file (the one without "
                               "<i>merged</i>). The display goes dark while the "
                               "flash is written and comes back on when it is done."
+                            : Lang_Get() == LANG_SK
+                            ? "Vyberte súbor <b>.ino.bin</b> (ten bez <i>merged</i>). Displej počas zápisu zhasne a po dokončení sa znova rozsvieti."
                             : "Vyberte soubor <b>.ino.bin</b> (ten bez <i>merged</i>). "
                               "Displej po dobu zapisu zhasne a po dokonceni se "
                               "sam rozsviti.");
-  p.replace("{{SEND}}",  en ? "Upload"           : "Nahrat");
-  p.replace("{{BACK}}",  en ? "Back to settings" : "Zpet na nastaveni");
-  p.replace("{{PICK}}",  en ? "Pick a file first." : "Nejdriv vyberte soubor.");
+  p.replace("{{SEND}}",  en ? "Upload"           : (Lang_Get() == LANG_SK ? "Nahrať" : "Nahrat"));
+  p.replace("{{BACK}}",  en ? "Back to settings" : (Lang_Get() == LANG_SK ? "Späť na nastavenia" : "Zpet na nastaveni"));
+  p.replace("{{PICK}}",  en ? "Pick a file first." : (Lang_Get() == LANG_SK ? "Najprv vyberte súbor." : "Nejdriv vyberte soubor."));
   p.replace("{{OK}}",    en ? "Done. The device is restarting."
-                            : "Hotovo. Zarizeni se restartuje.");
-  p.replace("{{FAIL}}",  en ? "Update failed"    : "Aktualizace selhala");
+                            : (Lang_Get() == LANG_SK ? "Hotovo. Zariadenie sa reštartuje." : "Hotovo. Zarizeni se restartuje."));
+  p.replace("{{FAIL}}",  en ? "Update failed"    : (Lang_Get() == LANG_SK ? "Aktualizacia zlyhala" : "Aktualizace selhala"));
   s_srv.sendHeader("Cache-Control", "no-store");
   s_srv.send(200, "text/html; charset=utf-8", p);
 }

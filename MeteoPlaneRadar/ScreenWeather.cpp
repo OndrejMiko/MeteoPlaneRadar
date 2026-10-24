@@ -170,10 +170,10 @@ static void borderProject(float lat, float lon, int* sx, int* sy) {
   *sy = (int)((int64_t)(srcY - s_crop.y1) * LCD_HEIGHT / cropH());
 }
 
-static int pngDraw(PNGDRAW* d) {
+static void pngDraw(PNGDRAW* d) {
   int srcY = d->y;
-  if (srcY < s_crop.y1 || srcY > s_crop.y2) return 1;
-  if (!s_crop565 || !s_lineBuf) return 1;
+  if (srcY < s_crop.y1 || srcY > s_crop.y2) return;
+  if (!s_crop565 || !s_lineBuf) return;
   png.getLineAsRGB565(d, s_lineBuf, PNG_RGB565_LITTLE_ENDIAN, 0xffffffff);
   const int cw = cropW();
   uint16_t* row = s_crop565 + (int64_t)(srcY - s_crop.y1) * cw;
@@ -184,7 +184,7 @@ static int pngDraw(PNGDRAW* d) {
     bool have = (srcX >= 0 && srcX < s_imgW && srcX <= s_dataX1 && srcY >= s_dataY0);
     row[i] = have ? s_lineBuf[srcX] : 0x0000;
   }
-  return 1;
+  return;
 }
 
 // RainViewer frames are already in display coordinates - the zoom was chosen so

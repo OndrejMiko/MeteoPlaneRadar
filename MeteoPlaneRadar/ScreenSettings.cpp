@@ -102,7 +102,7 @@ bool ScreenSettings_HandleTap(int x, int y) {
     return true;
   }
   if (y >= BTN1_Y && y <= BTN1_Y + BTN_H) {
-    Settings_SetLanguage(Lang_Get() == LANG_CZ ? LANG_EN : LANG_CZ);
+    Settings_SetLanguage((Lang_Get() + 1) % (LANG_SK + 1));
     return true;
   }
   if (y >= BTN2_Y && y <= BTN2_Y + BTN_H) {
@@ -130,8 +130,8 @@ void ScreenSettings_Draw() {
   if (Settings_NightAuto() || Settings_IsNight()) {
     gfx->setTextSize(1);
     gfx->setCursor(SL_X + 60, ROW_BRIGHT + 6);
-    gfx->print(Settings_IsNight() ? (Lang_Get() == LANG_EN ? "(night)" : "(nocni)")
-                                  : (Lang_Get() == LANG_EN ? "(day)"   : "(denni)"));
+    gfx->print(Settings_IsNight() ? (Lang_Get() == LANG_EN ? "(night)" : (Lang_Get() == LANG_SK ? "(nocny)" : "(nocni)"))
+                                  : (Lang_Get() == LANG_EN ? "(day)"   : (Lang_Get() == LANG_SK ? "(denny)" : "(denni)")));
   }
   uint8_t bl = Settings_Backlight();
   char blbuf[8]; snprintf(blbuf, sizeof(blbuf), "%d%%", bl);
@@ -202,11 +202,11 @@ void ScreenSettings_Draw() {
                   BTN0_Y + BTN_H / 2 - 8, C_BLACK, 2);
 
   gfx->fillRoundRect(BTN_X, BTN1_Y, BTN_W, BTN_H, 12, C_CYAN);
-  UI_TextCentered(Lang_Get() == LANG_EN ? "Language: English" : "Jazyk: cestina",
+  UI_TextCentered(Lang_Get() == LANG_EN ? "Language: English" : (Lang_Get() == LANG_SK ? "Jazyk: slovencina" : "Jazyk: cestina"),
                   BTN1_Y + BTN_H / 2 - 8, C_BLACK, 2);
 
   gfx->fillRoundRect(BTN_X, BTN2_Y, BTN_W, BTN_H, 12, C_ORANGE);
-  UI_TextCentered(Lang_Get() == LANG_EN ? "Forget WiFi" : "Zapomenout WiFi",
+  UI_TextCentered(Lang_Get() == LANG_EN ? "Forget WiFi" : (Lang_Get() == LANG_SK ? "Zabudnut WiFi" : "Zapomenout WiFi"),
                   BTN2_Y + BTN_H / 2 - 8, C_BLACK, 2);
 
   UI_TextCentered("chiptron.cz", LY_FOOTER, C_GREEN, 2);
