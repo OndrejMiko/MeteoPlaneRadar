@@ -86,6 +86,7 @@ td:first-child{color:var(--mut);width:50%}
   <button data-tab="tScr"    data-i18n="tabScr">Obrazovky</button>
   <button data-tab="tLook"   data-i18n="tabLook">Vzhled</button>
   <button data-tab="tPlanes" data-i18n="tabPlanes">Letadla</button>
+  <button data-tab="tCal" data-i18n="scrCalendar">Kalendář</button>
   <button data-tab="tSys"    data-i18n="tabSys">Systém</button>
 </nav>
 
@@ -149,6 +150,7 @@ td:first-child{color:var(--mut);width:50%}
       <label class="chk"><input type="checkbox" id="sPlanes"><span data-i18n="scrPlanes">Letadla</span></label>
       <label class="chk"><input type="checkbox" id="sMeteo"><span data-i18n="scrMeteo">Meteoradar</span></label>
       <label class="chk"><input type="checkbox" id="sForecast"><span data-i18n="scrForecast">Předpověď</span></label>
+      <label class="chk"><input type="checkbox" id="sCalendar"><span data-i18n="scrCalendar">Kalendář</span></label>
     </div>
     <p class="hint" data-i18n="scrHint">Vypnuté obrazovky se přeskakují. Nastavení je dostupné vždy.</p>
     <p class="hint" data-i18n="restartHint">Změna obrazovek, zdroje radaru nebo polohy potřebuje restart, takže se ukládá až tlačítkem dole.</p>
@@ -217,6 +219,44 @@ td:first-child{color:var(--mut);width:50%}
   </div>
 </section>
 
+<!-- ================= KALENDÁŘ ================= -->
+<section id="tCal" class="tab hide">
+ <div class="card">
+  <h2 data-i18n="scrCalendar">Kalendář</h2>
+  <p class="hint" data-i18n="calIntro"></p>
+  <div class="row"><label for="calendarView" data-i18n="calView"></label><select id="calendarView"><option value="0" data-i18n="calDay"></option><option value="1" data-i18n="calMonth"></option></select></div>
+  <div class="row"><label for="calendarRefresh" data-i18n="calRefresh"></label><input id="calendarRefresh" type="number" min="5" max="1440" value="15"></div>
+  <h3><span data-i18n="calSource"></span> 1</h3>
+  <label class="chk"><input type="checkbox" id="cal0On"><span data-i18n="calEnabled"></span></label>
+  <div class="row"><label for="cal0Name" data-i18n="calName"></label><input type="text" id="cal0Name" maxlength="31"></div>
+  <div class="row"><label for="cal0Color" data-i18n="calColor"></label><input id="cal0Color" type="color" value="#00bfff"></div>
+  <div class="row"><label for="cal0Url" data-i18n="calUrl"></label><input id="cal0Url" type="password" autocomplete="off" spellcheck="false" maxlength="767"></div>
+  <label class="chk"><input type="checkbox" id="cal0Clear"><span data-i18n="calClear"></span></label>
+  <p class="hint" id="cal0Status"></p>
+  <h3><span data-i18n="calSource"></span> 2</h3>
+  <label class="chk"><input type="checkbox" id="cal1On"><span data-i18n="calEnabled"></span></label>
+  <div class="row"><label for="cal1Name" data-i18n="calName"></label><input type="text" id="cal1Name" maxlength="31"></div>
+  <div class="row"><label for="cal1Color" data-i18n="calColor"></label><input id="cal1Color" type="color" value="#ff9900"></div>
+  <div class="row"><label for="cal1Url" data-i18n="calUrl"></label><input id="cal1Url" type="password" autocomplete="off" spellcheck="false" maxlength="767"></div>
+  <label class="chk"><input type="checkbox" id="cal1Clear"><span data-i18n="calClear"></span></label>
+  <p class="hint" id="cal1Status"></p>
+  <h3><span data-i18n="calSource"></span> 3</h3>
+  <label class="chk"><input type="checkbox" id="cal2On"><span data-i18n="calEnabled"></span></label>
+  <div class="row"><label for="cal2Name" data-i18n="calName"></label><input type="text" id="cal2Name" maxlength="31"></div>
+  <div class="row"><label for="cal2Color" data-i18n="calColor"></label><input id="cal2Color" type="color" value="#00ff00"></div>
+  <div class="row"><label for="cal2Url" data-i18n="calUrl"></label><input id="cal2Url" type="password" autocomplete="off" spellcheck="false" maxlength="767"></div>
+  <label class="chk"><input type="checkbox" id="cal2Clear"><span data-i18n="calClear"></span></label>
+  <p class="hint" id="cal2Status"></p>
+  <p class="hint" data-i18n="calUrlHint"></p>
+  <p class="hint" data-i18n="calGoogleHint"></p>
+  <p class="hint" data-i18n="calAppleHint"></p>
+  <p class="hint" data-i18n="calDotsHint"></p>
+  <p class="hint" data-i18n="calLimits"></p>
+  <p class="hint" data-i18n="calSaveHint"></p>
+  <button class="sec" type="button" onclick="refreshCalendars()" data-i18n="calReload"></button>
+ </div>
+</section>
+
 <!-- ================= SYSTÉM ================= -->
 <section id="tSys" class="tab hide">
   <div class="card">
@@ -259,7 +299,7 @@ td:first-child{color:var(--mut);width:50%}
 
 <script>
 const D={
- cs:{tabCtl:"Ovládání",tabLoc:"Poloha",tabScr:"Obrazovky",tabLook:"Vzhled",tabPlanes:"Letadla",tabSys:"Systém",
+ cs:{"scrCalendar":"Kalendář","calIntro":"Události z Google Kalendáře, iCloudu nebo jiného ICS odběru. Na displeji přepnete den a měsíc; klepnutí na datum otevře jeho události.","calView":"Výchozí / poslední pohled","calDay":"Den","calMonth":"Měsíc","calRefresh":"Obnovování (minuty, 5–1440)","calSource":"Kalendář","calEnabled":"Používat tento kalendář","calName":"Název","calColor":"Barva","calUrl":"Nový ICS odkaz (HTTPS / webcal)","calClear":"Smazat uložený odkaz","calUrlHint":"Odkazy jsou přístup k událostem: nevracejí se do stránky ani do exportu. Prázdné pole ponechá uložený odkaz. Po importu zálohy do nového zařízení je zadejte znovu.","calGoogleHint":"Google: Nastavení kalendáře → Integrovat kalendář → Tajná adresa ve formátu iCal. Není potřeba zveřejňovat kalendář.","calAppleHint":"iCloud: zapněte Veřejný kalendář a vložte jeho odkaz. Kdokoli s tímto odkazem může kalendář číst. Jde o odběr pro zobrazení; přihlášení Apple/Google ani zápis událostí zde nejsou.","calDotsHint":"Jeden aktivní kalendář: zvýrazněné dny, bez barevných teček a názvu zdroje u události. Více kalendářů: barevné tečky a názvy zdrojů.","calLimits":"Ukládá se předchozí měsíc, aktuální a dva následující; nejvýše 256 výskytů a 512 KiB na zdroj. Podporovány jsou UTC, místní čas a běžná středoevropská pásma. Nepodporované opakování nebo pásmo se zobrazí jako chyba; poslední platná data zůstanou.","calSaveHint":"Zdroje a pohled uložte tlačítkem dole. Změna sady obrazovek restartuje zařízení. Je-li nastaveno heslo správce, vyplňte jej na kartě Systém.","calReload":"Obnovit uložené kalendáře","calConfigured":"Odkaz uložen","calMissing":"Odkaz není nastaven","calMemory":"Paměť kalendáře (PSRAM)",tabCtl:"Ovládání",tabLoc:"Poloha",tabScr:"Obrazovky",tabLook:"Vzhled",tabPlanes:"Letadla",tabSys:"Systém",
   timezone:"Časové pásmo",
   wifi:"WiFi",network:"Síť",password:"Heslo",scan:"Vyhledat",connect:"Připojit",
   wifiHint:"Po uložení se zařízení připojí a přístupový bod zmizí.",
@@ -300,7 +340,7 @@ const D={
   settings:"Nastavení",
   saved:"Uloženo",failed:"Nepovedlo se",searching:"Hledám…",nothing:"Nic nenalezeno",
   disabled:"Obrazovka je vypnutá",confirmReset:"Opravdu smazat všechna nastavení včetně WiFi?"},
- en:{timezone:"Time zone",tabCtl:"Control",tabLoc:"Location",tabScr:"Screens",tabLook:"Appearance",tabPlanes:"Aircraft",tabSys:"System",
+ en:{"scrCalendar":"Calendar","calIntro":"Events from Google Calendar, iCloud or another ICS subscription. Switch day/month on the display; tap a date to open its agenda.","calView":"Default / last view","calDay":"Day","calMonth":"Month","calRefresh":"Refresh interval (minutes, 5–1440)","calSource":"Calendar","calEnabled":"Use this calendar","calName":"Name","calColor":"Colour","calUrl":"New ICS URL (HTTPS / webcal)","calClear":"Delete the saved URL","calUrlHint":"URLs grant access to events: they are never returned to the page or exported. An empty field keeps the saved URL. Re-enter URLs after importing a backup on a new device.","calGoogleHint":"Google: Calendar settings → Integrate calendar → Secret address in iCal format. The calendar does not need to be public.","calAppleHint":"iCloud: enable Public Calendar and paste its link. Anyone with that link can read the calendar. This is a display subscription; Apple/Google sign-in and editing events are not provided.","calDotsHint":"One enabled calendar: highlighted dates, no coloured dots or source name in the agenda. Multiple calendars: source dots and names.","calLimits":"Caches the previous, current and next two months; up to 256 occurrences and 512 KiB per source. Supports UTC, local time and common Central European zones. Unsupported recurrence or zones report an error; the last valid data remains.","calSaveHint":"Save sources and view with the button below. Changing enabled screens restarts the device. If an admin password is set, enter it on the System tab.","calReload":"Refresh saved calendars","calConfigured":"URL saved","calMissing":"No URL configured","calMemory":"Calendar memory (PSRAM)",timezone:"Time zone",tabCtl:"Control",tabLoc:"Location",tabScr:"Screens",tabLook:"Appearance",tabPlanes:"Aircraft",tabSys:"System",
   wifi:"WiFi",network:"Network",password:"Password",scan:"Scan",connect:"Connect",
   wifiHint:"After saving the device connects and the access point disappears.",
   wifiHintSta:"Changing the network drops this page. If the connection fails, the device brings up its own MeteoPlaneRadar network and you enter it again.",
@@ -340,7 +380,7 @@ const D={
   settings:"Settings",
   saved:"Saved",failed:"Failed",searching:"Searching…",nothing:"Nothing found",
   disabled:"That screen is switched off",confirmReset:"Really erase all settings including WiFi?"},
- sk:{
+ sk:{"scrCalendar":"Kalendár","calIntro":"Udalosti z Google Kalendára, iCloudu alebo iného ICS odberu. Na displeji prepnete deň a mesiac; ťuknutie na dátum otvorí jeho udalosti.","calView":"Predvolený / posledný pohľad","calDay":"Deň","calMonth":"Mesiac","calRefresh":"Obnovovanie (minúty, 5–1440)","calSource":"Kalendár","calEnabled":"Používať tento kalendár","calName":"Názov","calColor":"Farba","calUrl":"Nový ICS odkaz (HTTPS / webcal)","calClear":"Vymazať uložený odkaz","calUrlHint":"Odkazy umožňujú prístup k udalostiam: nevracajú sa do stránky ani do exportu. Prázdne pole ponechá uložený odkaz. Po importe zálohy do nového zariadenia ich zadajte znova.","calGoogleHint":"Google: Nastavenia kalendára → Integrovať kalendár → Tajná adresa vo formáte iCal. Kalendár nemusí byť verejný.","calAppleHint":"iCloud: zapnite Verejný kalendár a vložte jeho odkaz. Ktokoľvek s odkazom môže kalendár čítať. Ide o odber na zobrazenie; prihlásenie Apple/Google ani úpravy udalostí tu nie sú.","calDotsHint":"Jeden aktívny kalendár: zvýraznené dni, bez farebných bodiek a názvu zdroja pri udalosti. Viac kalendárov: farebné bodky a názvy zdrojov.","calLimits":"Ukladá sa predchádzajúci mesiac, aktuálny a dva nasledujúce; najviac 256 výskytov a 512 KiB na zdroj. Podporované sú UTC, miestny čas a bežné stredoeurópske pásma. Nepodporované opakovanie alebo pásmo sa zobrazí ako chyba; posledné platné dáta zostanú.","calSaveHint":"Zdroje a pohľad uložte tlačidlom dole. Zmena sady obrazoviek reštartuje zariadenie. Ak je nastavené heslo správcu, vyplňte ho na karte Systém.","calReload":"Obnoviť uložené kalendáre","calConfigured":"Odkaz uložený","calMissing":"Odkaz nie je nastavený","calMemory":"Pamäť kalendára (PSRAM)",
   "tabCtl": "Ovládanie",
   "tabLoc": "Poloha",
   "tabScr": "Obrazovky",
@@ -439,7 +479,7 @@ const $=id=>document.getElementById(id);
 function setLang(v){L=(v==2||v=="sk")?"sk":(v==1||v=="en")?"en":"cs";$("uiLang").value=String({cs:0,en:1,sk:2}[L]);
  document.documentElement.lang=L;
  document.querySelectorAll("[data-i18n]").forEach(e=>{const t=D[L][e.dataset.i18n];if(t)e.textContent=t;});
- pwState();status();}
+ pwState();calendarLabels();status();}
 
 // Tabs. The Save bar is hidden on Control - nothing there is saved, it is sent
 // straight away - so the button cannot look like it applies to the buttons.
@@ -459,7 +499,7 @@ function hexToRgb565(h){const r=parseInt(h.substr(1,2),16),g=parseInt(h.substr(3
  return ((r>>3)<<11)|((g>>2)<<5)|(b>>3);}
 
 const SCR=[["scrClock",0],["scrPlanes",1],["scrMeteo",2],["scrForecast",3],
-           ["settings",4]];
+           ["scrCalendar",4],["settings",5]];
 function drawScrBtns(cur,enabled){
  $("scrBtns").innerHTML=SCR.map(([k,i])=>{
   const on=enabled?enabled[i]:true;
@@ -535,6 +575,16 @@ async function load(){
  $("lat").value=CFG.lat.toFixed(4);$("lon").value=CFG.lon.toFixed(4);
  $("sClock").checked=CFG.screens.clock;$("sPlanes").checked=CFG.screens.planes;
  $("sMeteo").checked=CFG.screens.meteo;$("sForecast").checked=CFG.screens.forecast;
+ $("sCalendar").checked=!!CFG.screens.calendar;
+ $("calendarView").value=CFG.calendarView||0;$("calendarRefresh").value=CFG.calendarRefresh||15;
+ for(let i=0;i<3;i++){
+  const c=(CFG.calendars||[])[i]||{};
+  $("cal"+i+"On").checked=c.enabled!==false;
+  $("cal"+i+"Name").value=c.name||("Calendar "+(i+1));
+  $("cal"+i+"Color").value=rgb565ToHex(c.color??[1535,64800,2016][i]);
+  $("cal"+i+"Url").value="";$("cal"+i+"Clear").checked=false;
+ }
+ calendarLabels();
  $("autoRotate").value=CFG.autoRotate;$("radarSrc").value=CFG.radarSrc;
  $("meteoLegend").checked=CFG.meteoLegend;
  $("briDay").value=CFG.briDay;$("briNight").value=CFG.briNight;
@@ -568,8 +618,9 @@ async function status(){
  const rows=[["IP",s.ip],["WiFi",s.ssid+" ("+s.rssi+" dBm)"],["Uptime",s.uptime],
   ["Heap",s.heap+" B"],["PSRAM",s.psram+" B"],["Restart",s.resetReason],
   ["ADS-B",s.adsb],["Radar",s.radar],[D[L].scrForecast,s.forecast],
-  [D[L].timezone,s.timezone],
+  [D[L].timezone,s.timezone],[D[L].calMemory,(s.calendarMemory||0)+" B"],
   ["Firmware","v"+s.version],[D[L].board,s.board]];
+ (s.calendarSources||[]).forEach((c,i)=>{if(i<3)$("cal"+i+"Status").textContent=c.state+(c.updated?" · "+new Date(c.updated*1000).toLocaleString(L):"");});
  $("statusTab").innerHTML=rows.map(r=>"<tr><td>"+r[0]+"</td><td>"+r[1]+"</td></tr>").join("");}catch(e){}
 }
 setInterval(status,10000);
@@ -584,12 +635,37 @@ function body(){return{lat:parseFloat($("lat").value),lon:parseFloat($("lon").va
  altMin:+$("altMin").value,altMax:+$("altMax").value,onlyCallsign:$("onlyCallsign").checked,
  squawkAlert:$("squawkAlert").checked,watch:$("watch").value,
  password:$("adminPass").value,newPassword:$("newPass").value,
+ calendarView:+$("calendarView").value,calendarRefresh:+$("calendarRefresh").value,
+ calendars:[0,1,2].map(i=>({name:$("cal"+i+"Name").value,enabled:$("cal"+i+"On").checked,color:hexToRgb565($("cal"+i+"Color").value),url:$("cal"+i+"Url").value.trim(),clearUrl:$("cal"+i+"Clear").checked})),
  screens:{clock:$("sClock").checked,planes:$("sPlanes").checked,meteo:$("sMeteo").checked,
-  forecast:$("sForecast").checked}};}
+  forecast:$("sForecast").checked,calendar:$("sCalendar").checked}};}
 
+function calendarLabels(){
+ for(let i=0;i<3;i++){
+  const c=(CFG.calendars||[])[i]||{};
+  $("cal"+i+"Url").placeholder=c.hasUrl?D[L].calConfigured:D[L].calMissing;
+ }
+}
+async function refreshCalendars(){
+ const r=await fetch("/api/calendar/refresh",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:$("adminPass").value})});
+ msg(r.ok?D[L].autoSaved:D[L].failed,r.ok?"ok":"err");
+}
 async function save(){
- const r=await fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body())});
- if(r.ok){msg(D[L].saved,"ok");$("newPass").value="";setLang($("uiLang").value);}else msg(D[L].failed+" ("+r.status+")","err");
+ try{
+  const payload=body();
+  const r=await fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  const result=await r.json();
+  if(!r.ok){msg(D[L].failed+" ("+r.status+")","err");return;}
+  CFG.calendars=payload.calendars.map((c,i)=>({name:c.name,color:c.color,enabled:c.enabled,
+   hasUrl:!!c.url||(!c.clearUrl&&!!((CFG.calendars||[])[i]||{}).hasUrl)}));
+  for(let i=0;i<3;i++){$("cal"+i+"Url").value="";$("cal"+i+"Clear").checked=false;}
+  $("newPass").value="";
+  setLang($("uiLang").value);
+  msg(D[L].saved,"ok");
+  // A restart is already queued after screen/location changes. Do not request
+  // another config while the device is shutting down its web server.
+  if(!result.restart)await load();
+ }catch(e){msg(D[L].failed,"err");}
 }
 async function scan(){
  const s=$("ssid");s.innerHTML="<option>…</option>";

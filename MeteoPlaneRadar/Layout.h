@@ -3,7 +3,7 @@
 //  Layout - shared screen bands and a collision check, so no two elements can
 //  ever end up drawn on top of each other.
 //
-//  The round panel has little usable height at top and bottom, and five screens
+//  The round panel has little usable height at top and bottom, and six screens
 //  compete for it. Tuning coordinates by hand looks fine until someone enables
 //  one more thing, so there are two mechanisms instead:
 //

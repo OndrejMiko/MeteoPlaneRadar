@@ -20,12 +20,45 @@ ESP32-S3-Touch-LCD-2.1 a ESP32-S3-Touch-LCD-2.8C a nastavuje se z prohlížeče.
 | **Letadla** | letadla v okolí, detail letu včetně trasy | adsb.fi, adsb.lol |
 | **Meteoradar** | animovaná srážková situace | ČHMÚ nebo RainViewer |
 | **Předpověď** | nyní, +3 h, +6 h, dnes, zítra, pozítří a další dny, ovzduší a pyl | Open-Meteo |
+| **Kalendář** | denní agenda, měsíční přehled, až tři odběry | Google/iCloud/jiné ICS |
 | **Nastavení** | jas, orientace mapy, jednotky, jazyk | — |
 
-První čtyři obrazovky lze vypnout, Nastavení je dostupné vždy. Rozhraní je
+Prvních pět obrazovek lze vypnout, Nastavení je dostupné vždy. Rozhraní je
 česky, anglicky nebo slovensky. Jazyk zvolíte v horní části webového nastavení
 nebo tlačítkem Jazyk na displeji (cyklus čeština → angličtina → slovenština).
 Volba se zachová po restartu. Displej používá text bez diakritiky, web s diakritikou.
+
+## Kalendář
+
+Na kartě **Kalendář** ve webu zadejte název, barvu a ICS odkaz až tří kalendářů.
+Google: Nastavení → Integrovat kalendář → Tajná adresa ve formátu iCal.
+iCloud: Veřejný kalendář → Kopírovat odkaz (`webcal://` se převede na HTTPS).
+Kdokoli s iCloud odkazem může kalendář číst. Používá se pouze odběr pro zobrazení,
+bez přihlášení OAuth/CalDAV a bez vytváření či úprav událostí.
+
+Nastavení uložte a na kartě **Obrazovky** zapněte Kalendář (po aktualizaci je vypnutý).
+Je-li nastaveno heslo správce, vyplňte jej před uložením na kartě Systém.
+Odkazy se nevracejí na web ani do exportu; prázdné pole ponechá uložený odkaz,
+zaškrtnutí „Smazat uložený odkaz“ ho odstraní. Po obnově zálohy do nového zařízení
+odkazy zadejte znovu. Názvy, barvy a ostatní nastavení se zálohují.
+
+Na displeji přepínáte **Den/Měsíc**. Šipky a přejetí listují, datum v měsíci otevře
+agendu, **DNES** vrátí dnešní datum. Více než tři události se stránkují klepnutím
+na agendu. Jeden aktivní kalendář nemá barevné tečky ani popisky zdroje; při více
+kalendářích jsou odlišeny barvou a názvem.
+
+Cache zabírá přibližně **0,65 MiB PSRAM**, nevytváří další framebuffer a má pevné
+limity: předchozí, aktuální a dva příští měsíce, 256 výskytů a 512 KiB ICS na zdroj.
+Obnovování je nastavitelné po 5–1440 minutách; chyby se zkouší znovu po dvou minutách.
+Při chybě zůstanou poslední platná data s upozorněním. Stav a přidělená PSRAM jsou
+vidět ve webu. Vypnutý kalendář nestahuje data a uvolní pracovní buffery.
+
+Podporováno je UTC, místní čas zařízení a běžná středoevropská pásma (např.
+Europe/Bratislava, Europe/Prague). Parser podporuje běžné denní, týdenní, měsíční
+(včetně `1MO` / `-1FR`) a roční opakování, intervaly, COUNT/UNTIL, EXDATE/RDATE,
+přesuny a rušení jednotlivých výskytů. Složitější pravidla a jiná pásma jsou
+hlášena jako chyba; úplná implementace RFC 5545 to není. Přesný seznam je v kódu
+`CalendarIcs.cpp`. Tato verze byla ověřena sestavením a host testy, nikoli na hardwaru.
 
 ## Hardware
 
@@ -144,6 +177,7 @@ Lang.*                české, anglické a slovenské řetězce
 Layout.*              pásy obrazovky a hlídání kolizí
 WebConfig.* WebPage.h webový server, API, portál, OTA
 Net.*                 sdílené HTTPS stahování
+Calendar.* CalendarIcs.* ICS odběry, omezená PSRAM cache, parser
 Forecast.*            Open-Meteo: předpověď, slunce, ovzduší
 RainViewer.*          dlaždicový radar
 Screen*.{h,cpp}       jednotlivé obrazovky

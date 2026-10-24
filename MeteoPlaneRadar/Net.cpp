@@ -169,3 +169,61 @@ bool Net_TouchDate(const char* url) {
   http.end();
   return ok;
 }
+
+extern const uint8_t calendar_ca_start[] asm("_binary_x509_crt_bundle_start");
+extern const uint8_t calendar_ca_end[] asm("_binary_x509_crt_bundle_end");
+bool Net_GetCalendar(const char* url, uint8_t* buf, size_t cap, size_t* outLen, bool* tooLarge) {
+  if (tooLarge) *tooLarge = false;
+  if (outLen) *outLen = 0;
+  if (!buf || cap < 2 || WiFi.status() != WL_CONNECTED || !Net_HeapOk("CALENDAR")) return false;
+  String target(url);
+  for (int redirects = 0; redirects <= 3; redirects++) {
+    if (!target.startsWith("https://")) return false;
+    WiFiClientSecure secure;
+    secure.setCACertBundle(calendar_ca_start, calendar_ca_end - calendar_ca_start);
+    secure.setHandshakeTimeout(NET_TLS_HANDSHAKE_S);
+    HTTPClient http;
+    http.setConnectTimeout(6000);
+    http.setTimeout(10000);
+    http.setReuse(false);
+    http.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
+    if (!http.begin(secure, target)) return false;
+    http.setUserAgent(HTTP_USER_AGENT);
+    http.addHeader("Accept", "text/calendar");
+    http.addHeader("Accept-Encoding", "identity");
+    const char* headers[] = {"Date", "Location"};
+    http.collectHeaders(headers, 2);
+    int code = http.GET();
+    if (code == 301 || code == 302 || code == 303 || code == 307 || code == 308) {
+      String next = http.header("Location");
+      http.end();
+      if (next.startsWith("/") && !next.startsWith("//")) {
+        int slash = target.indexOf('/', 8);
+        next = (slash < 0 ? target : target.substring(0, slash)) + next;
+      }
+      target = next;
+      poll();
+      continue;
+    }
+    if (code != HTTP_CODE_OK) {
+      Serial.printf("CALENDAR: HTTP %d\n", code);
+      http.end();
+      return false;
+    }
+    if (http.hasHeader("Date")) Outside_NoteHttpDate(http.header("Date").c_str());
+    if (http.getSize() > (int)cap - 1) {
+      if (tooLarge) *tooLarge = true;
+      http.end();
+      return false;
+    }
+    long got = Net_ReadBody(http, buf, cap, "CALENDAR", s_poll, tooLarge);
+    http.end();
+    poll();
+    if (got <= 0) return false;
+    if (outLen) *outLen = got;
+    return true;
+  }
+  return false;
+}
+
+void Net_Poll() { poll(); }

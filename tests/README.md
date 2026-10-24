@@ -18,3 +18,12 @@ arduino-cli compile --profile default MeteoPlaneRadar
 
 The profile is in `MeteoPlaneRadar/sketch.yaml`. Host tests do not verify display
 rendering, touch input, network services or flash persistence on physical hardware.
+
+Calendar coverage includes folded/escaped ICS text, all-day and multi-day
+boundaries, UTC and Central European DST, daily/weekly/monthly/yearly recurrence,
+exceptions and moved/cancelled instances, unsupported rules/zones and capacity
+limits. AddressSanitizer and UndefinedBehaviorSanitizer run on the parser and
+scheduler tests. The scheduler tests verify PSRAM-only allocation, offline/clock
+startup, failed downloads retaining the cache, source removal, and single-source
+versus multiple-source drawing. `CALENDAR_SCREENSHOTS=/absolute/directory` also
+records the real screen's drawing calls as SVG for layout inspection.

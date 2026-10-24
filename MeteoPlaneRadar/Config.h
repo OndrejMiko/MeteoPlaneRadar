@@ -305,14 +305,16 @@
 // =============================================================================
 
 // ---------------------------------------------------------------------------
-//  Four data screens retain their persisted indices. Settings is always reachable.
+//  Existing data screens retain their indices; calendar follows forecast.
+//  Settings is always reachable.
 // ---------------------------------------------------------------------------
 #define SCREEN_CLOCK_I    0
 #define SCREEN_PLANES_I   1
 #define SCREEN_METEO_I    2
 #define SCREEN_FORECAST_I 3
-#define SCREEN_SETTINGS_I 4
-#define SCREEN_N          5
+#define SCREEN_CALENDAR_I 4
+#define SCREEN_SETTINGS_I 5
+#define SCREEN_N          6
 
 // Automatic screen cycling: 0 = off, otherwise SECONDS between switches (it was
 // minutes up to 0.6.0 - see Settings.h).
@@ -447,3 +449,9 @@
 //  before it turns into two labels sitting on top of each other.
 // ---------------------------------------------------------------------------
 #define LAYOUT_DEBUG 0
+
+// Calendar subscriptions: five-minute minimum, all large buffers live in PSRAM.
+#define CALENDAR_SOURCES 3
+#define CALENDAR_URL_MAX 768
+#define CALENDAR_EVENTS_PER_SOURCE 256
+#define CALENDAR_MAX_FEED (512UL * 1024UL)

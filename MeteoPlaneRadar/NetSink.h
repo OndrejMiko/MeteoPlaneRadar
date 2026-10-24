@@ -30,7 +30,7 @@ class HTTPClient;
 // failure - all of them logged with the given tag. The body is left
 // NUL-terminated. For bodies that have to be kept whole: JSON, PNG, tiles.
 long Net_ReadBody(HTTPClient& http, uint8_t* buf, size_t cap, const char* tag,
-                  void (*poll)() = nullptr);
+                  void (*poll)() = nullptr, bool* tooLarge = nullptr);
 
 // Longest token a scan callback may look for. Everything shorter is guaranteed
 // to land whole in at least one window.

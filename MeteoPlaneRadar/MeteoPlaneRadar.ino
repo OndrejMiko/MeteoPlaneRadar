@@ -17,7 +17,8 @@
 //    2) Aircraft    - adsb.fi, tap an aircraft for details and its route
 //    3) Weather     - animated precipitation, CHMU or RainViewer
 //    4) Forecast    - now/+3h/+6h, today/tomorrow/after, then the weekdays
-//    5) Settings    - always reachable, and shows the web address
+//    5) Calendar    - daily agenda and month grid from ICS subscriptions
+//    6) Settings    - always reachable, and shows the web address
 //
 //  Configuration lives in a browser. The device serves its own settings page
 //  permanently at http://meteoplaneradar.local/ once it is on the home network,
@@ -88,6 +89,8 @@
 #include "ScreenWeather.h"
 #include "ScreenClock.h"
 #include "ScreenForecast.h"
+#include "ScreenCalendar.h"
+#include "Calendar.h"
 #include "ScreenSettings.h"
 #include "Forecast.h"
 #include "NightMode.h"
@@ -273,6 +276,7 @@ static void drawActive() {
     case SCREEN_PLANES_I:   ScreenPlanes_Draw();   break;
     case SCREEN_METEO_I:    ScreenWeather_Draw();  break;
     case SCREEN_FORECAST_I: ScreenForecast_Draw(); break;
+    case SCREEN_CALENDAR_I: ScreenCalendar_Draw(); break;
     case SCREEN_SETTINGS_I: ScreenSettings_Draw(); break;
   }
   drawScreenDots();
@@ -285,6 +289,7 @@ static void enterActive() {
     case SCREEN_PLANES_I:   ScreenPlanes_Enter();   break;
     case SCREEN_METEO_I:    ScreenWeather_Enter();  break;
     case SCREEN_FORECAST_I: ScreenForecast_Enter(); break;
+    case SCREEN_CALENDAR_I: ScreenCalendar_Enter(); break;
     case SCREEN_SETTINGS_I: ScreenSettings_Enter(); break;
   }
   drawActive();
@@ -323,6 +328,7 @@ static bool activeTick() {
     case SCREEN_PLANES_I:   return ScreenPlanes_Tick();
     case SCREEN_METEO_I:    return ScreenWeather_Tick();
     case SCREEN_FORECAST_I: return ScreenForecast_Tick();
+    case SCREEN_CALENDAR_I: return ScreenCalendar_Tick();
     case SCREEN_SETTINGS_I: return ScreenSettings_Tick();
   }
   return false;
@@ -332,6 +338,7 @@ static void activeChangeRange(int dir) {
   switch (s_screen) {
     case SCREEN_PLANES_I: ScreenPlanes_ChangeRange(dir);  break;
     case SCREEN_METEO_I:  ScreenWeather_ChangeRange(dir); break;
+    case SCREEN_CALENDAR_I: ScreenCalendar_ChangeRange(dir); break;
     default: break;   // the other screens have no range
   }
 }
@@ -340,6 +347,7 @@ static bool activeTap(int x, int y) {
   switch (s_screen) {
     case SCREEN_CLOCK_I:    return ScreenClock_HandleTap(x, y);
     case SCREEN_PLANES_I:   return ScreenPlanes_HandleTap(x, y);
+    case SCREEN_CALENDAR_I: return ScreenCalendar_HandleTap(x, y);
     case SCREEN_SETTINGS_I: return ScreenSettings_HandleTap(x, y);
     default: return false;
   }
@@ -374,7 +382,10 @@ static void dispatchTouch() {
       break;
     case PEND_TAP:
       // A tap does not pause the cycling - see touchPump().
-      if (activeTap(a, b)) drawActive();
+      if (activeTap(a, b)) {
+        if (s_screen==SCREEN_CALENDAR_I) s_touchPauseUntil=millis()+autoRotatePauseMs();
+        drawActive();
+      }
       break;
     default:
       break;
@@ -686,6 +697,7 @@ void loop() {
   displayWatchdog();
   Outside_Tick();     // outside temperature and the clock safety net
   Forecast_Tick();    // forecast, sun times and air quality
+  Calendar_Tick();    // bounded ICS subscriptions, only while enabled
   NightMode_Tick();   // day/night brightness
   Route_Tick();       // pending "where is it flying from/to" lookup
   Settings_Tick();    // debounced persist of UI state to NVS

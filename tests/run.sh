@@ -8,4 +8,11 @@ c++ -std=c++17 -Wall -Wextra -Itests/stubs -IMeteoPlaneRadar -I"$ARDUINOJSON_SRC
   MeteoPlaneRadar/Lang.cpp MeteoPlaneRadar/Settings.cpp tests/settings_language.cpp \
   -o "$test_build_dir/settings_language"
 "$test_build_dir/settings_language"
+c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -IMeteoPlaneRadar \
+  MeteoPlaneRadar/CalendarIcs.cpp tests/calendar_ics.cpp -o "$test_build_dir/calendar_ics"
+"$test_build_dir/calendar_ics"
+c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoPlaneRadar -I"$ARDUINOJSON_SRC" \
+  MeteoPlaneRadar/Lang.cpp MeteoPlaneRadar/Settings.cpp MeteoPlaneRadar/CalendarIcs.cpp \
+  MeteoPlaneRadar/Calendar.cpp MeteoPlaneRadar/ScreenCalendar.cpp tests/calendar_runtime.cpp -o "$test_build_dir/calendar_runtime"
+"$test_build_dir/calendar_runtime"
 node tests/web.mjs

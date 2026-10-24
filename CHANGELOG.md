@@ -11,6 +11,36 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.2] - 2026-10-24
+
+### Přidáno
+
+- Kalendář s denní agendou a měsíčním přehledem. Přepnutí Den/Měsíc, listování
+  šipkami nebo přejetím, otevření dne z mřížky, návrat na dnešek a stránkování
+  delší agendy klepnutím. Používá stejné barvy a vestavěné písmo jako ostatní obrazovky.
+- Webová karta Kalendář pro tři ICS odběry: název, barva, zapnutí, tajný odkaz,
+  poslední pohled, interval 5–1440 minut a ruční obnovení. Google používá soukromý
+  iCal odkaz; iCloud odkaz veřejně sdíleného kalendáře. Nejde o OAuth/CalDAV ani zápis událostí.
+- Barevné tečky a označení zdrojů pouze při více aktivních kalendářích. Jeden
+  kalendář zvýrazní dny s událostmi bez teček a bez názvu zdroje v denní agendě.
+- Omezená cache v PSRAM: předchozí, aktuální a dva další měsíce; nejvýše 256 výskytů
+  a 512 KiB staženého ICS na zdroj. Chybný nebo nadlimitní odběr nenahradí poslední
+  platná data prázdným kalendářem. Bez zapnuté obrazovky se paměť uvolní a data se nestahují.
+- Ověřované HTTPS, pouze HTTPS přesměrování a odkazy dostupné jen pro zápis:
+  nevracejí se z API ani v záloze. Po importu do nového zařízení je nutné zadat je znovu.
+- ICS parser a regresní testy pro opakování, výjimky, přesuny, rušení, přechod letního
+  času, správu paměti, staré nastavení i zobrazení jednoho/více kalendářů.
+
+### Omezení
+
+- Podporovány jsou UTC, místní čas a vyjmenovaná středoevropská pásma. Opakování
+  DAILY/WEEKLY/MONTHLY/YEARLY zahrnuje INTERVAL, COUNT/UNTIL, běžné BYDAY,
+  BYMONTH, BYMONTHDAY, EXDATE, RDATE a jednotlivé RECURRENCE-ID výjimky.
+  Složitější pravidla (např. BYSETPOS, EXRULE nebo THISANDFUTURE) a jiná pásma
+  zobrazí chybu místo nesprávného rozpisu. Nejde o úplnou implementaci RFC 5545.
+- Ověřeno sestavením a host testy; skutečný displej, dotyk a konkrétní účty Google/iCloud
+  vyžadují ověření na zařízení.
+
 ## [0.7.1] - 2026-10-24
 
 ### Přidáno

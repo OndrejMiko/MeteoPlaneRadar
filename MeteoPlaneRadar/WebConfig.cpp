@@ -5,33 +5,36 @@
 //  Author:  Petr / chiptron.cz   (vyvoj / development: chiptron.cz)
 // =============================================================================
 #include "WebConfig.h"
-#include "WebPage.h"
+
+#include <ArduinoJson.h>
+#include <DNSServer.h>
+#include <ESPmDNS.h>
+#include <Update.h>
+#include <WebServer.h>
+#include <WiFi.h>
+#include <esp_heap_caps.h>
+#include <esp_system.h>
+#include <math.h>
+#include <string.h>
+
+#include "Board.h"
+#include "Calendar.h"
+#include "Config.h"
+#include "Display_ST7701.h"
+#include "Forecast.h"
+#include "Lang.h"
+#include "Net.h"
+#include "NightMode.h"
+#include "ScreenCalendar.h"
 #include "ScreenPlanes.h"
 #include "ScreenWeather.h"
 #include "Settings.h"
 #include "Status.h"
-#include "Version.h"
-#include "Config.h"
-#include "Lang.h"
-#include "Net.h"
-#include "Forecast.h"
-#include "NightMode.h"
-#include "UI.h"
-#include "Display_ST7701.h"
-#include "Watchdog.h"
-
-#include <WiFi.h>
-#include <WebServer.h>
-#include <DNSServer.h>
-#include <ESPmDNS.h>
-#include <ArduinoJson.h>
-#include <Update.h>
-#include <esp_heap_caps.h>
-#include "Board.h"
-#include <esp_system.h>
-#include <math.h>
-#include <string.h>
 #include "TimeZone.h"
+#include "UI.h"
+#include "Version.h"
+#include "Watchdog.h"
+#include "WebPage.h"
 
 static WebServer  s_srv(WEB_PORT);
 static DNSServer  s_dns;
@@ -109,6 +112,16 @@ static void handleGetConfig() {
 static void handlePostConfig() {
   JsonDocument doc;
   if (!readBody(doc)) { s_srv.send(400, "application/json", "{\"error\":\"json\"}"); return; }
+
+  if (const char* error = Settings_ValidateCalendarJson(doc.as<JsonObjectConst>())) {
+    JsonDocument res;
+    res["error"] = error;
+    sendJson(400, res);
+    return;
+  }
+  // Calendar URLs grant read access to private events. Editing them uses the
+  // same optional admin password as import; URLs never round-trip through GET.
+  if (!doc["calendars"].isNull() && !authed(doc)) return;
 
   // The password is write-only and never round-trips through the page, so it is
   // handled apart from the rest of the settings.
@@ -245,6 +258,8 @@ static void handleStatus() {
   char rb[24] = "";
   if      (scr == SCREEN_PLANES_I) ScreenPlanes_RangeText(rb, sizeof(rb));
   else if (scr == SCREEN_METEO_I)  ScreenWeather_RangeText(rb, sizeof(rb));
+  else if (scr == SCREEN_CALENDAR_I)
+    ScreenCalendar_RangeText(rb, sizeof(rb));
   doc["range"] = rb;                       // empty on screens without one
 
   JsonArray en = doc["enabled"].to<JsonArray>();
@@ -254,6 +269,13 @@ static void handleStatus() {
   Status_Text(ST_ADSB, b, sizeof(b));     doc["adsb"] = b;
   Status_Text(ST_RADAR, b, sizeof(b));    doc["radar"] = b;
   Status_Text(ST_FORECAST, b, sizeof(b)); doc["forecast"] = b;
+  doc["calendarMemory"] = Calendar_MemoryBytes();
+  JsonArray calendars = doc["calendarSources"].to<JsonArray>();
+  for (int i = 0; i < CALENDAR_SOURCES; i++) {
+    JsonObject c = calendars.add<JsonObject>();
+    c["state"] = Calendar_StateText(Calendar_State(i));
+    c["updated"] = (long long)Calendar_Updated(i);
+  }
   sendJson(200, doc);
 }
 
@@ -343,6 +365,12 @@ static void handleImport() {
   if (!authed(doc)) return;
   JsonObjectConst cfg = doc["config"];
   if (cfg.isNull()) { s_srv.send(400, "application/json", "{\"error\":\"config\"}"); return; }
+  if (const char* error = Settings_ValidateCalendarJson(cfg)) {
+    JsonDocument res;
+    res["error"] = error;
+    sendJson(400, res);
+    return;
+  }
   Settings_FromJson(cfg);
   NightMode_Apply();
   s_wantRestart = true;
@@ -555,6 +583,17 @@ static void handleUpdateDone() {
   s_updErr = "";
 }
 
+static void handleCalendarRefresh() {
+  JsonDocument doc;
+  if (!readBody(doc)) {
+    s_srv.send(400, "application/json", "{}");
+    return;
+  }
+  if (!authed(doc)) return;
+  Calendar_Refresh();
+  s_srv.send(200, "application/json", "{\"ok\":true}");
+}
+
 // --- Lifecycle --------------------------------------------------------------
 void WebConfig_Begin(bool apMode) {
   s_apMode = apMode;
@@ -582,6 +621,7 @@ void WebConfig_Begin(bool apMode) {
   s_srv.on("/api/config", HTTP_GET, handleGetConfig);
   s_srv.on("/api/config", HTTP_POST, handlePostConfig);
   s_srv.on("/api/status", HTTP_GET, handleStatus);
+  s_srv.on("/api/calendar/refresh", HTTP_POST, handleCalendarRefresh);
   s_srv.on("/api/screen", HTTP_POST, handleScreen);
   s_srv.on("/api/range", HTTP_POST, handleRange);
   s_srv.on("/api/scan", HTTP_GET, handleScan);

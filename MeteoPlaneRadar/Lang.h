@@ -77,6 +77,24 @@
   X(S_ALDER, "olse", "olše", "alder", "jelsa", "jelša") \
   X(S_BIRCH, "briza", "bříza", "birch", "breza", "breza") \
   X(S_GRASS, "travy", "trávy", "grass", "travy", "trávy") \
+  X(S_CALENDAR, "Kalendar", "Kalendář", "Calendar", "Kalendar", "Kalendár") \
+  X(S_CAL_DAY, "Den", "Den", "Day", "Den", "Deň") \
+  X(S_CAL_MONTH, "Mesic", "Měsíc", "Month", "Mesiac", "Mesiac") \
+  X(S_CAL_TODAY, "DNES", "DNES", "TODAY", "DNES", "DNES") \
+  X(S_CAL_PICK, "Vyber den", "Vyberte den", "Tap a day", "Vyber den", "Vyberte deň") \
+  X(S_CAL_MORE, "dalsi: klepni", "další: klepněte", "tap for more", "dalsie: tukni", "ďalšie: ťuknite") \
+  X(S_CAL_ALLDAY, "cely den", "celý den", "all day", "cely den", "celý deň") \
+  X(S_CAL_EMPTY, "Zadne udalosti", "Žádné události", "No events", "Ziadne udalosti", "Žiadne udalosti") \
+  X(S_CAL_SETUP, "Nastav kalendar na webu", "Nastavte kalendář na webu", "Set calendars on web", "Nastav kalendar na webe", "Nastavte kalendár na webe") \
+  X(S_CAL_STALE, "Data nejsou uplna / aktualni", "Data nejsou úplná nebo aktuální", "Data incomplete / stale", "Data nie su uplne / aktualne", "Dáta nie sú úplné alebo aktuálne") \
+  X(S_CAL_TIME_WAIT, "Cekam na nastaveni casu", "Čekám na nastavení času", "Waiting for clock", "Cakam na nastavenie casu", "Čakám na nastavenie času") \
+  X(S_CAL_OUTSIDE, "Mimo nactene obdobi", "Mimo načtené období", "Outside loaded dates", "Mimo nacitane obdobie", "Mimo načítaného obdobia") \
+  X(S_CAL_NETWORK, "Chyba HTTPS / prenosu", "Chyba HTTPS nebo přenosu", "HTTPS / transfer failed", "Chyba HTTPS / prenosu", "Chyba HTTPS alebo prenosu") \
+  X(S_CAL_INVALID, "Neplatny ICS kalendar", "Neplatný ICS kalendář", "Invalid ICS calendar", "Neplatny ICS kalendar", "Neplatný ICS kalendár") \
+  X(S_CAL_LIMIT, "Prekrocen limit kalendare", "Překročen limit kalendáře", "Calendar limit exceeded", "Prekroceny limit kalendara", "Prekročený limit kalendára") \
+  X(S_CAL_TIMEZONE, "Nepodporovane casove pasmo", "Nepodporované časové pásmo", "Unsupported time zone", "Nepodporovane casove pasmo", "Nepodporované časové pásmo") \
+  X(S_CAL_RULE, "Nepodporovane opakovani", "Nepodporované opakování", "Unsupported recurrence", "Nepodporovane opakovanie", "Nepodporované opakovanie") \
+  X(S_CAL_MEMORY, "Nedostatek PSRAM", "Nedostatek PSRAM", "Not enough PSRAM", "Nedostatok PSRAM", "Nedostatok PSRAM") \
   X(S_TOMORROW,      "zitra",              "zítra",              "tomorrow", "zajtra", "zajtra")
 
 enum StrId : uint16_t {
@@ -100,3 +118,6 @@ const char* TW(StrId id);
 // wday 0 = Sunday (matches struct tm), mon 0 = January.
 const char* Lang_WeekdayShort(int wday);
 const char* Lang_MonthName(int mon);
+
+// Nominative month labels for the calendar header (ASCII).
+const char* Lang_MonthLabel(int mon);

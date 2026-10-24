@@ -30,22 +30,36 @@ for (const lang of ['cs','en','sk']) {
 }
 assert.equal(elements.get('uiLang').value, '2');
 run('drawScrBtns(4,[true,true,true,true,true])');
-assert.equal((elements.get('scrBtns').innerHTML.match(/<button/g) || []).length, 5);
+assert.equal((elements.get('scrBtns').innerHTML.match(/<button/g) || []).length, 6);
 assert(elements.get('scrBtns').innerHTML.includes('Nastavenia'));
 const body = run('body()');
 assert.equal(body.lang, 2);
-assert.deepEqual(Object.keys(body.screens), ['clock','planes','meteo','forecast']);
+assert.deepEqual(Object.keys(body.screens), ['clock','planes','meteo','forecast','calendar']);
 for (const removed of ['priceFee','priceVat','mixCountry']) assert(!(removed in body));
-assert.equal(run('SCR.length'), 5);
+assert.equal(run('SCR.length'), 6);
 assert.equal(run('SCR[4][1]'), 4);
 for (const removed of ['sPrice','sMix','tEnergy']) assert(!elements.has(removed));
 
 context.fetch = async url => ({json:async()=>url === '/api/config' ? {
   version,lang:2,lat:48.15,lon:17.11,screens:{clock:true,planes:true,meteo:true,forecast:true},
-  clockColor:65535,secColor:1535,hasPassword:false
+  clockColor:65535,secColor:1535,hasPassword:false,calendarView:1,calendarRefresh:15,calendars:[{name:'Rodina',hasUrl:true,color:1535,enabled:true}]
 } : {screen:4,enabled:[true,true,true,true,true],range:''}});
 await run('load()');
 assert.equal(document.documentElement.lang, 'sk');
 assert.equal(elements.get('ver').textContent, 'v'+version);
 assert.equal(elements.get('sForecast').checked, true);
+assert.equal(elements.get('calendarView').value, 1);
+assert.equal(elements.get('cal0Url').value, '');
+assert.equal(elements.get('cal0Url').placeholder, 'Odkaz uložený');
+assert.equal(run('body().calendars.length'),3);
+// Saving screen changes queues a reboot: secrets clear after success and the
+// page must not race the restart with another GET /api/config.
+const requests=[];
+context.fetch=async (url,options)=>{requests.push({url,options});return {ok:true,json:async()=>url==='/api/config'?{ok:true,restart:true}:{screen:4,enabled:[true,true,true,true,true,true],range:''}};};
+elements.get('cal0Url').value='https://example.test/secret.ics';
+await run('save()');
+const saved=JSON.parse(requests.find(r=>r.url==='/api/config').options.body);
+assert.equal(saved.calendars[0].url,'https://example.test/secret.ics');
+assert.equal(elements.get('cal0Url').value,'');
+assert(!requests.some(r=>r.url==='/api/config'&&!r.options));
 console.log('Web language switching, config load/save and screen controls passed');

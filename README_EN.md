@@ -61,9 +61,10 @@ It is not a phone and does not try to be one.
 | **Aircraft** | aircraft around you, tap for details and route | adsb.fi, adsb.lol |
 | **Weather radar** | animated precipitation | CHMI or RainViewer |
 | **Forecast** | now, two 3-hour windows, today and six more days, air quality and pollen | Open-Meteo |
+| **Calendar** | daily agenda and month grid, up to three subscriptions | Google/iCloud/other ICS |
 | **Settings** | brightness, map orientation, units, language | — |
 
-Any of the four data screens can be switched off in the browser; Settings is
+Any of the five data screens can be switched off in the browser; Settings is
 always reachable. The interface supports Czech, English and Slovak. Select
 **Slovenčina** in the browser, or cycle the language button on the device through
 Czech → English → Slovak. The choice persists across restarts. Slovak uses ASCII
@@ -157,6 +158,41 @@ elsewhere.
 
 ---
 
+## Calendar subscriptions
+
+Configure up to three subscriptions on the web **Calendar** tab: name, colour,
+enabled state and an HTTPS/`webcal://` ICS URL. Google Calendar provides a **Secret
+address in iCal format** under Settings → Integrate calendar. For iCloud use the
+**Public Calendar** sharing link; anyone holding that link can read the calendar.
+This is a read-only feed, with no OAuth/CalDAV sign-in or event editing.
+
+Save, then enable Calendar on the **Screens** tab; it is off after an update.
+If an admin password is set, enter it on the System tab before saving.
+URLs are write-only and omitted from configuration responses and backups. Blank
+URL fields preserve saved links; the explicit delete checkbox removes them.
+Re-enter links after restoring a backup on another device.
+
+On the display choose Day/Month, use arrows or a swipe to browse, tap a date to
+open its agenda, or TODAY to return. Tap an agenda with more than three events to
+page through it. Source dots, names and a legend appear only with multiple enabled
+subscriptions; one subscription highlights dates without dots or source labels.
+
+The bounded cache uses about **0.65 MiB PSRAM** without another framebuffer. It
+covers the previous, current and next two months, with at most 256 occurrences
+and a 512 KiB ICS download per source. Refresh is configurable from 5 to 1440
+minutes; failed requests retry after two minutes and preserve the last valid data
+with a visible warning. Disable the screen to release its buffers and stop fetching.
+The web status reports source health and allocated PSRAM.
+
+Supported times are UTC, device-local floating time and listed Central European
+zones such as Europe/Bratislava and Europe/Prague. Common daily, weekly, monthly
+(including ordinal weekdays), yearly date-based recurrence, COUNT/UNTIL,
+EXDATE/RDATE and individual moved/cancelled instances are supported. More complex
+rules and other zones report an error rather than an incorrect agenda. This is
+a bounded subset of RFC 5545; see `CalendarIcs.cpp` for the exact rules.
+Build and host tests have passed; physical display/touch and real accounts still
+need validation on the device.
+
 ## Hardware
 
 **Waveshare ESP32-S3-Touch-LCD-2.1** or **ESP32-S3-Touch-LCD-2.8C** — ESP32-S3R8
@@ -186,12 +222,12 @@ IP address printed on the Settings screen.
 
 ## Configuration in a browser
 
-The web interface runs permanently and is split into six tabs so it works on a
+The web interface runs permanently and is split into seven tabs so it works on a
 phone: **Control** (switch screens and range remotely, device status),
 **Location** (manual or by searching for a town name), **Screens** (which to
 show, auto-cycling, radar source), **Appearance** (day and night brightness,
 sun-driven night mode, seconds ring, colours), **Aircraft** (filters, squawks,
-watched callsign, map orientation, units) and **System** (password, firmware update,
+watched callsign, map orientation, units), **Calendar** (ICS subscriptions) and **System** (password, firmware update,
 settings backup, restart, factory reset, data sources).
 
 Most settings are **saved the moment you change them**. The Save button is only
@@ -272,6 +308,7 @@ Lang.*                Czech, English and Slovak strings
 Layout.*              screen bands and collision checking
 WebConfig.* WebPage.h web server, API, captive portal, OTA
 Net.*                 shared HTTPS fetching
+Calendar.* CalendarIcs.* ICS subscriptions, bounded PSRAM cache and parser
 Forecast.*            Open-Meteo: forecast, sun times, air quality
 TimeZone.*            time zone from the location
 RainViewer.*          tile radar

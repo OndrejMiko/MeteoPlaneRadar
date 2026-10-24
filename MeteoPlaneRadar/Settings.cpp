@@ -10,6 +10,19 @@
 #include <string.h>
 #include <ctype.h>
 
+static CalendarSourceSettings s_cal[CALENDAR_SOURCES] = {};
+static uint8_t s_calView = 0;
+static uint16_t s_calRefresh = 15;
+static uint32_t s_calRevision = 1;
+static void calendarDefaults() {
+  const uint16_t colors[] = {0x05FF, 0xFD20, 0x07E0};
+  for (int i = 0; i < CALENDAR_SOURCES; i++) {
+    s_cal[i] = {};
+    snprintf(s_cal[i].name, sizeof(s_cal[i].name), "Calendar %d", i + 1);
+    s_cal[i].color = colors[i];
+    s_cal[i].enabled = true;
+  }
+}
 static Preferences prefs;
 static const char* NS = "planeradar";
 
@@ -80,7 +93,8 @@ static void putStr(const char* k, const char* v) {
 }
 
 void Settings_Begin() {
-  bool migrateRotate = false;
+  bool migrateRotate = false, migrateCalendar = false;
+  calendarDefaults();
   if (prefs.begin(NS, true)) {
     s_lat    = prefs.getDouble("lat", DEFAULT_LAT);
     s_lon    = prefs.getDouble("lon", DEFAULT_LON);
@@ -117,6 +131,25 @@ void Settings_Begin() {
     s_rngP   = prefs.getUChar("rngP", 1);
     s_rngM   = prefs.getUChar("rngM", 1);
     s_scr    = prefs.getUChar("scr", SCREEN_PLANES_I);
+    if (!prefs.getBool("calV", false)) {
+      s_scrMask &= 0x0f;
+      if (s_scr == 4) s_scr = SCREEN_SETTINGS_I;
+      migrateCalendar = true;
+    }
+    s_calView = prefs.getUChar("calView", 0) == 1 ? 1 : 0;
+    s_calRefresh = prefs.getUShort("calPoll", 15);
+    if (s_calRefresh < 5 || s_calRefresh > 1440) s_calRefresh = 15;
+    for (int i = 0; i < CALENDAR_SOURCES; i++) {
+      char key[16];
+      snprintf(key, sizeof(key), "cal%dName", i);
+      prefs.getString(key, s_cal[i].name, sizeof(s_cal[i].name));
+      snprintf(key, sizeof(key), "cal%dUrl", i);
+      prefs.getString(key, s_cal[i].url, sizeof(s_cal[i].url));
+      snprintf(key, sizeof(key), "cal%dColor", i);
+      s_cal[i].color = prefs.getUShort(key, s_cal[i].color);
+      snprintf(key, sizeof(key), "cal%dOn", i);
+      s_cal[i].enabled = prefs.getBool(key, true);
+    }
     // Map any retired screen or the previous Settings index to Settings.
     if (s_scr >= SCREEN_SETTINGS_I) s_scr = SCREEN_SETTINGS_I;
     s_top    = prefs.getUShort("topb", 0);
@@ -133,6 +166,13 @@ void Settings_Begin() {
     prefs.end();
     if (s_autoRot) Serial.printf("Nastaveni: stridani prevedeno na %u s\n", s_autoRot);
   }
+  if (migrateCalendar && prefs.begin(NS, false)) {
+    prefs.putBool("calV", true);
+    prefs.putUChar("scrM", s_scrMask);
+    prefs.putUChar("scr", s_scr);
+    prefs.end();
+  }
+  if (!s_scrMask) s_scrMask = 1 << SCREEN_CLOCK_I;
   Lang_Set(s_lang);
   s_lang = Lang_Get();
 }
@@ -348,14 +388,26 @@ void Settings_ToJson(JsonObject o) {
   o["squawkAlert"] = s_sqAlert;
   o["watch"] = s_watch;
   o["hasPassword"] = Settings_HasAdminPassword();
+  o["calendarView"] = s_calView;
+  o["calendarRefresh"] = s_calRefresh;
+  JsonArray calendars = o["calendars"].to<JsonArray>();
+  for (const auto& c : s_cal) {
+    JsonObject v = calendars.add<JsonObject>();
+    v["name"] = c.name;
+    v["enabled"] = c.enabled;
+    v["color"] = c.color;
+    v["hasUrl"] = c.url[0] != '\0';  // Never expose secret feed URLs in GET or backups.
+  }
   JsonObject scr = o["screens"].to<JsonObject>();
   scr["clock"]    = Settings_ScreenEnabled(SCREEN_CLOCK_I);
   scr["planes"]   = Settings_ScreenEnabled(SCREEN_PLANES_I);
   scr["meteo"]    = Settings_ScreenEnabled(SCREEN_METEO_I);
   scr["forecast"] = Settings_ScreenEnabled(SCREEN_FORECAST_I);
+  scr["calendar"] = Settings_ScreenEnabled(SCREEN_CALENDAR_I);
 }
 
 bool Settings_FromJson(JsonObjectConst in) {
+  if (Settings_ValidateCalendarJson(in)) return false;
   bool changed = false;
   auto setIf = [&](const char* key, auto fn) {
     JsonVariantConst v = in[key];
@@ -395,6 +447,47 @@ bool Settings_FromJson(JsonObjectConst in) {
     changed = true;
   }
 
+  if (!in["calendarView"].isNull()) {
+    Settings_SetCalendarView(in["calendarView"].as<uint8_t>());
+    changed = true;
+  }
+  if (!in["calendarRefresh"].isNull()) {
+    s_calRefresh = in["calendarRefresh"].as<uint16_t>();
+    putU16("calPoll", s_calRefresh);
+    changed = true;
+  }
+  if (in["calendars"].is<JsonArrayConst>()) {
+    int i = 0;
+    bool sourceChanged = false;
+    for (JsonObjectConst v : in["calendars"].as<JsonArrayConst>()) {
+      auto& c = s_cal[i];
+      const CalendarSourceSettings previous = c;
+      if (!v["name"].isNull()) snprintf(c.name, sizeof(c.name), "%s", v["name"].as<const char*>());
+      if (!v["enabled"].isNull()) c.enabled = v["enabled"].as<bool>();
+      if (!v["color"].isNull()) c.color = v["color"].as<uint16_t>();
+      if (v["clearUrl"] == true) c.url[0] = 0;
+      const char* url = v["url"] | "";
+      if (*url) {
+        if (!strncmp(url, "webcal://", 9))
+          snprintf(c.url, sizeof(c.url), "https://%s", url + 9);
+        else
+          snprintf(c.url, sizeof(c.url), "%s", url);
+      }
+      char key[16];
+      snprintf(key, sizeof(key), "cal%dName", i);
+      putStr(key, c.name);
+      snprintf(key, sizeof(key), "cal%dUrl", i);
+      putStr(key, c.url);
+      snprintf(key, sizeof(key), "cal%dColor", i);
+      putU16(key, c.color);
+      snprintf(key, sizeof(key), "cal%dOn", i);
+      putBool(key, c.enabled);
+      if (memcmp(&previous, &c, sizeof(c))) sourceChanged = true;
+      ++i;
+    }
+    if (sourceChanged) ++s_calRevision;
+    changed = true;
+  }
   JsonObjectConst scr = in["screens"];
   if (!scr.isNull()) {
     struct { const char* key; uint8_t idx; } M[] = {
@@ -402,6 +495,7 @@ bool Settings_FromJson(JsonObjectConst in) {
       { "planes",   SCREEN_PLANES_I },
       { "meteo",    SCREEN_METEO_I },
       { "forecast", SCREEN_FORECAST_I },
+      { "calendar", SCREEN_CALENDAR_I },
     };
     for (auto& m : M) {
       JsonVariantConst v = scr[m.key];
@@ -431,6 +525,10 @@ void Settings_ClearAll() {
   if (prefs.begin(NS, false)) { prefs.clear(); prefs.end(); }
   s_lat = DEFAULT_LAT; s_lon = DEFAULT_LON; s_hasLoc = false;
   s_briDay = 80; s_briNight = 25; s_nightAuto = true; s_nightOff = 0; s_isNight = false;
+  calendarDefaults();
+  s_calView = 0;
+  s_calRefresh = 15;
+  ++s_calRevision;
   s_metric = false; s_lang = LANG_CZ; Lang_Set(s_lang);
   s_scrMask = (1 << SCREEN_CLOCK_I) | (1 << SCREEN_PLANES_I) |
               (1 << SCREEN_METEO_I) | (1 << SCREEN_FORECAST_I);
@@ -441,4 +539,60 @@ void Settings_ClearAll() {
   s_pw[0] = '\0';
   s_ssid[0] = '\0'; s_wpass[0] = '\0';
   s_uiDirty = false;
+}
+
+const CalendarSourceSettings& Settings_CalendarSource(uint8_t i) {
+  return s_cal[i < CALENDAR_SOURCES ? i : 0];
+}
+uint8_t Settings_CalendarCount() {
+  uint8_t n = 0;
+  for (const auto& c : s_cal)
+    if (c.enabled && *c.url) n++;
+  return n;
+}
+uint8_t Settings_CalendarView() { return s_calView; }
+void Settings_SetCalendarView(uint8_t v) {
+  s_calView = v == 1 ? 1 : 0;
+  putU8("calView", s_calView);
+}
+uint16_t Settings_CalendarRefresh() { return s_calRefresh; }
+uint32_t Settings_CalendarRevision() { return s_calRevision; }
+const char* Settings_ValidateCalendarJson(JsonObjectConst in) {
+  if (!in["calendarView"].isNull() &&
+      (!in["calendarView"].is<unsigned>() || in["calendarView"].as<unsigned>() > 1))
+    return "calendarView";
+  if (!in["calendarRefresh"].isNull() &&
+      (!in["calendarRefresh"].is<unsigned>() || in["calendarRefresh"].as<unsigned>() < 5 ||
+       in["calendarRefresh"].as<unsigned>() > 1440))
+    return "calendarRefresh";
+  if (in["calendars"].isNull()) return nullptr;
+  if (!in["calendars"].is<JsonArrayConst>() || in["calendars"].size() > CALENDAR_SOURCES)
+    return "calendars";
+  for (JsonVariantConst item : in["calendars"].as<JsonArrayConst>()) {
+    if (!item.is<JsonObjectConst>()) return "calendar";
+    JsonObjectConst v = item.as<JsonObjectConst>();
+    if (!v["name"].isNull() && (!v["name"].is<const char*>() ||
+                                strlen(v["name"].as<const char*>()) >= sizeof(s_cal[0].name)))
+      return "calendarName";
+    if (!v["color"].isNull() && (!v["color"].is<unsigned>() || v["color"].as<unsigned>() > 65535))
+      return "calendarColor";
+    if (!v["enabled"].isNull() && !v["enabled"].is<bool>()) return "calendarEnabled";
+    if (!v["clearUrl"].isNull() && !v["clearUrl"].is<bool>()) return "calendarClear";
+    if (!v["url"].isNull()) {
+      if (!v["url"].is<const char*>()) return "calendarUrl";
+      const char* url = v["url"].as<const char*>();
+      if (strlen(url) >= CALENDAR_URL_MAX) return "calendarUrl";
+      if (*url) {
+        const char* host = !strncmp(url, "https://", 8)    ? url + 8
+                           : !strncmp(url, "webcal://", 9) ? url + 9
+                                                           : nullptr;
+        if (!host || !*host || *host == '/' || *host == '?' || *host == '#') return "calendarUrl";
+        for (const char* c = url; *c; c++)
+          if ((unsigned char)*c <= 32 || *c == '\\') return "calendarUrl";
+        for (const char* c = host; *c && *c != '/'; c++)
+          if (*c == '@') return "calendarUrl";
+      }
+    }
+  }
+  return nullptr;
 }

@@ -2,7 +2,7 @@
 //  MeteoPlaneRadar
 //  One place for "fetch this URL over TLS and hand me the body".
 //
-//  Every endpoint in this project needs the same four things: a check that
+//  Public data endpoints share these four things: a check that
 //  there is enough internal RAM for the handshake, an insecure TLS client
 //  (we do not pin certificates - see the note in Outside.h), the response as a
 //  complete string rather than a stream, and the "Date" header fed to the clock
@@ -43,3 +43,10 @@ void Net_SessionEnd();
 
 // Called from loop() while a long transfer runs, so the watchdog stays fed.
 void Net_SetPollFn(void (*fn)());
+
+// Private calendar subscriptions: bounded body, CA-verified HTTPS and at most
+// three HTTPS-only redirects. Never log a subscription URL (it is a credential).
+bool Net_GetCalendar(const char* url, uint8_t* buf, size_t cap, size_t* outLen, bool* tooLarge = nullptr);
+
+// Yield and sample touch during calendar expansion, using the shared callback.
+void Net_Poll();

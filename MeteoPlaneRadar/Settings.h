@@ -61,7 +61,7 @@ uint8_t Settings_Language();               // LANG_CZ / LANG_EN / LANG_SK
 void    Settings_SetLanguage(uint8_t l);
 
 // --- Screens ----------------------------------------------------------------
-// idx is SCREEN_CLOCK_I .. SCREEN_FORECAST_I. Settings is always enabled.
+// idx is SCREEN_CLOCK_I .. SCREEN_CALENDAR_I. Settings is always enabled.
 bool    Settings_ScreenEnabled(uint8_t idx);
 void    Settings_SetScreenEnabled(uint8_t idx, bool on);
 uint8_t Settings_EnabledCount();           // data screens currently on
@@ -138,3 +138,19 @@ bool Settings_FromJson(JsonObjectConst in);
 
 void Settings_Tick();       // call once per loop(); debounced NVS flush
 void Settings_ClearAll();
+
+// Subscription URLs are write-only in config/export JSON. Empty input keeps the
+// existing URL; clearUrl explicitly removes it. Settings names stay UTF-8.
+struct CalendarSourceSettings {
+  char name[32];
+  char url[CALENDAR_URL_MAX];
+  uint16_t color;
+  bool enabled;
+};
+const CalendarSourceSettings& Settings_CalendarSource(uint8_t index);
+uint8_t Settings_CalendarCount();
+uint8_t Settings_CalendarView(); // 0 day, 1 month
+void Settings_SetCalendarView(uint8_t view);
+uint16_t Settings_CalendarRefresh(); // minutes, 5..1440
+uint32_t Settings_CalendarRevision();
+const char* Settings_ValidateCalendarJson(JsonObjectConst in);

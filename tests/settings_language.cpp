@@ -59,9 +59,33 @@ int main() {
   JsonDocument exported;
   Settings_ToJson(exported.to<JsonObject>());
   assert(exported["lang"] == LANG_SK);
-  assert(exported["screens"].as<JsonObjectConst>().size() == 4);
+  assert(exported["screens"].as<JsonObjectConst>().size() == 5);
   assert(exported["priceFee"].isNull() && exported["priceVat"].isNull());
   assert(exported["mixCountry"].isNull());
   assert(exported["screens"]["price"].isNull() && exported["screens"]["mix"].isNull());
+  // Saved links are write-only, survive reboot, normalize webcal and are not
+  // overwritten when a browser submits blank fields after loading config.
+  JsonDocument cal;
+  deserializeJson(cal,R"({"calendarView":1,"calendarRefresh":10,"calendars":[{"name":"Rodina","url":"webcal://example.com/private.ics","color":123,"enabled":true}]})");
+  assert(!Settings_ValidateCalendarJson(cal.as<JsonObjectConst>()));
+  Settings_FromJson(cal.as<JsonObjectConst>());
+  Settings_Begin();
+  assert(Settings_CalendarCount()==1 && Settings_CalendarView()==1);
+  assert(Settings_CalendarRefresh()==10);
+  assert(!strcmp(Settings_CalendarSource(0).url,"https://example.com/private.ics"));
+  cal["calendars"][0]["url"]="";
+  Settings_FromJson(cal.as<JsonObjectConst>());
+  assert(*Settings_CalendarSource(0).url);
+  exported.clear();Settings_ToJson(exported.to<JsonObject>());
+  assert(exported["calendars"][0]["url"].isNull());
+  assert(exported["calendars"][0]["hasUrl"]==true);
+  std::string json;serializeJson(exported,json);assert(json.find("private.ics")==std::string::npos);
+  cal["calendars"][0]["url"]="http://example.com/private.ics";
+  assert(Settings_ValidateCalendarJson(cal.as<JsonObjectConst>()));
+  assert(!Settings_FromJson(cal.as<JsonObjectConst>()));
+  assert(!strcmp(Settings_CalendarSource(0).url,"https://example.com/private.ics"));
+  cal["calendars"][0]["url"]="";cal["calendars"][0]["clearUrl"]=true;
+  Settings_FromJson(cal.as<JsonObjectConst>());assert(Settings_CalendarCount()==0);
+  cal["calendarRefresh"]=0;assert(Settings_ValidateCalendarJson(cal.as<JsonObjectConst>()));
   std::cout << "Settings migration, backup and language tests passed\n";
 }

@@ -74,3 +74,10 @@ const char* Lang_MonthName(int mon) {
   if (mon < 0 || mon > 11) return "";
   return (s_lang == LANG_EN) ? MON_EN[mon] : (s_lang == LANG_SK) ? MON_SK[mon] : MON_CZ[mon];
 }
+
+const char* Lang_MonthLabel(int mon) {
+  static const char* CZ[]={"Leden","Unor","Brezen","Duben","Kveten","Cerven","Cervenec","Srpen","Zari","Rijen","Listopad","Prosinec"};
+  static const char* SK[]={"Januar","Februar","Marec","April","Maj","Jun","Jul","August","September","Oktober","November","December"};
+  if(mon<0||mon>11)return "";
+  return s_lang==LANG_EN?MON_EN[mon]:s_lang==LANG_SK?SK[mon]:CZ[mon];
+}

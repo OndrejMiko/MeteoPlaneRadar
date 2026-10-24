@@ -122,8 +122,9 @@ bool NetBufSink::terminate() {
   return true;
 }
 
-long Net_ReadBody(HTTPClient& http, uint8_t* buf, size_t cap, const char* tag,
-                  void (*poll)()) {
+long Net_ReadBody(HTTPClient& http, uint8_t* buf, size_t cap, const char* tag, void (*poll)(),
+                  bool* tooLarge) {
+  if (tooLarge) *tooLarge = false;
   if (!buf || cap == 0) return -1;
 
   // Reserve one byte so the body can always be NUL-terminated.
@@ -136,6 +137,7 @@ long Net_ReadBody(HTTPClient& http, uint8_t* buf, size_t cap, const char* tag,
     return -1;
   }
   if (sink.overflowed()) {
+    if (tooLarge) *tooLarge = true;
     // Deliberately fatal. A body that outgrew the buffer is a truncated body,
     // and half a JSON document or half a PNG is worse than no update at all.
     Serial.printf("%s: odpoved presahla %u B, zahozeno\n", tag, (unsigned)cap);
