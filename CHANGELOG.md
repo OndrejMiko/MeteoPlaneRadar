@@ -11,6 +11,16 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.4] - 2026-10-24
+
+### Přidáno
+
+- Přejetí nahoru přepne na následující zapnutou obrazovku, dolů na předchozí.
+  Dlouhý stisk vlevo/vpravo i vodorovné přejíždění pro změnu rozsahu zůstávají.
+  Rozlišení podle převládající osy zabrání dvojímu výkladu šikmého gesta.
+  Notifikační vrstva zachytí i nová gesta; otevřený detail letadla se nejprve
+  zavře, stejně jako při dosavadních gestech. Ruční přepnutí pozastaví cyklování.
+
 ## [0.7.3] - 2026-10-24
 
 ### Přidáno

@@ -260,6 +260,8 @@ startup**, which is a factory reset and also erases WiFi.
 | Gesture | Action |
 | --- | --- |
 | **Swipe** left/right | Change the range (aircraft, weather radar) |
+| **Swipe up** | Next screen |
+| **Swipe down** | Previous screen |
 | **Short tap** | Select an aircraft; on the clock, toggle day/night |
 | **Long press, left half** | Previous screen |
 | **Long press, right half** | Next screen |

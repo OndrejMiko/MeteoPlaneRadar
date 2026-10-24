@@ -121,7 +121,7 @@ Arduino_GFX* gfx = nullptr;
 //
 //  The action still waits for the fetch to end, but fires the instant it does.
 // =============================================================================
-enum PendKind : uint8_t { PEND_NONE = 0, PEND_SWIPE, PEND_LONG, PEND_TAP };
+enum PendKind : uint8_t { PEND_NONE = 0, PEND_SWIPE, PEND_SCREEN_SWIPE, PEND_LONG, PEND_TAP };
 static PendKind s_pendKind = PEND_NONE;
 static int      s_pendA = 0, s_pendB = 0;
 
@@ -187,11 +187,14 @@ static void touchPump() {
   const int dy = s_lastY - s_startY;
   const unsigned long dur = s_lastSeenMs - s_startMs;
   const bool smallMove = (abs(dx) < 60 && abs(dy) < 60);
+  // Prefer the dominant axis so diagonal drags cannot trigger both actions.
+  const bool screenSwipe = abs(dy) >= 70 && abs(dx) <= 90 && abs(dy) > abs(dx) && dur <= 700;
 
 #if TOUCH_DEBUG
   Serial.printf("TOUCH: start=(%d,%d) konec=(%d,%d) dx=%d dy=%d %lums -> %s\n",
                 s_startX, s_startY, s_lastX, s_lastY, dx, dy, (unsigned long)dur,
-                (abs(dx) >= 70 && abs(dy) <= 90 && dur <= 700) ? "swipe"
+                screenSwipe ? "swipe obrazovka"
+                  : (abs(dx) >= 70 && abs(dy) <= 90 && dur <= 700) ? "swipe rozsah"
                   : (smallMove && dur >= 500) ? "dlouhy stisk"
                   : (smallMove) ? "klepnuti" : "ignorovano");
 #endif
@@ -199,7 +202,10 @@ static void touchPump() {
   // The most recent gesture wins. If one is still queued behind a long download
   // the user has changed their mind since, and acting on the stale one would be
   // the wrong answer arriving late.
-  if (abs(dx) >= 70 && abs(dy) <= 90 && dur <= 700) {
+  if (screenSwipe) {
+    s_pendKind = PEND_SCREEN_SWIPE;
+    s_pendA = (dy < 0) ? +1 : -1;  // up = next, down = previous
+  } else if (abs(dx) >= 70 && abs(dy) <= 90 && dur <= 700) {
     s_pendKind = PEND_SWIPE;
     s_pendA = (dx < 0) ? +1 : -1;
   } else if (smallMove && dur >= 500) {
@@ -380,6 +386,11 @@ static void dispatchTouch() {
       // re-scale the map behind the panel.
       if (activeModalOpen()) { ScreenPlanes_CloseDetail(); drawActive(); }
       else                   { activeChangeRange(a); drawActive(); }
+      s_touchPauseUntil = millis() + autoRotatePauseMs();
+      break;
+    case PEND_SCREEN_SWIPE:
+      if (activeModalOpen()) { ScreenPlanes_CloseDetail(); drawActive(); }
+      else switchScreen(a);
       s_touchPauseUntil = millis() + autoRotatePauseMs();
       break;
     case PEND_LONG:

@@ -120,7 +120,9 @@ nastavení.
 
 | Gesto | Akce |
 | --- | --- |
-| **Přejetí prstem** | změna rozsahu (letadla, meteoradar) |
+| **Přejetí vlevo / vpravo** | změna rozsahu (letadla, meteoradar) |
+| **Přejetí nahoru** | následující obrazovka |
+| **Přejetí dolů** | předchozí obrazovka |
 | **Krátké klepnutí** | výběr letadla / přepnutí den–noc na hodinách |
 | **Dlouhý stisk vlevo / vpravo** | předchozí / následující obrazovka |
 | **BOOT při startu (~3 s)** | tovární reset |
