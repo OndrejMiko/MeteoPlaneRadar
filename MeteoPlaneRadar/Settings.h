@@ -154,3 +154,9 @@ void Settings_SetCalendarView(uint8_t view);
 uint16_t Settings_CalendarRefresh(); // minutes, 5..1440
 uint32_t Settings_CalendarRevision();
 const char* Settings_ValidateCalendarJson(JsonObjectConst in);
+
+// Notification pairing key is write-only; excluded from config and backups.
+bool Settings_NotificationsEnabled();
+uint16_t Settings_NotificationSeconds();  // 0 = stay open; otherwise 5..120
+const char* Settings_NotificationKey();
+const char* Settings_ValidateNotifications(JsonObjectConst in);

@@ -25,6 +25,7 @@
 #include "Lang.h"
 #include "Net.h"
 #include "NightMode.h"
+#include "Notifications.h"
 #include "ScreenCalendar.h"
 #include "ScreenPlanes.h"
 #include "ScreenWeather.h"
@@ -38,6 +39,8 @@
 
 static WebServer  s_srv(WEB_PORT);
 static DNSServer  s_dns;
+static uint32_t s_bridgeContact = 0;
+static bool s_bridgeSeen = false;
 static bool s_apMode = false;
 static bool s_running = false;
 static bool s_wantConnect = false;
@@ -119,6 +122,13 @@ static void handlePostConfig() {
     sendJson(400, res);
     return;
   }
+  if (const char* error = Settings_ValidateNotifications(doc.as<JsonObjectConst>())) {
+    JsonDocument res;
+    res["error"] = error;
+    sendJson(400, res);
+    return;
+  }
+  if (!doc["notifications"].isNull() && !authed(doc)) return;
   // Calendar URLs grant read access to private events. Editing them uses the
   // same optional admin password as import; URLs never round-trip through GET.
   if (!doc["calendars"].isNull() && !authed(doc)) return;
@@ -269,6 +279,11 @@ static void handleStatus() {
   Status_Text(ST_ADSB, b, sizeof(b));     doc["adsb"] = b;
   Status_Text(ST_RADAR, b, sizeof(b));    doc["radar"] = b;
   Status_Text(ST_FORECAST, b, sizeof(b)); doc["forecast"] = b;
+  doc["notificationMemory"] = Notifications_MemoryBytes();
+  doc["notificationCount"] = Notifications_Count();
+  doc["notificationRetries"] = Notifications_Dropped();
+  doc["notificationBridgeAge"] =
+      s_bridgeSeen ? (long)((uint32_t)(millis() - s_bridgeContact) / 1000) : -1;
   doc["calendarMemory"] = Calendar_MemoryBytes();
   JsonArray calendars = doc["calendarSources"].to<JsonArray>();
   for (int i = 0; i < CALENDAR_SOURCES; i++) {
@@ -366,6 +381,12 @@ static void handleImport() {
   JsonObjectConst cfg = doc["config"];
   if (cfg.isNull()) { s_srv.send(400, "application/json", "{\"error\":\"config\"}"); return; }
   if (const char* error = Settings_ValidateCalendarJson(cfg)) {
+    JsonDocument res;
+    res["error"] = error;
+    sendJson(400, res);
+    return;
+  }
+  if (const char* error = Settings_ValidateNotifications(cfg)) {
     JsonDocument res;
     res["error"] = error;
     sendJson(400, res);
@@ -595,6 +616,77 @@ static void handleCalendarRefresh() {
 }
 
 // --- Lifecycle --------------------------------------------------------------
+// Notification ingress is deliberately independent of the optional admin password.
+// A random, revocable pairing key grants only delivery, never config access.
+static bool notificationAuth() {
+  String header = s_srv.header("Authorization");
+  if (s_apMode || !header.startsWith("Bearer ") || !Notifications_Authorized(header.c_str() + 7)) {
+    s_srv.send(403, "application/json", "{\"error\":\"pairing\"}");
+    return false;
+  }
+  s_bridgeContact = millis();
+  s_bridgeSeen = true;
+  return true;
+}
+static void handleNotificationPush() {
+  if (!notificationAuth()) return;
+  if (!s_srv.hasArg("plain") || s_srv.arg("plain").length() > 2048) {
+    s_srv.send(413, "application/json", "{\"error\":\"size\"}");
+    return;
+  }
+  JsonDocument doc;
+  if (!readBody(doc)) {
+    s_srv.send(400, "application/json", "{\"error\":\"json\"}");
+    return;
+  }
+  if (const char* error = Notifications_Validate(doc.as<JsonObjectConst>())) {
+    JsonDocument res;
+    res["error"] = error;
+    sendJson(400, res);
+    return;
+  }
+  if (!Settings_NotificationsEnabled()) {
+    s_srv.send(409, "application/json", "{\"error\":\"disabled\"}");
+    return;
+  }
+  if (!Notifications_Push(doc.as<JsonObjectConst>())) {
+    s_srv.sendHeader("Retry-After", "15");
+    s_srv.send(503, "application/json", "{\"error\":\"queueOrMemory\"}");
+    return;
+  }
+  s_srv.send(200, "application/json", "{\"ok\":true}");
+}
+static void handleNotificationPing() {
+  if (!notificationAuth()) return;
+  JsonDocument doc;
+  doc["enabled"] = Settings_NotificationsEnabled();
+  doc["queued"] = Notifications_Count();
+  doc["version"] = FW_VERSION;
+  sendJson(200, doc);
+}
+static void handleNotificationTest() {
+  JsonDocument doc;
+  if (!readBody(doc)) {
+    s_srv.send(400, "application/json", "{\"error\":\"json\"}");
+    return;
+  }
+  if (!authed(doc)) return;
+  doc.clear();
+  char id[48];
+  snprintf(id, sizeof(id), "test-%lu", (unsigned long)millis());
+  doc["id"] = id;
+  doc["service"] = "google-chat";
+  doc["sender"] = "MeteoPlaneRadar";
+  doc["room"] = "Test";
+  doc["text"] =
+      Settings_Language() == LANG_EN
+          ? "Notifications work. Tap the banner for details, or close it with the large X."
+          : "Notifikacie funguju. Tukni na banner pre detail alebo ho zavri velkym krizikom.";
+  bool ok = !s_apMode && Notifications_Push(doc.as<JsonObjectConst>());
+  s_srv.send(ok ? 200 : 409, "application/json",
+             ok ? "{\"ok\":true}" : "{\"error\":\"enableOrQueue\"}");
+}
+
 void WebConfig_Begin(bool apMode) {
   s_apMode = apMode;
 
@@ -617,6 +709,11 @@ void WebConfig_Begin(bool apMode) {
     return;
   }
 
+  const char* headers[] = {"Authorization"};
+  s_srv.collectHeaders(headers, 1);
+  s_srv.on("/api/notifications", HTTP_POST, handleNotificationPush);
+  s_srv.on("/api/notifications/ping", HTTP_GET, handleNotificationPing);
+  s_srv.on("/api/notifications/test", HTTP_POST, handleNotificationTest);
   s_srv.on("/", HTTP_GET, handleRoot);
   s_srv.on("/api/config", HTTP_GET, handleGetConfig);
   s_srv.on("/api/config", HTTP_POST, handlePostConfig);

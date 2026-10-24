@@ -1,0 +1,6 @@
+# Credentials and local Google Chat bridge state
+client_secret*.json
+meteoplaneradar-chat*.json
+.chat-bridge/
+__pycache__/
+*.pyc

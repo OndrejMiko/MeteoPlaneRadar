@@ -1,5 +1,7 @@
 # MeteoPlaneRadar
 
+**0.7.3 – Notifications / Google Chat:** global banner, message detail and web pairing. See the [setup and memory guide](tools/google-chat-bridge/README.md) (Slovak). Google Chat requires the included bridge running on a computer/Pi and authorized Chat API access.
+
 **A clock, live aircraft radar, precipitation radar and weather forecast on a round
 touchscreen.** Runs on a single Waveshare
 ESP32-S3-Touch-LCD-2.1 or ESP32-S3-Touch-LCD-2.8C board and is configured from

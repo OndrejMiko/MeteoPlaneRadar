@@ -23,4 +23,5 @@ size_t CalendarIcs_WorkspaceSize();
 CalendarParseResult CalendarIcs_Parse(const char* data, size_t length, time_t from, time_t until,
                                       uint8_t source, CalendarEvent* out, size_t capacity,
                                       size_t& count, void* workspace, void (*poll)() = nullptr);
-void Calendar_Ascii(const char* in, char* out, size_t cap);
+void Calendar_Ascii(const char* in, char* out, size_t cap, bool icsEscapes = true,
+                    bool newlines = false);

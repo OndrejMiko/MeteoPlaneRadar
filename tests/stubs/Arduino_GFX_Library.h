@@ -20,6 +20,7 @@ class Arduino_GFX {
   void fillRoundRect(int a,int b,int w,int h,int r,uint16_t c){drawing<<"<rect x='"<<a<<"' y='"<<b<<"' width='"<<w<<"' height='"<<h<<"' rx='"<<r<<"' fill='"<<rgb(c)<<"'/>";}
   void drawRoundRect(int a,int b,int w,int h,int r,uint16_t c){drawing<<"<rect x='"<<a<<"' y='"<<b<<"' width='"<<w<<"' height='"<<h<<"' rx='"<<r<<"' fill='none' stroke='"<<rgb(c)<<"'/>";}
   void fillCircle(int a,int b,int r,uint16_t c){circles++;drawing<<"<circle cx='"<<a<<"' cy='"<<b<<"' r='"<<r<<"' fill='"<<rgb(c)<<"'/>";}
+  void drawLine(int a,int b,int c,int d,uint16_t color){drawing<<"<path d='M"<<a<<" "<<b<<"L"<<c<<" "<<d<<"' stroke='"<<rgb(color)<<"'/>";}
   void drawFastHLine(int a,int b,int w,uint16_t c){drawing<<"<path d='M"<<a<<" "<<b<<"h"<<w<<"' stroke='"<<rgb(c)<<"'/>";}
   void snapshot(const char* path){std::ofstream f(path);f<<"<svg xmlns='http://www.w3.org/2000/svg' width='480' height='480'><defs><clipPath id='round'><circle cx='240' cy='240' r='239'/></clipPath></defs><g clip-path='url(#round)'>"<<drawing.str()<<"</g></svg>";}
 };

@@ -1,5 +1,7 @@
 # MeteoPlaneRadar
 
+**0.7.3 – Notifikácie / Google Chat:** globálny banner, detail a webové párovanie. Postup zapojenia a výsledky pamäte: [Google Chat bridge](tools/google-chat-bridge/README.md). Google Chat potrebuje spustený most na počítači/Pi a povolený prístup k Chat API.
+
 **Hodiny, radar letadel, srážkový meteoradar, předpověď počasí na kulatém dotykovém displeji.** Běží na deskách Waveshare
 ESP32-S3-Touch-LCD-2.1 a ESP32-S3-Touch-LCD-2.8C a nastavuje se z prohlížeče.
 

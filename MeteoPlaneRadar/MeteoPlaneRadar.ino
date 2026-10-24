@@ -91,6 +91,7 @@
 #include "ScreenForecast.h"
 #include "ScreenCalendar.h"
 #include "Calendar.h"
+#include "Notifications.h"
 #include "ScreenSettings.h"
 #include "Forecast.h"
 #include "NightMode.h"
@@ -280,6 +281,7 @@ static void drawActive() {
     case SCREEN_SETTINGS_I: ScreenSettings_Draw(); break;
   }
   drawScreenDots();
+  Notifications_Draw();
   gfx->flush();    // hand the framebuffer over; Canvas16 switches to the other
 }
 
@@ -367,6 +369,11 @@ static void dispatchTouch() {
   const int a = s_pendA, b = s_pendB;
   s_pendKind = PEND_NONE;
 
+  if (Notifications_Touch(a, b, kind == PEND_TAP)) {
+    s_touchPauseUntil = millis() + autoRotatePauseMs();
+    drawActive();
+    return;
+  }
   switch (kind) {
     case PEND_SWIPE:
       // With the detail open a swipe just closes it, so you cannot accidentally
@@ -410,7 +417,10 @@ static void autoRotateTick() {
   // timer is kept fresh rather than stopped, so when the panel closes - by a
   // tap, or because the aircraft dropped out of the data - cycling resumes with
   // a full interval instead of switching away immediately.
-  if (activeModalOpen()) { s_lastRotate = now; return; }
+  if (Notifications_Visible() || activeModalOpen()) {
+    s_lastRotate = now;
+    return;
+  }
 
   if (now < s_touchPauseUntil) return;
   if (now - s_lastRotate < (unsigned long)secs * 1000UL) return;
@@ -679,6 +689,7 @@ void loop() {
   // Redrawing is decoupled from reading the touch and capped at ~12 FPS.
   static unsigned long lastDraw = 0;
   bool wantDraw = activeTick();
+  wantDraw = Notifications_Tick() || wantDraw;
   if (wantDraw && millis() - lastDraw >= 80) {
     drawActive();
     lastDraw = millis();

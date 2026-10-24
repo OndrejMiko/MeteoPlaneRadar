@@ -87,6 +87,7 @@ td:first-child{color:var(--mut);width:50%}
   <button data-tab="tLook"   data-i18n="tabLook">Vzhled</button>
   <button data-tab="tPlanes" data-i18n="tabPlanes">Letadla</button>
   <button data-tab="tCal" data-i18n="scrCalendar">Kalendář</button>
+  <button data-tab="tNotify" data-i18n="ntTitle">Notifikácie</button>
   <button data-tab="tSys"    data-i18n="tabSys">Systém</button>
 </nav>
 
@@ -254,6 +255,33 @@ td:first-child{color:var(--mut);width:50%}
   <p class="hint" data-i18n="calLimits"></p>
   <p class="hint" data-i18n="calSaveHint"></p>
   <button class="sec" type="button" onclick="refreshCalendars()" data-i18n="calReload"></button>
+ </div>
+</section>
+
+<section id="tNotify" class="tab hide">
+ <div class="card">
+  <h2 data-i18n="ntTitle"></h2>
+  <p data-i18n="ntIntro"></p>
+  <label class="chk"><input type="checkbox" id="ntEnabled"><span data-i18n="ntEnabled"></span></label>
+  <div class="row"><label for="ntSeconds" data-i18n="ntSeconds"></label><input type="number" id="ntSeconds" min="0" max="120" value="15"></div>
+  <p class="hint" data-i18n="ntTimeoutHint"></p>
+  <p class="hint" id="ntPairState"></p>
+  <p class="hint" id="ntStatus"></p>
+  <button type="button" class="sec" id="ntTestBtn" onclick="testNotification()" data-i18n="ntTest"></button>
+ </div>
+ <div class="card">
+  <h2>Google Chat</h2>
+  <ol>
+   <li data-i18n="ntStep1"></li>
+   <li data-i18n="ntStep2"></li>
+   <li data-i18n="ntStep3"></li>
+   <li data-i18n="ntStep4"></li>
+  </ol>
+  <pre style="white-space:pre-wrap;overflow-wrap:anywhere">python3 tools/google-chat-bridge/bridge.py setup --client client_secret.json --pair meteoplaneradar-chat.json
+python3 tools/google-chat-bridge/bridge.py run</pre>
+  <button type="button" id="ntPairBtn" onclick="pairNotifications()" data-i18n="ntPair"></button>
+  <p class="hint" data-i18n="ntPairHint"></p>
+  <p class="hint" data-i18n="ntLimit"></p>
  </div>
 </section>
 
@@ -473,13 +501,16 @@ const D={
   "confirmReset": "Naozaj vymazať všetky nastavenia vrátane WiFi?",
   "import": "Import"
 }};
+Object.assign(D.en,{"ntTitle": "Notifications", "ntIntro": "Compact banner above every screen. Tap for details; the large X dismisses the message only on this display.", "ntEnabled": "Enable notifications", "ntSeconds": "Banner duration (seconds)", "ntTimeoutHint": "0 = until closed, otherwise 5–120 s. After timeout, messages stay behind the count badge. Details stay open until dismissed.", "ntTest": "Save and show a test", "ntPair": "Pair bridge / download configuration", "ntPairHint": "Enables notifications and rotates the pairing key. Previous bridges stop working. Keep the downloaded file private; it is sent over your home LAN. If set, enter the current admin password on System first.", "ntStep1": "Run the included Python 3 bridge on a computer or Raspberry Pi in the same LAN. It must stay running. No Python packages are needed.", "ntStep2": "In Google Cloud enable Google Chat API, configure the OAuth consent screen (add your account as a test user), create an OAuth client of type Desktop app and download its JSON as client_secret.json.", "ntStep3": "Download pairing configuration below. In the repository folder run the setup command. A browser opens for Google sign-in; select Chat spaces in the terminal.", "ntStep4": "Run the second command and leave it running. Then use the test button here. Save changes with the button below.", "ntLimit": "Google documents this API for Workspace accounts; availability depends on your account and administrator. Incoming Chat webhooks cannot receive messages. The bridge reads new text and attachment notices, not message history or edits. Up to 6 pending messages, 1024 UTF-8 bytes each; closing does not mark Chat messages read. Delivery may wait during radar downloads. Pairing keys and Google tokens are excluded from backups.", "ntPaired": "Bridge paired", "ntUnpaired": "Bridge not paired", "ntBridge": "Bridge contact (s ago; −1 = none)", "ntQueue": "Pending", "ntMemory": "Notification PSRAM"});
+Object.assign(D.sk,{"ntTitle": "Notifikácie", "ntIntro": "Kompaktný banner nad každou obrazovkou. Ťuknutie otvorí detail; veľký krížik zavrie správu iba na displeji.", "ntEnabled": "Zapnúť notifikácie", "ntSeconds": "Trvanie bannera (sekundy)", "ntTimeoutHint": "0 = do zatvorenia, inak 5–120 s. Po uplynutí času zostanú správy pod odznakom s počtom. Detail zostáva otvorený do zatvorenia.", "ntTest": "Uložiť a zobraziť skúšku", "ntPair": "Spárovať most / stiahnuť konfiguráciu", "ntPairHint": "Zapne notifikácie a vymení párovací kľúč. Predchádzajúci most prestane fungovať. Stiahnutý súbor uchovajte súkromne; prenáša sa cez domácu LAN. Ak máte heslo správcu, najprv ho zadajte na karte Systém.", "ntStep1": "Priložený most pre Python 3 spustite na počítači alebo Raspberry Pi v rovnakej LAN. Musí zostať spustený. Netreba inštalovať balíčky Pythonu.", "ntStep2": "V Google Cloud zapnite Google Chat API, nastavte súhlas OAuth (pridajte svoj účet medzi testovacích používateľov), vytvorte OAuth klienta typu Desktop app a stiahnite JSON ako client_secret.json.", "ntStep3": "Nižšie stiahnite párovaciu konfiguráciu. V priečinku repozitára spustite príkaz setup. Otvorí sa prehliadač na prihlásenie ku Googlu; v termináli vyberiete priestory Chatu.", "ntStep4": "Spustite druhý príkaz a nechajte ho bežať. Potom tu použite skúšobné tlačidlo. Zmeny uložte tlačidlom dole.", "ntLimit": "Google dokumentuje toto API pre účty Workspace; dostupnosť závisí od účtu a správcu. Prichádzajúci webhook Chatu nedokáže prijímať správy. Most číta nové texty a oznámenia o prílohách, nie históriu ani úpravy. Najviac 6 čakajúcich správ, každá 1024 bajtov UTF-8; zatvorenie neoznačí správu v Chate ako prečítanú. Počas sťahovania radaru môže doručenie chvíľu čakať. Párovacie kľúče a tokeny Googlu nie sú v zálohách.", "ntPaired": "Most spárovaný", "ntUnpaired": "Most ešte nie je spárovaný", "ntBridge": "Kontakt mosta (pred s; −1 = žiadny)", "ntQueue": "Čakajúce správy", "ntMemory": "PSRAM notifikácií"});
+Object.assign(D.cs,{"ntTitle": "Notifikace", "ntIntro": "Kompaktní banner nad každou obrazovkou. Klepnutí otevře detail; velký křížek zavře zprávu pouze na displeji.", "ntEnabled": "Zapnout notifikace", "ntSeconds": "Trvání banneru (sekundy)", "ntTimeoutHint": "0 = do zavření, jinak 5–120 s. Po uplynutí času zůstanou zprávy pod odznakem s počtem. Detail zůstává otevřený do zavření.", "ntTest": "Uložit a zobrazit test", "ntPair": "Spárovat most / stáhnout konfiguraci", "ntPairHint": "Zapne notifikace a vymění párovací klíč. Předchozí most přestane fungovat. Stažený soubor uchovejte soukromě; přenáší se přes domácí LAN. Máte-li heslo správce, nejprve jej vyplňte na kartě Systém.", "ntStep1": "Přiložený most pro Python 3 spusťte na počítači nebo Raspberry Pi ve stejné LAN. Musí zůstat spuštěný. Není třeba instalovat balíčky Pythonu.", "ntStep2": "V Google Cloud zapněte Google Chat API, nastavte souhlas OAuth (přidejte svůj účet mezi testovací uživatele), vytvořte OAuth klienta typu Desktop app a stáhněte JSON jako client_secret.json.", "ntStep3": "Níže stáhněte párovací konfiguraci. Ve složce repozitáře spusťte příkaz setup. Otevře se prohlížeč pro přihlášení ke Googlu; v terminálu vyberete prostory Chatu.", "ntStep4": "Spusťte druhý příkaz a nechte jej běžet. Potom zde použijte testovací tlačítko. Změny uložte tlačítkem dole.", "ntLimit": "Google dokumentuje toto API pro účty Workspace; dostupnost závisí na účtu a správci. Příchozí webhook Chatu neumí přijímat zprávy. Most čte nové texty a oznámení o přílohách, ne historii ani úpravy. Nejvýše 6 čekajících zpráv, každá 1024 bajtů UTF-8; zavření neoznačí zprávu v Chatu jako přečtenou. Během stahování radaru může doručení chvíli čekat. Párovací klíče a tokeny Googlu nejsou v zálohách.", "ntPaired": "Most spárovaný", "ntUnpaired": "Most ještě není spárovaný", "ntBridge": "Kontakt mostu (před s; −1 = žádný)", "ntQueue": "Čekající zprávy", "ntMemory": "PSRAM notifikací"});
 let L="cs", CFG={}, TAB="tCtl";
 const $=id=>document.getElementById(id);
 
 function setLang(v){L=(v==2||v=="sk")?"sk":(v==1||v=="en")?"en":"cs";$("uiLang").value=String({cs:0,en:1,sk:2}[L]);
  document.documentElement.lang=L;
  document.querySelectorAll("[data-i18n]").forEach(e=>{const t=D[L][e.dataset.i18n];if(t)e.textContent=t;});
- pwState();calendarLabels();status();}
+ pwState();calendarLabels();notificationLabels();status();}
 
 // Tabs. The Save bar is hidden on Control - nothing there is saved, it is sent
 // straight away - so the button cannot look like it applies to the buttons.
@@ -576,6 +607,10 @@ async function load(){
  $("sClock").checked=CFG.screens.clock;$("sPlanes").checked=CFG.screens.planes;
  $("sMeteo").checked=CFG.screens.meteo;$("sForecast").checked=CFG.screens.forecast;
  $("sCalendar").checked=!!CFG.screens.calendar;
+ $("ntEnabled").checked=!!(CFG.notifications||{}).enabled;
+ $("ntSeconds").value=(CFG.notifications||{}).seconds??15;
+ notificationLabels();
+ $("ntTestBtn").disabled=$("ntPairBtn").disabled=!!CFG.apMode;
  $("calendarView").value=CFG.calendarView||0;$("calendarRefresh").value=CFG.calendarRefresh||15;
  for(let i=0;i<3;i++){
   const c=(CFG.calendars||[])[i]||{};
@@ -620,6 +655,7 @@ async function status(){
   ["ADS-B",s.adsb],["Radar",s.radar],[D[L].scrForecast,s.forecast],
   [D[L].timezone,s.timezone],[D[L].calMemory,(s.calendarMemory||0)+" B"],
   ["Firmware","v"+s.version],[D[L].board,s.board]];
+ $("ntStatus").textContent=D[L].ntQueue+": "+(s.notificationCount||0)+" · "+D[L].ntBridge+": "+(s.notificationBridgeAge??-1)+" · "+D[L].ntMemory+": "+(s.notificationMemory||0)+" B";
  (s.calendarSources||[]).forEach((c,i)=>{if(i<3)$("cal"+i+"Status").textContent=c.state+(c.updated?" · "+new Date(c.updated*1000).toLocaleString(L):"");});
  $("statusTab").innerHTML=rows.map(r=>"<tr><td>"+r[0]+"</td><td>"+r[1]+"</td></tr>").join("");}catch(e){}
 }
@@ -635,6 +671,7 @@ function body(){return{lat:parseFloat($("lat").value),lon:parseFloat($("lon").va
  altMin:+$("altMin").value,altMax:+$("altMax").value,onlyCallsign:$("onlyCallsign").checked,
  squawkAlert:$("squawkAlert").checked,watch:$("watch").value,
  password:$("adminPass").value,newPassword:$("newPass").value,
+ notifications:{enabled:$("ntEnabled").checked,seconds:+$("ntSeconds").value},
  calendarView:+$("calendarView").value,calendarRefresh:+$("calendarRefresh").value,
  calendars:[0,1,2].map(i=>({name:$("cal"+i+"Name").value,enabled:$("cal"+i+"On").checked,color:hexToRgb565($("cal"+i+"Color").value),url:$("cal"+i+"Url").value.trim(),clearUrl:$("cal"+i+"Clear").checked})),
  screens:{clock:$("sClock").checked,planes:$("sPlanes").checked,meteo:$("sMeteo").checked,
@@ -649,6 +686,34 @@ function calendarLabels(){
 async function refreshCalendars(){
  const r=await fetch("/api/calendar/refresh",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:$("adminPass").value})});
  msg(r.ok?D[L].autoSaved:D[L].failed,r.ok?"ok":"err");
+}
+function notificationLabels(){
+ $("ntPairState").textContent=(CFG.notifications||{}).paired?D[L].ntPaired:D[L].ntUnpaired;
+}
+async function saveNotificationSettings(key){
+ const seconds=+$("ntSeconds").value;
+ if(!Number.isInteger(seconds)||(seconds!==0&&(seconds<5||seconds>120)))throw Error("5–120 / 0");
+ const notifications={enabled:$("ntEnabled").checked,seconds};
+ if(key){notifications.key=key;notifications.enabled=true;}
+ const r=await fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({notifications,password:$("adminPass").value})});
+ if(!r.ok)throw Error(r.status);
+ $("ntEnabled").checked=notifications.enabled;
+ return notifications;
+}
+async function testNotification(){
+ try{$("ntEnabled").checked=true;await saveNotificationSettings();const r=await fetch("/api/notifications/test",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:$("adminPass").value})});
+ if(!r.ok)throw Error(r.status);msg(D[L].autoSaved,"ok");await status();}catch(e){msg(D[L].failed+" ("+e.message+")","err");}
+}
+async function pairNotifications(){
+ try{
+ const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);
+ const key=Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
+ await saveNotificationSettings(key);
+ const url=new URL("/api/notifications",location.href).href;
+ const blob=new Blob([JSON.stringify({device:url,key},null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="meteoplaneradar-chat.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+ CFG.notifications={enabled:true,seconds:+$("ntSeconds").value,paired:true};notificationLabels();msg(D[L].autoSaved,"ok");
+ }catch(e){msg(D[L].failed+" ("+e.message+")","err");}
 }
 async function save(){
  try{

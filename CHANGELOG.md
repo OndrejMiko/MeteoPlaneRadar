@@ -11,6 +11,31 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.3] - 2026-10-24
+
+### Přidáno
+
+- Globální kompaktní notifikační banner nad všemi hlavními obrazovkami, bez
+  barevného pruhu vlevo. Viditelný křížek 32×32 px má neviditelnou aktivní
+  plochu 64×64 px. Detail zprávy, stránkování, zavření/další zpráva a odznak
+  čekajících zpráv po skrytí bannera. Otevřená vrstva zachytává gesta a drží
+  automatické přepínání obrazovek.
+- Webová karta Notifikace v češtině, angličtině a slovenštině: zapnutí, trvání,
+  zkouška, párování s náhodným odvolatelným klíčem, návod a diagnostika.
+  Klíč je pouze pro zápis a nevrací se v konfiguraci ani záloze.
+- Python most Google Chat se skutečným desktop OAuth/PKCE, automatickým
+  obnovením tokenů, výběrem prostorů, stránkovaným čtením nových zpráv,
+  kontrolními body a opakováním při zaplnění fronty. Google tokeny zůstávají
+  na počítači, nikoli na ESP32. Most vyžaduje běžící počítač/Raspberry Pi a
+  povolený přístup k Chat API; nejde o příchozí webhook Chatu.
+- Omezená fronta šesti zpráv a historie 32 ID v PSRAM (7 176 B), bez dalšího
+  framebufferu. Vypnutí vrstvu uvolní; zprávy se nepersistují přes restart.
+- Regresní testy fronty, dotykových oblastí, timeoutu, deduplikace, nedostatku
+  paměti, tajných klíčů, HTTP doručení, obnovy tokenů a pokračování přes stránky.
+
+Nastavení a omezení: [návod Google Chat](tools/google-chat-bridge/README.md).
+Reálný Google účet ani fyzický panel zatím nebyly ověřeny.
+
 ## [0.7.2] - 2026-10-24
 
 ### Přidáno

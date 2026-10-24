@@ -1,6 +1,7 @@
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+import {webcrypto} from 'node:crypto';
 
 const page = readFileSync(new URL('../MeteoPlaneRadar/WebPage.h', import.meta.url), 'utf8');
 const version = readFileSync(new URL('../MeteoPlaneRadar/Version.h', import.meta.url), 'utf8').match(/#define FW_VERSION "([^"]+)"/)[1];
@@ -11,12 +12,14 @@ const elements = new Map([...page.matchAll(/id="([^"]+)"/g)].map(([,id]) => [id,
 }]));
 const translations = [...page.matchAll(/data-i18n="([^"]+)"/g)]
   .map(([,key]) => ({dataset:{i18n:key}, textContent:''}));
+const downloads=[];
 const document = {
+  createElement() { return {click(){downloads.push({href:this.href,name:this.download});}}; },
   documentElement: {},
   getElementById(id) { assert(elements.has(id), `Missing DOM element: ${id}`); return elements.get(id); },
   querySelectorAll(selector) { return selector === '[data-i18n]' ? translations : []; }
 };
-const context = vm.createContext({document, window:{scrollTo(){}}, setInterval(){}, setTimeout(){},
+const context = vm.createContext({document, crypto:webcrypto, URL, Blob, location:{href:'http://192.168.1.42/'}, window:{scrollTo(){}}, setInterval(){}, setTimeout(){},
   fetch: async () => ({json: async () => ({screen:4,enabled:[true,true,true,true,true],range:''})})});
 // load is exercised below with a realistic config; all other initial handlers
 // execute so missing DOM references left by screen removal fail immediately.
@@ -62,4 +65,26 @@ const saved=JSON.parse(requests.find(r=>r.url==='/api/config').options.body);
 assert.equal(saved.calendars[0].url,'https://example.test/secret.ics');
 assert.equal(elements.get('cal0Url').value,'');
 assert(!requests.some(r=>r.url==='/api/config'&&!r.options));
-console.log('Web language switching, config load/save and screen controls passed');
+// Pairing posts a fresh random key without changing unrelated settings.
+requests.length=0;
+elements.get('ntSeconds').value='15';
+await run('pairNotifications()');
+const paired=JSON.parse(requests[0].options.body);
+assert.equal(requests[0].url,'/api/config');
+assert.deepEqual(Object.keys(paired).sort(),['notifications','password']);
+assert.match(paired.notifications.key,/^[0-9a-f]{64}$/);
+assert.equal(paired.notifications.enabled,true);
+assert.equal(downloads.length,1);
+assert.equal(downloads[0].name,'meteoplaneradar-chat.json');
+const pairing=await(await fetch(downloads[0].href)).json();
+assert.equal(pairing.device,'http://192.168.1.42/api/notifications');
+assert.equal(pairing.key,paired.notifications.key);
+assert.equal(run('CFG.notifications.paired'),true);
+assert.equal(run('body().notifications.key'),undefined);
+assert.equal(elements.get('ntPairState').textContent,'Most spárovaný');
+requests.length=0;
+await run('testNotification()');
+assert(requests.some(r=>r.url==='/api/notifications/test'));
+requests.length=0;elements.get('ntSeconds').value='3';
+await run('testNotification()');assert.equal(requests.length,0);
+console.log('Web languages, config, pairing download, secret handling and notification controls passed');

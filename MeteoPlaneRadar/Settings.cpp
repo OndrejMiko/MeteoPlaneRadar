@@ -23,6 +23,9 @@ static void calendarDefaults() {
     s_cal[i].enabled = true;
   }
 }
+static bool s_notify = false;
+static uint16_t s_notifySeconds = 15;
+static char s_notifyKey[65] = "";
 static Preferences prefs;
 static const char* NS = "planeradar";
 
@@ -96,6 +99,10 @@ void Settings_Begin() {
   bool migrateRotate = false, migrateCalendar = false;
   calendarDefaults();
   if (prefs.begin(NS, true)) {
+    s_notify = prefs.getBool("ntOn", false);
+    s_notifySeconds = prefs.getUShort("ntSec", 15);
+    if (s_notifySeconds && (s_notifySeconds < 5 || s_notifySeconds > 120)) s_notifySeconds = 15;
+    prefs.getString("ntKey", s_notifyKey, sizeof(s_notifyKey));
     s_lat    = prefs.getDouble("lat", DEFAULT_LAT);
     s_lon    = prefs.getDouble("lon", DEFAULT_LON);
     s_hasLoc = prefs.getBool("hasLoc", false);
@@ -388,6 +395,10 @@ void Settings_ToJson(JsonObject o) {
   o["squawkAlert"] = s_sqAlert;
   o["watch"] = s_watch;
   o["hasPassword"] = Settings_HasAdminPassword();
+  JsonObject notification = o["notifications"].to<JsonObject>();
+  notification["enabled"] = s_notify;
+  notification["seconds"] = s_notifySeconds;
+  notification["paired"] = strlen(s_notifyKey) == 64;
   o["calendarView"] = s_calView;
   o["calendarRefresh"] = s_calRefresh;
   JsonArray calendars = o["calendars"].to<JsonArray>();
@@ -407,8 +418,25 @@ void Settings_ToJson(JsonObject o) {
 }
 
 bool Settings_FromJson(JsonObjectConst in) {
-  if (Settings_ValidateCalendarJson(in)) return false;
+  if (Settings_ValidateCalendarJson(in) || Settings_ValidateNotifications(in)) return false;
   bool changed = false;
+  JsonObjectConst notification = in["notifications"];
+  if (!notification.isNull()) {
+    if (!notification["enabled"].isNull()) {
+      s_notify = notification["enabled"].as<bool>();
+      putBool("ntOn", s_notify);
+    }
+    if (!notification["seconds"].isNull()) {
+      s_notifySeconds = notification["seconds"].as<uint16_t>();
+      putU16("ntSec", s_notifySeconds);
+    }
+    const char* key = notification["key"] | "";
+    if (*key) {
+      snprintf(s_notifyKey, sizeof(s_notifyKey), "%s", key);
+      putStr("ntKey", s_notifyKey);
+    }
+    changed = true;
+  }
   auto setIf = [&](const char* key, auto fn) {
     JsonVariantConst v = in[key];
     if (!v.isNull()) { fn(v); changed = true; }
@@ -525,6 +553,9 @@ void Settings_ClearAll() {
   if (prefs.begin(NS, false)) { prefs.clear(); prefs.end(); }
   s_lat = DEFAULT_LAT; s_lon = DEFAULT_LON; s_hasLoc = false;
   s_briDay = 80; s_briNight = 25; s_nightAuto = true; s_nightOff = 0; s_isNight = false;
+  s_notify = false;
+  s_notifySeconds = 15;
+  s_notifyKey[0] = 0;
   calendarDefaults();
   s_calView = 0;
   s_calRefresh = 15;
@@ -592,6 +623,31 @@ const char* Settings_ValidateCalendarJson(JsonObjectConst in) {
         for (const char* c = host; *c && *c != '/'; c++)
           if (*c == '@') return "calendarUrl";
       }
+    }
+  }
+  return nullptr;
+}
+
+bool Settings_NotificationsEnabled() { return s_notify; }
+uint16_t Settings_NotificationSeconds() { return s_notifySeconds; }
+const char* Settings_NotificationKey() { return s_notifyKey; }
+const char* Settings_ValidateNotifications(JsonObjectConst in) {
+  if (in["notifications"].isNull()) return nullptr;
+  if (!in["notifications"].is<JsonObjectConst>()) return "notifications";
+  JsonObjectConst n = in["notifications"];
+  if (!n["enabled"].isNull() && !n["enabled"].is<bool>()) return "notificationEnabled";
+  if (!n["seconds"].isNull()) {
+    if (!n["seconds"].is<unsigned>()) return "notificationSeconds";
+    unsigned seconds = n["seconds"].as<unsigned>();
+    if (seconds && (seconds < 5 || seconds > 120)) return "notificationSeconds";
+  }
+  if (!n["key"].isNull()) {
+    if (!n["key"].is<const char*>()) return "notificationKey";
+    const char* key = n["key"];
+    if (*key) {
+      if (strlen(key) != 64) return "notificationKey";
+      for (const char* c = key; *c; ++c)
+        if (!isxdigit((unsigned char)*c)) return "notificationKey";
     }
   }
   return nullptr;

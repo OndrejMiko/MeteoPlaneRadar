@@ -411,12 +411,12 @@ CalendarParseResult property(Raw& r, char* key, char* val) {
 }  // namespace
 
 size_t CalendarIcs_WorkspaceSize() { return sizeof(Work); }
-void Calendar_Ascii(const char* in, char* out, size_t cap) {
+void Calendar_Ascii(const char* in, char* out, size_t cap, bool icsEscapes, bool newlines) {
   if (!cap) return;
   size_t n = 0;
   for (const unsigned char* p = (const unsigned char*)in; *p && n + 1 < cap;) {
     uint32_t c = *p++;
-    if (c == '\\' && *p) {
+    if (icsEscapes && c == '\\' && *p) {
       c = *p++;
       if (c == 'n' || c == 'N') c = ' ';
     } else if (c >= 0xc0) {
@@ -424,7 +424,7 @@ void Calendar_Ascii(const char* in, char* out, size_t cap) {
       c &= (1 << (6 - more)) - 1;
       while (more-- && (*p & 0xc0) == 0x80) c = (c << 6) | (*p++ & 63);
     }
-    if (c < 32) c = ' ';
+    if (c < 32 && !(newlines && c == '\n')) c = ' ';
     if (c < 128) {
       out[n++] = (char)c;
       continue;

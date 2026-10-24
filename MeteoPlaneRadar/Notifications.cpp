@@ -1,0 +1,256 @@
+#include "Notifications.h"
+
+#include <Arduino.h>
+#include <esp_heap_caps.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "CalendarIcs.h"
+#include "Lang.h"
+#include "Settings.h"
+#include "UI.h"
+
+namespace {
+constexpr unsigned CAPACITY = 6;
+struct Message {
+  char sender[64], room[64], text[1025];
+};
+struct Store {
+  Message messages[CAPACITY];
+  // Dedupe survives local dismissal. No message bodies retained in this history.
+  uint64_t recent[32];
+};
+Store* store = nullptr;
+unsigned count = 0, recentIndex = 0, detailPage = 0;
+uint32_t dropped = 0, lastReceived = 0, openedAt = 0;
+bool visible = false, expanded = false, dirty = false;
+constexpr uint16_t PANEL = 0x1105;
+const char* label(const char* cz, const char* en, const char* sk) {
+  return Lang_Get() == LANG_EN ? en : (Lang_Get() == LANG_SK ? sk : cz);
+}
+uint64_t hash(const char* s) {
+  uint64_t h = 14695981039346656037ULL;
+  while (*s) {
+    h ^= (uint8_t)*s++;
+    h *= 1099511628211ULL;
+  }
+  return h ? h : 1;
+}
+void text(const char* s, int x, int y, uint16_t color, unsigned size = 2) {
+  gfx->setTextColor(color);
+  gfx->setTextSize(size);
+  gfx->setCursor(x, y);
+  gfx->print(s);
+}
+void clipped(const char* s, int x, int y, unsigned chars, uint16_t color) {
+  char b[65];
+  size_t n = strlen(s);
+  if (n > chars) n = chars;
+  memcpy(b, s, n);
+  b[n] = 0;
+  if (strlen(s) > n && n >= 3) memcpy(b + n - 3, "...", 3);
+  text(b, x, y, color);
+}
+// Monospaced ASCII after transliteration. Word wrap, honouring explicit newlines.
+size_t line(const char* s, size_t at, char* out, unsigned width) {
+  size_t start = at, end = at;
+  while (s[end] && s[end] != '\n' && end - start < width) ++end;
+  size_t next = end;
+  if (s[end] && s[end] != '\n' && end - start == width) {
+    size_t space = end;
+    while (space > start && s[space] != ' ') --space;
+    if (space > start) {
+      end = space;
+      next = space;
+    }
+  }
+  memcpy(out, s + start, end - start);
+  out[end - start] = 0;
+  while (s[next] == ' ') ++next;
+  if (s[next] == '\n') ++next;
+  return next;
+}
+void cross(int x, int y) {
+  // 32x32 visible X, twice the 16px text height; invisible 64x64 target.
+  for (int t = -1; t <= 1; ++t) {
+    gfx->drawLine(x + 16, y + 16 + t, x + 47, y + 47 + t, C_GRAY);
+    gfx->drawLine(x + 16, y + 47 + t, x + 47, y + 16 + t, C_GRAY);
+  }
+}
+void show() {
+  visible = true;
+  expanded = false;
+  detailPage = 0;
+  openedAt = millis();
+  dirty = true;
+}
+void dismiss() {
+  if (count) {
+    --count;
+    memmove(store->messages, store->messages + 1, count * sizeof(Message));
+    memset(&store->messages[count], 0, sizeof(Message));
+  }
+  visible = count != 0;
+  expanded = false;
+  detailPage = 0;
+  openedAt = millis();
+  dirty = true;
+}
+unsigned pageCount(const char* s) {
+  unsigned lines = 0;
+  size_t at = 0;
+  char b[33];
+  do {
+    at = line(s, at, b, 28);
+    ++lines;
+  } while (s[at]);
+  return (lines + 7) / 8;
+}
+}  // namespace
+
+const char* Notifications_Validate(JsonObjectConst n) {
+  if (n.isNull()) return "message";
+  struct Field {
+    const char* name;
+    size_t max;
+  };
+  const Field fields[] = {{"id", 159}, {"sender", 127}, {"room", 127}, {"text", 1024}};
+  for (const auto& f : fields) {
+    if (!n[f.name].is<const char*>()) return f.name;
+    const char* s = n[f.name];
+    if (strlen(s) > f.max || (!*s && (!strcmp(f.name, "id") || !strcmp(f.name, "text"))))
+      return f.name;
+  }
+  if (!n["service"].is<const char*>() || strcmp(n["service"], "google-chat")) return "service";
+  return nullptr;
+}
+bool Notifications_Authorized(const char* token) {
+  const char* key = Settings_NotificationKey();
+  if (!token || strlen(key) != 64 || strlen(token) != 64) return false;
+  unsigned diff = 0;
+  for (unsigned i = 0; i < 64; ++i) diff |= (unsigned char)(token[i] ^ key[i]);
+  return diff == 0;
+}
+bool Notifications_Push(JsonObjectConst n) {
+  if (!Settings_NotificationsEnabled() || Notifications_Validate(n)) return false;
+  if (!store)
+    store = (Store*)heap_caps_calloc(1, sizeof(Store), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  if (!store) return false;
+  uint64_t id = hash(n["id"]);
+  for (auto seen : store->recent)
+    if (seen == id) return true;
+  // Backpressure: sender retries instead of silently losing old or new messages.
+  if (count == CAPACITY) {
+    ++dropped;
+    return false;
+  }
+  Message& m = store->messages[count++];
+  Calendar_Ascii(n["sender"], m.sender, sizeof(m.sender), false, false);
+  Calendar_Ascii(n["room"], m.room, sizeof(m.room), false, false);
+  Calendar_Ascii(n["text"], m.text, sizeof(m.text), false, true);
+  store->recent[recentIndex++ % 32] = id;
+  lastReceived = millis();
+  if (!visible) show();
+  dirty = true;
+  return true;
+}
+bool Notifications_Tick() {
+  if (!Settings_NotificationsEnabled()) {
+    if (store) {
+      free(store);
+      store = nullptr;
+      count = 0;
+      recentIndex = 0;
+      visible = expanded = false;
+      dirty = true;
+    }
+  }
+  unsigned seconds = Settings_NotificationSeconds();
+  if (visible && !expanded && seconds && (uint32_t)(millis() - openedAt) >= seconds * 1000UL) {
+    visible = false;
+    dirty = true;  // retain messages behind badge
+  }
+  return dirty;
+}
+void Notifications_Draw() {
+  dirty = false;
+  if (!count || !Settings_NotificationsEnabled()) return;
+  char b[64];
+  if (!visible) {
+    gfx->fillRoundRect(208, 391, 64, 48, 20, PANEL);
+    snprintf(b, sizeof(b), "%u", count);
+    UI_TextCenteredIn(b, 208, 64, 407, C_WHITE, 2);
+    return;
+  }
+  Message& m = store->messages[0];
+  if (!expanded) {
+    gfx->fillRoundRect(43, 115, 394, 197, 20, PANEL);
+    gfx->fillCircle(66, 139, 4, C_GREEN);
+    text("Google Chat", 80, 132, C_GRAY);
+    snprintf(b, sizeof(b), "%u/%u", 1, count);
+    text(b, 294, 132, C_GRAY, 2);
+    cross(368, 120);
+    clipped(m.sender, 63, 165, 24, C_WHITE);
+    size_t at = line(m.text, 0, b, 28);
+    text(b, 63, 199, C_WHITE);
+    line(m.text, at, b, 28);
+    text(b, 63, 222, C_WHITE);
+    text(label("Tukni pro detail", "Tap for details", "Tukni pre detail"), 63, 275, C_GRAY, 2);
+  } else {
+    gfx->fillScreen(C_BLACK);
+    gfx->fillCircle(166, 82, 4, C_GREEN);
+    text("Google Chat", 180, 75, C_GRAY, 2);
+    cross(359, 95);
+    clipped(m.sender, 85, 120, 22, C_WHITE);
+    clipped(m.room, 85, 147, 25, C_GRAY);
+    snprintf(b, sizeof(b), "%u / %u", 1, count);
+    text(b, 85, 175, C_CYAN, 1);
+    gfx->drawFastHLine(70, 195, 340, C_DKGRAY);
+    size_t at = 0;
+    for (unsigned i = 0; i < detailPage * 8 && m.text[at]; ++i) at = line(m.text, at, b, 28);
+    for (unsigned i = 0; i < 8 && m.text[at]; ++i) {
+      at = line(m.text, at, b, 28);
+      text(b, 72, 210 + i * 19, C_WHITE);
+    }
+    unsigned pages = pageCount(m.text);
+    snprintf(b, sizeof(b), "<  %u/%u  >", detailPage + 1, pages);
+    UI_TextCentered(b, 370, C_GRAY, 2);
+    gfx->fillRoundRect(108, 400, 264, 48, 16, C_DKGRAY);
+    UI_TextCentered(label("Zavrit / dalsi", "Dismiss / next", "Zavriet / dalsia"), 416, C_WHITE, 2);
+  }
+}
+bool Notifications_Visible() { return visible && Settings_NotificationsEnabled(); }
+bool Notifications_Touch(int x, int y, bool tap) {
+  if (!count || !Settings_NotificationsEnabled()) return false;
+  if (!visible) {
+    if (tap && x >= 208 && x < 272 && y >= 391 && y < 439) {
+      show();
+      return true;
+    }
+    return false;
+  }
+  if (!tap) return true;
+  if (!expanded) {
+    if (x >= 368 && x < 432 && y >= 120 && y < 184)
+      dismiss();
+    else if (x >= 43 && x < 437 && y >= 115 && y < 312) {
+      expanded = true;
+      detailPage = 0;
+      dirty = true;
+    }
+  } else {
+    if ((x >= 359 && x < 423 && y >= 95 && y < 159) || (x >= 108 && x < 372 && y >= 400 && y < 448))
+      dismiss();
+    else if (y >= 360 && y < 400) {
+      unsigned pages = pageCount(store->messages[0].text);
+      if (x < 240 && detailPage) --detailPage;
+      if (x >= 240 && detailPage + 1 < pages) ++detailPage;
+      dirty = true;
+    }
+  }
+  return true;
+}
+size_t Notifications_MemoryBytes() { return store ? sizeof(Store) : 0; }
+unsigned Notifications_Count() { return count; }
+uint32_t Notifications_Dropped() { return dropped; }
+uint32_t Notifications_LastReceived() { return lastReceived; }
