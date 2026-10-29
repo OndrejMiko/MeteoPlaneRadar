@@ -36,8 +36,11 @@
 #define LY_NOTE        86    // small note under the legend      (size 1)
 
 // Bottom stack, from the rim up.
-#define LY_RANGE       (LCD_HEIGHT - 76)   // range readout       (size 2)
-#define LY_RANGE_DOTS  (LCD_HEIGHT - 50)   // range dots (CENTRE y)
+#define LY_RANGE       (LCD_HEIGHT - 58)   // range centred on the old dot row (size 2)
+// Zoom steps form a temporary vertical column at the right edge of either map.
+#define LY_ZOOM_DOTS_X   (LCD_WIDTH - 36)
+#define LY_ZOOM_DOTS_Y   (LCD_HEIGHT / 2)
+#define LY_ZOOM_DOTS_GAP 16
 #define LY_FOOTER      418                 // signature           (size 2)
 
 // The seconds ring on the clock screen lives outside everything else.

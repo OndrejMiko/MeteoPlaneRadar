@@ -11,6 +11,27 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.5] - 2026-10-29
+
+### Změněno
+
+- Vodorovná gesta nyní přepínají obrazovky: doleva následující, doprava předchozí.
+  Dlouhý stisk vlevo/vpravo zůstává. Horní body obrazovek se po vstupu/přepnutí
+  automaticky skryjí po 5 sekundách, včetně přepnutí z webu a automatického cyklu.
+- Svislá gesta na mapách letadel a počasí mění zoom: nahoru přiblížit, dolů oddálit.
+  Krajní rozsahy se již cyklicky nepřetáčejí. Kalendář se listuje vlastními šipkami
+  nebo z webu; vodorovná gesta přepínají obrazovky i na kalendáři.
+- Ukazatele zoomu obou map jsou ve svislém sloupci vpravo. Po vstupu na mapu nebo
+  změně rozsahu se zobrazí na 10 sekund, poté uvolní místo mapě i jejím popiskům.
+  Údaj v kilometrech je níže, vycentrovaný na původním spodním řádku bodů.
+- Sdílené časovače si vyžádají překreslení při skrytí indikátorů i na jinak
+  neaktivní obrazovce. Notifikace a detail letadla nadále zachytávají gesta.
+
+### Ověření
+
+- Testy časovačů zahrnují přesné hranice 5/10 sekund, opakovaná gesta, odložené
+  překreslení, geometrii sloupce a přetečení millis(). Doplněna dokumentace ovládání.
+
 ## [0.7.4] - 2026-10-24
 
 ### Přidáno

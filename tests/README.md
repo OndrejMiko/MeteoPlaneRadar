@@ -27,3 +27,7 @@ scheduler tests. The scheduler tests verify PSRAM-only allocation, offline/clock
 startup, failed downloads retaining the cache, source removal, and single-source
 versus multiple-source drawing. `CALENDAR_SCREENSHOTS=/absolute/directory` also
 records the real screen's drawing calls as SVG for layout inspection.
+
+Navigation tests cover transient screen/zoom indicators, exact expiry, refreshing
+the zoom timer, redraw requests surviving throttling, right-side geometry and
+32-bit millis rollover. Physical gesture recognition still needs device testing.

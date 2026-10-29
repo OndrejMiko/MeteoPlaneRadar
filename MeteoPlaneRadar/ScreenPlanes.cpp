@@ -15,6 +15,7 @@
 #include "EuBorder.h"
 #include "UI.h"
 #include "Layout.h"
+#include "Navigation.h"
 #include "Lang.h"
 #include "Status.h"
 #include "Display_ST7701.h"
@@ -307,11 +308,16 @@ bool ScreenPlanes_HandleTap(int x, int y) {
   return false;
 }
 
-// Swipe: change the range (both directions). Re-fetch immediately at the new
+// Vertical swipe: change the range (both directions). Re-fetch at the new
 // radius. Ignored while the detail panel is open (close it first).
 void ScreenPlanes_ChangeRange(int dir) {
   if (ScreenPlanes_DetailOpen()) return;
-  s_rangeIdx = (s_rangeIdx + dir + RANGE_COUNT) % RANGE_COUNT;
+  int next = s_rangeIdx + dir;
+  if (next < 0) next = 0;
+  if (next >= RANGE_COUNT) next = RANGE_COUNT - 1;
+  Navigation_RangeChanged();
+  if (next == s_rangeIdx) return;
+  s_rangeIdx = next;
   Settings_SetPlaneRange(s_rangeIdx);   // remember across restarts (debounced)
   Serial.printf("ADSB range: %.0f km\n", currentRange());
   s_nextFetch = 0;
@@ -334,7 +340,7 @@ void ScreenPlanes_Draw() {
   // Reserve the chrome BEFORE the map is drawn. City labels and callsigns are
   // placed by data rather than by design, so they have to lose the argument -
   // and they can only lose it if the space is already taken when they ask.
-  Layout_ReserveBand(LY_DOTS - 6, 12);        // screen selector dots
+  if (Navigation_ScreenDotsVisible()) Layout_ReserveBand(LY_DOTS - 6, 12);  // screen dots
   Layout_ReserveBand(LY_STATUS - 3, 22);      // clock + outside temperature
   // The alert banner is taller than the count it replaces, and the legend has
   // its boundary numbers under the colour bar - both bands are sized for the
@@ -342,7 +348,7 @@ void ScreenPlanes_Draw() {
   Layout_ReserveBand(LY_SUB - 6, 22);         // aircraft count / alert banner
   Layout_ReserveBand(LY_LEGEND - 2, 24);      // altitude legend + numbers
   Layout_ReserveBand(LY_RANGE - 2, 20);       // range readout
-  Layout_ReserveBand(LY_RANGE_DOTS - 6, 12);  // range dots
+  Navigation_ReserveRangeDots(RANGE_COUNT);  // range dots
 
   // --- Map underlay ---
   // The map data spans the whole of Europe, so work out which slice of it can
@@ -540,21 +546,12 @@ void ScreenPlanes_Draw() {
     }
   }
 
-  // Range indicator at the bottom (moved up a little to leave room for the
-  // southern compass mark).
+  // Range readout occupies the old bottom dot row; steps are on the right.
   char rbuf[16];
   snprintf(rbuf, sizeof(rbuf), "%.0f km", range);
   UI_TextCentered(rbuf, LY_RANGE, C_YELLOW, 2);
 
-  int dotGap = 24;
-  int totalW = (RANGE_COUNT - 1) * dotGap;
-  int startX = R_CX - totalW / 2;
-  int dotY = LY_RANGE_DOTS;
-  for (int i = 0; i < RANGE_COUNT; i++) {
-    int x = startX + i * dotGap;
-    if (i == s_rangeIdx) gfx->fillCircle(x, dotY, 5, C_YELLOW);
-    else                 gfx->drawCircle(x, dotY, 5, C_GRAY);
-  }
+  Navigation_DrawRangeDots(s_rangeIdx, RANGE_COUNT);
 
   // --- Detail of the selected aircraft (overlay) ---
   // selIdx was resolved from the hex at the top of the frame, so this always

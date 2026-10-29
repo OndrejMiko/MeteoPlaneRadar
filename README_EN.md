@@ -174,7 +174,7 @@ URLs are write-only and omitted from configuration responses and backups. Blank
 URL fields preserve saved links; the explicit delete checkbox removes them.
 Re-enter links after restoring a backup on another device.
 
-On the display choose Day/Month, use arrows or a swipe to browse, tap a date to
+On the display choose Day/Month, use arrows to browse, tap a date to
 open its agenda, or TODAY to return. Tap an agenda with more than three events to
 page through it. Source dots, names and a legend appear only with multiple enabled
 subscriptions; one subscription highlights dates without dots or source labels.
@@ -259,13 +259,18 @@ startup**, which is a factory reset and also erases WiFi.
 
 | Gesture | Action |
 | --- | --- |
-| **Swipe** left/right | Change the range (aircraft, weather radar) |
-| **Swipe up** | Next screen |
-| **Swipe down** | Previous screen |
+| **Swipe** left/right | Next / previous screen |
+| **Swipe up on a map** | Zoom in |
+| **Swipe down on a map** | Zoom out |
 | **Short tap** | Select an aircraft; on the clock, toggle day/night |
 | **Long press, left half** | Previous screen |
 | **Long press, right half** | Next screen |
 | **Hold BOOT at startup (~3 s)** | Factory reset |
+
+Screen dots appear for 5 seconds after switching. Zoom dots form a vertical
+column on the right of both maps, visible for 10 seconds after entering or
+changing zoom. The range in kilometres stays at the bottom, in the former dot
+row. Zoom stops at its limits. Use the calendar arrows to browse dates.
 
 Screens and range can also be changed from the browser, without touching the
 glass.

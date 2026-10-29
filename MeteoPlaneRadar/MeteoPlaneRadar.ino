@@ -92,6 +92,7 @@
 #include "ScreenCalendar.h"
 #include "Calendar.h"
 #include "Notifications.h"
+#include "Navigation.h"
 #include "ScreenSettings.h"
 #include "Forecast.h"
 #include "NightMode.h"
@@ -121,7 +122,7 @@ Arduino_GFX* gfx = nullptr;
 //
 //  The action still waits for the fetch to end, but fires the instant it does.
 // =============================================================================
-enum PendKind : uint8_t { PEND_NONE = 0, PEND_SWIPE, PEND_SCREEN_SWIPE, PEND_LONG, PEND_TAP };
+enum PendKind : uint8_t { PEND_NONE = 0, PEND_SCREEN_SWIPE, PEND_ZOOM_SWIPE, PEND_LONG, PEND_TAP };
 static PendKind s_pendKind = PEND_NONE;
 static int      s_pendA = 0, s_pendB = 0;
 
@@ -188,13 +189,13 @@ static void touchPump() {
   const unsigned long dur = s_lastSeenMs - s_startMs;
   const bool smallMove = (abs(dx) < 60 && abs(dy) < 60);
   // Prefer the dominant axis so diagonal drags cannot trigger both actions.
-  const bool screenSwipe = abs(dy) >= 70 && abs(dx) <= 90 && abs(dy) > abs(dx) && dur <= 700;
+  const bool zoomSwipe = abs(dy) >= 70 && abs(dx) <= 90 && abs(dy) > abs(dx) && dur <= 700;
 
 #if TOUCH_DEBUG
   Serial.printf("TOUCH: start=(%d,%d) konec=(%d,%d) dx=%d dy=%d %lums -> %s\n",
                 s_startX, s_startY, s_lastX, s_lastY, dx, dy, (unsigned long)dur,
-                screenSwipe ? "swipe obrazovka"
-                  : (abs(dx) >= 70 && abs(dy) <= 90 && dur <= 700) ? "swipe rozsah"
+                zoomSwipe ? "swipe zoom"
+                  : (abs(dx) >= 70 && abs(dy) <= 90 && dur <= 700) ? "swipe obrazovka"
                   : (smallMove && dur >= 500) ? "dlouhy stisk"
                   : (smallMove) ? "klepnuti" : "ignorovano");
 #endif
@@ -202,11 +203,11 @@ static void touchPump() {
   // The most recent gesture wins. If one is still queued behind a long download
   // the user has changed their mind since, and acting on the stale one would be
   // the wrong answer arriving late.
-  if (screenSwipe) {
-    s_pendKind = PEND_SCREEN_SWIPE;
-    s_pendA = (dy < 0) ? +1 : -1;  // up = next, down = previous
+  if (zoomSwipe) {
+    s_pendKind = PEND_ZOOM_SWIPE;
+    s_pendA = (dy < 0) ? -1 : +1;  // up = zoom in, down = zoom out
   } else if (abs(dx) >= 70 && abs(dy) <= 90 && dur <= 700) {
-    s_pendKind = PEND_SWIPE;
+    s_pendKind = PEND_SCREEN_SWIPE;
     s_pendA = (dx < 0) ? +1 : -1;
   } else if (smallMove && dur >= 500) {
     s_pendKind = PEND_LONG;
@@ -262,6 +263,7 @@ static int visibleList(int* out) {
 }
 
 static void drawScreenDots() {
+  if (!Navigation_ScreenDotsVisible()) return;
   int vis[SCREEN_N];
   const int n = visibleList(vis);
   if (n <= 1) return;                    // one screen - a single dot says nothing
@@ -288,6 +290,7 @@ static void drawActive() {
   }
   drawScreenDots();
   Notifications_Draw();
+  Navigation_Drawn();
   gfx->flush();    // hand the framebuffer over; Canvas16 switches to the other
 }
 
@@ -300,6 +303,7 @@ static void enterActive() {
     case SCREEN_CALENDAR_I: ScreenCalendar_Enter(); break;
     case SCREEN_SETTINGS_I: ScreenSettings_Enter(); break;
   }
+  Navigation_ScreenChanged();
   drawActive();
 }
 
@@ -381,11 +385,14 @@ static void dispatchTouch() {
     return;
   }
   switch (kind) {
-    case PEND_SWIPE:
+    case PEND_ZOOM_SWIPE:
       // With the detail open a swipe just closes it, so you cannot accidentally
       // re-scale the map behind the panel.
       if (activeModalOpen()) { ScreenPlanes_CloseDetail(); drawActive(); }
-      else                   { activeChangeRange(a); drawActive(); }
+      else if (s_screen == SCREEN_PLANES_I || s_screen == SCREEN_METEO_I) {
+        activeChangeRange(a);
+        drawActive();
+      }
       s_touchPauseUntil = millis() + autoRotatePauseMs();
       break;
     case PEND_SCREEN_SWIPE:
@@ -701,6 +708,7 @@ void loop() {
   static unsigned long lastDraw = 0;
   bool wantDraw = activeTick();
   wantDraw = Notifications_Tick() || wantDraw;
+  wantDraw = Navigation_Tick() || wantDraw;
   if (wantDraw && millis() - lastDraw >= 80) {
     drawActive();
     lastDraw = millis();

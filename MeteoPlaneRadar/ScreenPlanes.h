@@ -17,7 +17,7 @@ bool ScreenPlanes_Tick();                    // true = needs a redraw
 // Short tap - select an aircraft / close the detail panel.
 bool ScreenPlanes_HandleTap(int x, int y);
 
-// Swipe - change the range (dir = +1 / -1).
+// Vertical swipe - change the range (dir = +1 / -1); stops at the limits.
 void ScreenPlanes_ChangeRange(int dir);
 
 // The current range as text ("25 km"), for the web UI.

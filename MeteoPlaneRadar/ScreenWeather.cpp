@@ -22,6 +22,7 @@
 #include "Config.h"
 #include "UI.h"
 #include "Layout.h"
+#include "Navigation.h"
 #include "Lang.h"
 #include "Status.h"
 #include "RainViewer.h"
@@ -408,7 +409,7 @@ static void drawOverlay() {
     }
   }
 
-  // Range + indicator dots (bottom centre) with a backing.
+  // Range readout at the bottom; temporary zoom steps on the right.
   char rbuf[16];
   if (isWholeCz())      snprintf(rbuf, sizeof(rbuf), "%s", T(S_WHOLE_CZ));
   else if (rvMode())    snprintf(rbuf, sizeof(rbuf), "%.0f %s",
@@ -416,13 +417,7 @@ static void drawOverlay() {
   else                  snprintf(rbuf, sizeof(rbuf), "%.0f %s", currentRange(), T(S_KM));
   gfx->fillRect(CX - 56, LY_RANGE - 4, 112, 24, C_BLACK);
   UI_TextCenteredIn(rbuf, 0, LCD_WIDTH, LY_RANGE, C_YELLOW, 2);
-  int dotGap = 16, dotY = LY_RANGE_DOTS, totalW = (RANGE_COUNT - 1) * dotGap;
-  int startX = CX - totalW / 2;
-  for (int i = 0; i < RANGE_COUNT; i++) {
-    int x = startX + i * dotGap;
-    if (i == s_rangeIdx) gfx->fillCircle(x, dotY, 3, C_YELLOW);
-    else                 gfx->drawCircle(x, dotY, 3, C_GRAY);
-  }
+  Navigation_DrawRangeDots(s_rangeIdx, RANGE_COUNT);
 }
 
 void ScreenWeather_RangeText(char* out, size_t cap) {
@@ -449,7 +444,12 @@ void ScreenWeather_Enter() {
 }
 
 void ScreenWeather_ChangeRange(int dir) {
-  s_rangeIdx = (s_rangeIdx + dir + RANGE_COUNT) % RANGE_COUNT;
+  int next = s_rangeIdx + dir;
+  if (next < 0) next = 0;
+  if (next >= RANGE_COUNT) next = RANGE_COUNT - 1;
+  Navigation_RangeChanged();
+  if (next == s_rangeIdx) return;
+  s_rangeIdx = next;
   Settings_SetMeteoRange(s_rangeIdx);   // remember across restarts (debounced)
   s_needRebuild = true;   // re-crop the frames on the next tick
   if (rvMode()) {
@@ -567,13 +567,13 @@ void ScreenWeather_Draw() {
   Layout_Begin();
 
   // Chrome owns its lines before the map draws a single city label.
-  Layout_ReserveBand(LY_DOTS - 6, 12);
+  if (Navigation_ScreenDotsVisible()) Layout_ReserveBand(LY_DOTS - 6, 12);
   Layout_ReserveBand(LY_STATUS - 3, 22);
   Layout_ReserveBand(LY_SUB, 22);            // frame dots
   Layout_ReserveBand(LY_LEGEND - 2, 12);     // frame time label
   Layout_ReserveBand(LY_NOTE - 2, 12);       // loading / stale note
   Layout_ReserveBand(LY_RANGE - 4, 24);
-  Layout_ReserveBand(LY_RANGE_DOTS - 6, 12);
+  Navigation_ReserveRangeDots(RANGE_COUNT);
   // The precipitation legend down the left-hand side. Not reserved when it is
   // switched off - otherwise turning it off would free the pixels but still
   // push the map labels away from them.

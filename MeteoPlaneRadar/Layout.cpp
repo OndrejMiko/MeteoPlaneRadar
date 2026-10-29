@@ -95,8 +95,7 @@ void Layout_SelfTest() {
     { "LY_LEGEND",     LY_LEGEND,        16 },
     { "LY_NOTE",       LY_NOTE,          10 },
     { "LY_RANGE",      LY_RANGE,         16 },
-    { "LY_RANGE_DOTS", LY_RANGE_DOTS - 5, 10 },
-    { "LY_FOOTER",     LY_FOOTER,        16 },
+    // LY_FOOTER is used on clock/settings only; those screens have no map range.
   };
   const int n = sizeof(B) / sizeof(B[0]);
   int clashes = 0;

@@ -21,3 +21,6 @@ c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoP
   MeteoPlaneRadar/Notifications.cpp tests/notifications.cpp -o "$test_build_dir/notifications"
 "$test_build_dir/notifications"
 python3 tests/chat_bridge.py
+c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoPlaneRadar \
+  MeteoPlaneRadar/Navigation.cpp tests/navigation.cpp -o "$test_build_dir/navigation"
+"$test_build_dir/navigation"

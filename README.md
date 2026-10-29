@@ -44,7 +44,7 @@ Odkazy se nevracejí na web ani do exportu; prázdné pole ponechá uložený od
 zaškrtnutí „Smazat uložený odkaz“ ho odstraní. Po obnově zálohy do nového zařízení
 odkazy zadejte znovu. Názvy, barvy a ostatní nastavení se zálohují.
 
-Na displeji přepínáte **Den/Měsíc**. Šipky a přejetí listují, datum v měsíci otevře
+Na displeji přepínáte **Den/Měsíc**. Šipky listují, datum v měsíci otevře
 agendu, **DNES** vrátí dnešní datum. Více než tři události se stránkují klepnutím
 na agendu. Jeden aktivní kalendář nemá barevné tečky ani popisky zdroje; při více
 kalendářích jsou odlišeny barvou a názvem.
@@ -120,12 +120,17 @@ nastavení.
 
 | Gesto | Akce |
 | --- | --- |
-| **Přejetí vlevo / vpravo** | změna rozsahu (letadla, meteoradar) |
-| **Přejetí nahoru** | následující obrazovka |
-| **Přejetí dolů** | předchozí obrazovka |
+| **Přejetí vlevo / vpravo** | následující / předchozí obrazovka |
+| **Přejetí nahoru na mapě** | přiblížení mapy |
+| **Přejetí dolů na mapě** | oddálení mapy |
 | **Krátké klepnutí** | výběr letadla / přepnutí den–noc na hodinách |
 | **Dlouhý stisk vlevo / vpravo** | předchozí / následující obrazovka |
 | **BOOT při startu (~3 s)** | tovární reset |
+
+Body obrazovek nahoře se zobrazí po přepnutí na 5 sekund. Ukazatel rozsahu
+vpravo na mapě se zobrazí při vstupu a při změně zoomu na 10 sekund. Údaj
+v kilometrech zůstává dole, na původním místě bodů rozsahu. Zoom na krajních
+hodnotách nepřeskakuje na opačný konec. Kalendářem se listuje jeho šipkami.
 
 Na obrazovce Nastavení se řádkem `Nahore` volí, **který světový směr je nahoře**
 na radaru letadel — tedy směr, kterým se díváte z okna. Meteoradar se záměrně
