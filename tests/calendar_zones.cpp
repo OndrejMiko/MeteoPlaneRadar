@@ -116,6 +116,46 @@ int main() {
                    event("DTSTART;TZID=Custom/Dates:20270329T090000\r\n"),
                utc(2027, 3, 1), utc(2027, 4, 1)) == CAL_PARSE_OK);
   assert(out[0].start == utc(2027, 3, 27, 8) && out[1].start == utc(2027, 3, 29, 7));
+  // Synthetic reproduction of iCloud's full history: pre-1900 LMT offsets
+  // used to invalidate an otherwise supported modern Pacific definition.
+  auto historical = eastern("Custom/Pacific");
+  size_t pos = 0;
+  while ((pos = historical.find("-0400", pos)) != std::string::npos) {
+    historical.replace(pos, 5, "-0700");
+    pos += 5;
+  }
+  pos = 0;
+  while ((pos = historical.find("-0500", pos)) != std::string::npos) {
+    historical.replace(pos, 5, "-0800");
+    pos += 5;
+  }
+  historical.insert(historical.find("BEGIN:STANDARD"),
+                    "BEGIN:STANDARD\r\nDTSTART:18500101T000000\r\nRDATE:18500101T000000\r\n"
+                    "TZOFFSETFROM:-075258\r\nTZOFFSETTO:-075258\r\nEND:STANDARD\r\n"
+                    "BEGIN:STANDARD\r\nDTSTART:18831118T120702\r\nRDATE:18831118T120702\r\n"
+                    "TZOFFSETFROM:-075258\r\nTZOFFSETTO:-0800\r\nEND:STANDARD\r\n");
+  assert(
+      parse(
+          historical +
+          event("DTSTART;TZID=Custom/Pacific:20261026T090000\r\nRRULE:FREQ=WEEKLY;COUNT=2\r\n")) ==
+      CAL_PARSE_OK);
+  assert(count == 2 && out[0].start == utc(2026, 10, 26, 16) &&
+         out[1].start == utc(2026, 11, 2, 17));
+  // Earlier timezone metadata does not expand the supported event date domain.
+  assert(parse(event("DTSTART:18831118T120702Z\r\n")) == CAL_PARSE_INVALID);
+  auto ancient = half;
+  ancient.replace(ancient.find("19700101"), 8, "16010101");
+  assert(parse(ancient + event("DTSTART;TZID=Custom/Nepal:20261024T100000\r\n")) == CAL_PARSE_OK);
+  assert(out[0].start == utc(2026, 10, 24, 4, 15));
+  // Historical UNTIL and generated rule dates use the same metadata-only bound.
+  auto historicalRule = ancient;
+  historicalRule.insert(historicalRule.find("END:VTIMEZONE"),
+                        "BEGIN:STANDARD\r\nDTSTART:18500331T020000\r\n"
+                        "RRULE:FREQ=YEARLY;UNTIL=18510330T000000Z;BYMONTH=3;BYDAY=-1SU\r\n"
+                        "TZOFFSETFROM:+0545\r\nTZOFFSETTO:+0545\r\nEND:STANDARD\r\n");
+  assert(parse(historicalRule + event("DTSTART;TZID=Custom/Nepal:20261024T100000\r\n")) ==
+         CAL_PARSE_OK);
+  assert(out[0].start == utc(2026, 10, 24, 4, 15));
   assert(CalendarIcs_WorkspaceSize() < 80 * 1024);
   std::cout << "VTIMEZONE aliases, annual DST, hemisphere, gaps/folds, offsets, limits and "
                "isolation passed\n";

@@ -46,7 +46,8 @@ odkazy zadejte znovu. Názvy, barvy a ostatní nastavení se zálohují.
 
 Podporované definice časových pásem `VTIMEZONE` se čtou přímo z odběru:
 standardní/letní čas, běžné roční přechody a explicitní data změn. Limity jsou
-8 pásem a 512 přechodů na pásmo, roky 1900–2100; složitější definice zůstanou
+8 pásem a 512 přechodů na pásmo. Historie pásem může začínat rokem 1600,
+události zůstávají v rozsahu 1900–2100; složitější definice zůstanou
 odmítnuté. Webový stav ukáže konkrétní `TZID`, není potřeba sdílet soukromý odkaz.
 Paměťový rozpočet kalendáře je přibližně 746 kB PSRAM.
 

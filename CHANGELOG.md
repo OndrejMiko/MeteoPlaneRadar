@@ -11,6 +11,22 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.8] - 2026-10-29
+
+### Opraveno
+
+- Ověřeno na skutečném iCloud odběru: obsahoval VTIMEZONE America/Los_Angeles
+  s historickým přechodem v roce 1883. Omezení data na rok 1900 tuto definici
+  zneplatnilo a blokovalo načtení celého kalendáře.
+- Historická metadata časových pásem se nyní čtou od roku 1600, včetně RDATE,
+  RRULE/UNTIL a posunů se sekundami. Rozsah dat samotných událostí zůstává
+  1900–2100; limity paměti a počtu přechodů zůstávají stejné.
+- Po opravě parser zpracoval všech 12 platných výskytů ve čtyřměsíčním okně;
+  začátky i konce odpovídaly nezávislému parseru. Zrušené události se nezobrazují.
+  Soukromý odkaz ani obsah událostí nejsou součástí testovacích dat v repozitáři.
+- Přidán syntetický regresní test historických definic a moderního opakování
+  přes změnu času. Ověřen build pro ESP32-S3 a host testy, nikoli fyzický panel.
+
 ## [0.7.7] - 2026-10-29
 
 ### Opraveno

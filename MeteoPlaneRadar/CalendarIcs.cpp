@@ -8,6 +8,10 @@
 
 namespace {
 constexpr int LINE = 1024, EXCEPTIONS = 256;
+// iCloud includes historical LMT transitions, even for modern events. Keep the
+// event date domain unchanged; only VTIMEZONE metadata uses the earlier bound.
+constexpr int ZONE_FIRST_YEAR = 1600;
+static_assert(sizeof(time_t) >= 8, "Calendar history requires 64-bit time_t");
 struct Date {
   int y = 0, m = 0, d = 0, h = 0, min = 0, s = 0;
   bool all = false, utc = false;
@@ -156,8 +160,9 @@ bool euZone(const char* z) {
     if (!strcmp(z, n)) return true;
   return false;
 }
-bool epoch(const Date& d, const char* zone, time_t& out, const Zones* zones = nullptr) {
-  if (d.y < 1900 || d.y > 2100 || d.m < 1 || d.m > 12 || d.d < 1 || d.d > dim(d.y, d.m) ||
+bool epoch(const Date& d, const char* zone, time_t& out, const Zones* zones = nullptr,
+           int firstYear = 1900) {
+  if (d.y < firstYear || d.y > 2100 || d.m < 1 || d.m > 12 || d.d < 1 || d.d > dim(d.y, d.m) ||
       d.h > 23 || d.min > 59 || d.s > 59)
     return false;
   const time_t naive = (time_t)civil(d.y, d.m, d.d) * 86400 + d.h * 3600 + d.min * 60 + d.s;
@@ -203,8 +208,8 @@ int digits(const char* s, int n) {
   }
   return v;
 }
-CalendarParseResult stamp(const char* s, const char* zone, Stamp& out,
-                          const Zones* zones = nullptr) {
+CalendarParseResult stamp(const char* s, const char* zone, Stamp& out, const Zones* zones = nullptr,
+                          int firstYear = 1900) {
   size_t n = strlen(s);
   if (n != 8 && n != 15 && n != 16) return CAL_PARSE_INVALID;
   Date d;
@@ -222,7 +227,7 @@ CalendarParseResult stamp(const char* s, const char* zone, Stamp& out,
   if (d.h < 0 || d.min < 0 || d.s < 0) return CAL_PARSE_INVALID;
   out.wall = d;
   snprintf(out.zone, sizeof(out.zone), "%s", zone);
-  if (!epoch(d, zone, out.epoch, zones))
+  if (!epoch(d, zone, out.epoch, zones, firstYear))
     return (*zone && !euZone(zone) && !d.utc && !d.all && strcmp(zone, "UTC") &&
             strcmp(zone, "Etc/UTC") && strcmp(zone, "GMT"))
                ? CAL_PARSE_TIMEZONE
@@ -280,7 +285,8 @@ bool ruleParse(const Raw& raw, Rule& r, bool observance = false, const Zones* zo
       if (!integer(v, r.count, 1, 100000)) return false;
     } else if (!strcmp(t, "UNTIL")) {
       Stamp u;
-      if (stamp(v, raw.start.zone, u, zones) != CAL_PARSE_OK) return false;
+      if (stamp(v, raw.start.zone, u, zones, observance ? ZONE_FIRST_YEAR : 1900) != CAL_PARSE_OK)
+        return false;
       r.until = u.epoch;
       if (u.wall.all) r.until += 86399;
     } else if (!strcmp(t, "WKST")) {
@@ -407,7 +413,7 @@ bool observance(Zone& z, const Raw& raw, int before, int after, void (*poll)()) 
       d.m = r.months[0];
       d.d = day;
       time_t wall;
-      if (!epoch(d, "UTC", wall)) return false;
+      if (!epoch(d, "UTC", wall, nullptr, ZONE_FIRST_YEAR)) return false;
       if (wall <= raw.start.epoch) continue;
       if (r.until && wall - before > r.until) continue;
       if (!matches(d, civil(y, d.m, day), raw, r)) continue;
@@ -487,8 +493,8 @@ CalendarParseResult readZones(const char* data, size_t len, Work& w, void (*poll
     } else if (!strcmp(w.line, "TZOFFSETTO")) {
       hasTo = offsetValue(value, after);
     } else if (!strcmp(w.line, "DTSTART")) {
-      if (stamp(value, "UTC", w.raw.start) != CAL_PARSE_OK || w.raw.start.wall.all ||
-          w.raw.start.wall.utc)
+      if (stamp(value, "UTC", w.raw.start, nullptr, ZONE_FIRST_YEAR) != CAL_PARSE_OK ||
+          w.raw.start.wall.all || w.raw.start.wall.utc)
         zone->valid = false;
       else
         w.raw.hasStart = true;
@@ -501,8 +507,8 @@ CalendarParseResult readZones(const char* data, size_t len, Work& w, void (*poll
       char* save = nullptr;
       for (char* v = strtok_r(value, ",", &save); v; v = strtok_r(nullptr, ",", &save)) {
         Stamp date;
-        if (w.raw.extraN == 64 || stamp(v, "UTC", date) != CAL_PARSE_OK || date.wall.all ||
-            date.wall.utc) {
+        if (w.raw.extraN == 64 || stamp(v, "UTC", date, nullptr, ZONE_FIRST_YEAR) != CAL_PARSE_OK ||
+            date.wall.all || date.wall.utc) {
           zone->valid = false;
           break;
         }

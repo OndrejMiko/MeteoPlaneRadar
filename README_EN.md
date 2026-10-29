@@ -176,7 +176,8 @@ Re-enter links after restoring a backup on another device.
 
 Supported VTIMEZONE definitions are read from the feed: standard/daylight
 observances, common yearly transition rules and explicit transition dates.
-Limits: 8 zones, 512 transitions per zone, years 1900–2100. Unsupported definitions
+Limits: 8 zones, 512 transitions per zone. Zone history may begin in 1600;
+events retain their 1900–2100 date range. Unsupported definitions
 remain errors; web status now reports the specific TZID without exposing the
 subscription URL. Calendar storage is bounded at approximately 746 kB PSRAM.
 
