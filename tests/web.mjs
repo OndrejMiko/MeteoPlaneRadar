@@ -88,3 +88,40 @@ assert(requests.some(r=>r.url==='/api/notifications/test'));
 requests.length=0;elements.get('ntSeconds').value='3';
 await run('testNotification()');assert.equal(requests.length,0);
 console.log('Web languages, config, pairing download, secret handling and notification controls passed');
+
+// A saved URL does not imply an enabled screen. The dedicated action must
+// enable Calendar without overwriting unrelated form fields or reading secrets.
+run('CFG.screens={clock:true,calendar:false}; CFG.calendars=[{name:"Rodina",enabled:true,hasUrl:true,color:1535}]; calendarLabels()');
+assert.equal(elements.get('calScreenState').textContent,run('D[L].calScreenOff'));
+for(let i=0;i<3;i++){
+ elements.get('cal'+i+'Url').value='';elements.get('cal'+i+'Clear').checked=false;
+ elements.get('cal'+i+'On').checked=i===0;
+}
+requests.length=0;
+await run('saveCalendars()');
+const activation=JSON.parse(requests[0].options.body);
+assert.equal(requests[0].url,'/api/config');
+assert.deepEqual(activation.screens,{calendar:true});
+assert(!('lat' in activation)&&!('notifications' in activation));
+assert.equal(activation.calendars[0].url,'');
+assert.equal(run('CFG.calendars[0].hasUrl'),true);
+assert.equal(elements.get('sCalendar').checked,true);
+assert.equal(elements.get('calScreenState').textContent,run('D[L].calScreenOn'));
+assert.equal(requests.length,1); // restart pending: no refresh/status race
+// With an active screen, persist first, then refresh the saved subscription.
+requests.length=0;
+context.fetch=async(url,options)=>{requests.push({url,options});return{ok:true,json:async()=>({restart:false,calendarSources:[]})};};
+await run('saveCalendars()');
+assert.deepEqual(requests.map(r=>r.url),['/api/config','/api/calendar/refresh','/api/status']);
+// Failed validation must preserve the entered private URL and off state.
+run('CFG.screens.calendar=false');
+elements.get('cal0Url').value='webcal://example.test/private';
+context.fetch=async()=>({ok:false,status:400,json:async()=>({error:'calendarUrl'})});
+await run('saveCalendars()');
+assert.equal(elements.get('cal0Url').value,'webcal://example.test/private');
+assert.equal(run('CFG.screens.calendar'),false);
+// No source means no misleading successful activation.
+requests.length=0;elements.get('cal0Url').value='';elements.get('cal0Clear').checked=true;
+context.fetch=async(...args)=>{requests.push(args);throw Error('should not request');};
+await run('saveCalendars()');assert.equal(requests.length,0);
+console.log('Calendar activation, saved URL reuse, restart handling and failed saves passed');

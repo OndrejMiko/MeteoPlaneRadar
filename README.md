@@ -44,6 +44,10 @@ Odkazy se nevracejí na web ani do exportu; prázdné pole ponechá uložený od
 zaškrtnutí „Smazat uložený odkaz“ ho odstraní. Po obnově zálohy do nového zařízení
 odkazy zadejte znovu. Názvy, barvy a ostatní nastavení se zálohují.
 
+Na kartě **Kalendář** použijte **Uložit a zapnout kalendář**. Uložený odkaz sám
+o sobě nezapíná obrazovku; její stav ukazuje tato karta. Máte-li adresu již uloženou,
+není nutné ji zadávat znovu. Při zapnutí se zařízení může restartovat.
+
 Na displeji přepínáte **Den/Měsíc**. Šipky listují, datum v měsíci otevře
 agendu, **DNES** vrátí dnešní datum. Více než tři události se stránkují klepnutím
 na agendu. Jeden aktivní kalendář nemá barevné tečky ani popisky zdroje; při více

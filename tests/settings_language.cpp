@@ -87,5 +87,21 @@ int main() {
   cal["calendars"][0]["url"]="";cal["calendars"][0]["clearUrl"]=true;
   Settings_FromJson(cal.as<JsonObjectConst>());assert(Settings_CalendarCount()==0);
   cal["calendarRefresh"]=0;assert(Settings_ValidateCalendarJson(cal.as<JsonObjectConst>()));
-  std::cout << "Settings migration, backup and language tests passed\n";
+
+  // The calendar activation request reuses the private URL and persists the
+  // screen bit through a reboot, without modifying other enabled screens.
+  Settings_ClearAll(); Settings_Begin();
+  JsonDocument activation;
+  activation["calendars"][0]["url"]="webcal://example.test/private.ics";
+  activation["calendars"][0]["enabled"]=true;
+  assert(Settings_FromJson(activation.as<JsonObjectConst>()));
+  assert(!Settings_ScreenEnabled(SCREEN_CALENDAR_I));
+  activation["calendars"][0]["url"]="";
+  activation["screens"]["calendar"]=true;
+  assert(Settings_FromJson(activation.as<JsonObjectConst>()));
+  Settings_Begin();
+  assert(Settings_ScreenEnabled(SCREEN_CALENDAR_I));
+  assert(Settings_ScreenEnabled(SCREEN_PLANES_I));
+  assert(!strcmp(Settings_CalendarSource(0).url,"https://example.test/private.ics"));
+  std::cout << "Settings migration, backup, calendar activation and language tests passed\n";
 }

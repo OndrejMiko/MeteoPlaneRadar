@@ -174,6 +174,10 @@ URLs are write-only and omitted from configuration responses and backups. Blank
 URL fields preserve saved links; the explicit delete checkbox removes them.
 Re-enter links after restoring a backup on another device.
 
+Use **Save and enable calendar** on the Calendar tab to save subscriptions and
+enable the screen together. A previously saved URL can be reused; enabling the
+screen may restart the device.
+
 On the display choose Day/Month, use arrows to browse, tap a date to
 open its agenda, or TODAY to return. Tap an agenda with more than three events to
 page through it. Source dots, names and a legend appear only with multiple enabled

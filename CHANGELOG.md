@@ -11,6 +11,20 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.6] - 2026-10-29
+
+### Opraveno
+
+- Karta Kalendář nyní výslovně ukazuje, zda je obrazovka zapnutá. Samotné zadání
+  ICS adresy dosud nezapínalo samostatnou obrazovku, takže se odběr nestahoval
+  a tlačítko dálkového ovládání zůstávalo nedostupné i po restartu.
+- Nové tlačítko „Uložit a zapnout kalendář“ společně uloží odběry a povolí
+  obrazovku. Použije i již uloženou tajnou adresu, bez nutnosti ji znovu zadávat.
+  Nemění ostatní obrazovky ani neuloženou polohu; při potřebném restartu
+  nezahajuje další požadavky. Při již aktivní obrazovce obnoví uložená data.
+- Doplněny nápovědy ve všech třech jazycích a regresní testy zapnutí, chybného
+  uložení, zachování tajných adres a opětovného načtení.
+
 ## [0.7.5] - 2026-10-29
 
 ### Změněno

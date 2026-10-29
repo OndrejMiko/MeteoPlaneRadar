@@ -225,6 +225,8 @@ td:first-child{color:var(--mut);width:50%}
  <div class="card">
   <h2 data-i18n="scrCalendar">Kalendář</h2>
   <p class="hint" data-i18n="calIntro"></p>
+  <p class="hint" id="calScreenState"></p>
+  <button type="button" onclick="saveCalendars()" data-i18n="calSaveEnable"></button>
   <div class="row"><label for="calendarView" data-i18n="calView"></label><select id="calendarView"><option value="0" data-i18n="calDay"></option><option value="1" data-i18n="calMonth"></option></select></div>
   <div class="row"><label for="calendarRefresh" data-i18n="calRefresh"></label><input id="calendarRefresh" type="number" min="5" max="1440" value="15"></div>
   <h3><span data-i18n="calSource"></span> 1</h3>
@@ -504,6 +506,9 @@ const D={
 Object.assign(D.en,{"ntTitle": "Notifications", "ntIntro": "Compact banner above every screen. Tap for details; the large X dismisses the message only on this display.", "ntEnabled": "Enable notifications", "ntSeconds": "Banner duration (seconds)", "ntTimeoutHint": "0 = until closed, otherwise 5–120 s. After timeout, messages stay behind the count badge. Details stay open until dismissed.", "ntTest": "Save and show a test", "ntPair": "Pair bridge / download configuration", "ntPairHint": "Enables notifications and rotates the pairing key. Previous bridges stop working. Keep the downloaded file private; it is sent over your home LAN. If set, enter the current admin password on System first.", "ntStep1": "Run the included Python 3 bridge on a computer or Raspberry Pi in the same LAN. It must stay running. No Python packages are needed.", "ntStep2": "In Google Cloud enable Google Chat API, configure the OAuth consent screen (add your account as a test user), create an OAuth client of type Desktop app and download its JSON as client_secret.json.", "ntStep3": "Download pairing configuration below. In the repository folder run the setup command. A browser opens for Google sign-in; select Chat spaces in the terminal.", "ntStep4": "Run the second command and leave it running. Then use the test button here. Save changes with the button below.", "ntLimit": "Google documents this API for Workspace accounts; availability depends on your account and administrator. Incoming Chat webhooks cannot receive messages. The bridge reads new text and attachment notices, not message history or edits. Up to 6 pending messages, 1024 UTF-8 bytes each; closing does not mark Chat messages read. Delivery may wait during radar downloads. Pairing keys and Google tokens are excluded from backups.", "ntPaired": "Bridge paired", "ntUnpaired": "Bridge not paired", "ntBridge": "Bridge contact (s ago; −1 = none)", "ntQueue": "Pending", "ntMemory": "Notification PSRAM"});
 Object.assign(D.sk,{"ntTitle": "Notifikácie", "ntIntro": "Kompaktný banner nad každou obrazovkou. Ťuknutie otvorí detail; veľký krížik zavrie správu iba na displeji.", "ntEnabled": "Zapnúť notifikácie", "ntSeconds": "Trvanie bannera (sekundy)", "ntTimeoutHint": "0 = do zatvorenia, inak 5–120 s. Po uplynutí času zostanú správy pod odznakom s počtom. Detail zostáva otvorený do zatvorenia.", "ntTest": "Uložiť a zobraziť skúšku", "ntPair": "Spárovať most / stiahnuť konfiguráciu", "ntPairHint": "Zapne notifikácie a vymení párovací kľúč. Predchádzajúci most prestane fungovať. Stiahnutý súbor uchovajte súkromne; prenáša sa cez domácu LAN. Ak máte heslo správcu, najprv ho zadajte na karte Systém.", "ntStep1": "Priložený most pre Python 3 spustite na počítači alebo Raspberry Pi v rovnakej LAN. Musí zostať spustený. Netreba inštalovať balíčky Pythonu.", "ntStep2": "V Google Cloud zapnite Google Chat API, nastavte súhlas OAuth (pridajte svoj účet medzi testovacích používateľov), vytvorte OAuth klienta typu Desktop app a stiahnite JSON ako client_secret.json.", "ntStep3": "Nižšie stiahnite párovaciu konfiguráciu. V priečinku repozitára spustite príkaz setup. Otvorí sa prehliadač na prihlásenie ku Googlu; v termináli vyberiete priestory Chatu.", "ntStep4": "Spustite druhý príkaz a nechajte ho bežať. Potom tu použite skúšobné tlačidlo. Zmeny uložte tlačidlom dole.", "ntLimit": "Google dokumentuje toto API pre účty Workspace; dostupnosť závisí od účtu a správcu. Prichádzajúci webhook Chatu nedokáže prijímať správy. Most číta nové texty a oznámenia o prílohách, nie históriu ani úpravy. Najviac 6 čakajúcich správ, každá 1024 bajtov UTF-8; zatvorenie neoznačí správu v Chate ako prečítanú. Počas sťahovania radaru môže doručenie chvíľu čakať. Párovacie kľúče a tokeny Googlu nie sú v zálohách.", "ntPaired": "Most spárovaný", "ntUnpaired": "Most ešte nie je spárovaný", "ntBridge": "Kontakt mosta (pred s; −1 = žiadny)", "ntQueue": "Čakajúce správy", "ntMemory": "PSRAM notifikácií"});
 Object.assign(D.cs,{"ntTitle": "Notifikace", "ntIntro": "Kompaktní banner nad každou obrazovkou. Klepnutí otevře detail; velký křížek zavře zprávu pouze na displeji.", "ntEnabled": "Zapnout notifikace", "ntSeconds": "Trvání banneru (sekundy)", "ntTimeoutHint": "0 = do zavření, jinak 5–120 s. Po uplynutí času zůstanou zprávy pod odznakem s počtem. Detail zůstává otevřený do zavření.", "ntTest": "Uložit a zobrazit test", "ntPair": "Spárovat most / stáhnout konfiguraci", "ntPairHint": "Zapne notifikace a vymění párovací klíč. Předchozí most přestane fungovat. Stažený soubor uchovejte soukromě; přenáší se přes domácí LAN. Máte-li heslo správce, nejprve jej vyplňte na kartě Systém.", "ntStep1": "Přiložený most pro Python 3 spusťte na počítači nebo Raspberry Pi ve stejné LAN. Musí zůstat spuštěný. Není třeba instalovat balíčky Pythonu.", "ntStep2": "V Google Cloud zapněte Google Chat API, nastavte souhlas OAuth (přidejte svůj účet mezi testovací uživatele), vytvořte OAuth klienta typu Desktop app a stáhněte JSON jako client_secret.json.", "ntStep3": "Níže stáhněte párovací konfiguraci. Ve složce repozitáře spusťte příkaz setup. Otevře se prohlížeč pro přihlášení ke Googlu; v terminálu vyberete prostory Chatu.", "ntStep4": "Spusťte druhý příkaz a nechte jej běžet. Potom zde použijte testovací tlačítko. Změny uložte tlačítkem dole.", "ntLimit": "Google dokumentuje toto API pro účty Workspace; dostupnost závisí na účtu a správci. Příchozí webhook Chatu neumí přijímat zprávy. Most čte nové texty a oznámení o přílohách, ne historii ani úpravy. Nejvýše 6 čekajících zpráv, každá 1024 bajtů UTF-8; zavření neoznačí zprávu v Chatu jako přečtenou. Během stahování radaru může doručení chvíli čekat. Párovací klíče a tokeny Googlu nejsou v zálohách.", "ntPaired": "Most spárovaný", "ntUnpaired": "Most ještě není spárovaný", "ntBridge": "Kontakt mostu (před s; −1 = žádný)", "ntQueue": "Čekající zprávy", "ntMemory": "PSRAM notifikací"});
+Object.assign(D.cs,{"calSaveEnable": "Uložit a zapnout kalendář", "calScreenOff": "Obrazovka Kalendář je vypnutá. Samotné uložení odkazu ji nezapne. Tlačítko „Uložit a zapnout kalendář“ uloží odběry a zpřístupní obrazovku.", "calScreenOn": "Obrazovka Kalendář je zapnutá. Stav stahování najdete pod jednotlivými odběry.", "calNeedSource": "Zadejte odkaz a zapněte alespoň jeden odběr, případně použijte již uložený odkaz.", "calEnabledSaved": "Kalendář uložen a zapnut. Při změně obrazovek se zařízení restartuje; po chvíli obnovte stránku.", "calSaveHint": "Odběry i obrazovku zapnete tlačítkem Uložit a zapnout kalendář nahoře. Obnovit uložené kalendáře používá pouze již uložené odkazy. Máte-li heslo správce, vyplňte jej na kartě Systém."});
+Object.assign(D.en,{"calSaveEnable": "Save and enable calendar", "calScreenOff": "The Calendar screen is disabled. Saving a URL alone does not enable it. Save and enable calendar saves subscriptions and enables the screen.", "calScreenOn": "The Calendar screen is enabled. Download status appears below each subscription.", "calNeedSource": "Enter a URL and enable at least one subscription, or use a saved URL.", "calEnabledSaved": "Calendar saved and enabled. A change of enabled screens restarts the device; reload this page shortly.", "calSaveHint": "Use Save and enable calendar above to save subscriptions and enable the screen. Refresh saved calendars only uses URLs already saved. If an admin password is set, enter it on System."});
+Object.assign(D.sk,{"calSaveEnable": "Uložiť a zapnúť kalendár", "calScreenOff": "Obrazovka Kalendár je vypnutá. Samotné uloženie odkazu ju nezapne. Tlačidlo „Uložiť a zapnúť kalendár“ uloží odbery a sprístupní obrazovku.", "calScreenOn": "Obrazovka Kalendár je zapnutá. Stav sťahovania nájdete pod jednotlivými odbermi.", "calNeedSource": "Zadajte odkaz a zapnite aspoň jeden odber, prípadne použite už uložený odkaz.", "calEnabledSaved": "Kalendár uložený a zapnutý. Pri zmene obrazoviek sa zariadenie reštartuje; po chvíli obnovte stránku.", "calSaveHint": "Odbery aj obrazovku zapnete tlačidlom Uložiť a zapnúť kalendár vyššie. Obnoviť uložené kalendáre používa iba už uložené odkazy. Ak máte heslo správcu, vyplňte ho na karte Systém."});
 let L="cs", CFG={}, TAB="tCtl";
 const $=id=>document.getElementById(id);
 
@@ -673,15 +678,41 @@ function body(){return{lat:parseFloat($("lat").value),lon:parseFloat($("lon").va
  password:$("adminPass").value,newPassword:$("newPass").value,
  notifications:{enabled:$("ntEnabled").checked,seconds:+$("ntSeconds").value},
  calendarView:+$("calendarView").value,calendarRefresh:+$("calendarRefresh").value,
- calendars:[0,1,2].map(i=>({name:$("cal"+i+"Name").value,enabled:$("cal"+i+"On").checked,color:hexToRgb565($("cal"+i+"Color").value),url:$("cal"+i+"Url").value.trim(),clearUrl:$("cal"+i+"Clear").checked})),
+ calendars:calendarSources(),
  screens:{clock:$("sClock").checked,planes:$("sPlanes").checked,meteo:$("sMeteo").checked,
   forecast:$("sForecast").checked,calendar:$("sCalendar").checked}};}
 
+function calendarSources(){return [0,1,2].map(i=>({name:$("cal"+i+"Name").value,enabled:$("cal"+i+"On").checked,color:hexToRgb565($("cal"+i+"Color").value),url:$("cal"+i+"Url").value.trim(),clearUrl:$("cal"+i+"Clear").checked}));}
 function calendarLabels(){
+ const enabled=!!(CFG.screens||{}).calendar;
+ $("calScreenState").textContent=enabled?D[L].calScreenOn:D[L].calScreenOff;
+ $("calScreenState").className="hint "+(enabled?"ok":"warn");
  for(let i=0;i<3;i++){
   const c=(CFG.calendars||[])[i]||{};
   $("cal"+i+"Url").placeholder=c.hasUrl?D[L].calConfigured:D[L].calMissing;
  }
+}
+function rememberCalendars(calendars){
+ CFG.calendars=calendars.map((c,i)=>({name:c.name,color:c.color,enabled:c.enabled,
+   hasUrl:!!c.url||(!c.clearUrl&&!!((CFG.calendars||[])[i]||{}).hasUrl)}));
+ for(let i=0;i<3;i++){$("cal"+i+"Url").value="";$("cal"+i+"Clear").checked=false;}
+}
+async function saveCalendars(){
+ try{
+  const calendars=calendarSources();
+  if(!calendars.some((c,i)=>c.enabled&&(c.url||(!c.clearUrl&&!!((CFG.calendars||[])[i]||{}).hasUrl)))){
+   msg(D[L].calNeedSource,"warn");return;
+  }
+  const payload={calendars,calendarView:+$("calendarView").value,calendarRefresh:+$("calendarRefresh").value,
+   screens:{calendar:true},password:$("adminPass").value};
+  const r=await fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  const result=await r.json();
+  if(!r.ok){msg(D[L].failed+" ("+(result.error||r.status)+")","err");return;}
+  rememberCalendars(calendars);
+  CFG.screens={...(CFG.screens||{}),calendar:true};$("sCalendar").checked=true;
+  calendarLabels();msg(result.restart?D[L].calEnabledSaved:D[L].saved,"ok");
+  if(!result.restart){await refreshCalendars();await status();}
+ }catch(e){msg(D[L].failed,"err");}
 }
 async function refreshCalendars(){
  const r=await fetch("/api/calendar/refresh",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:$("adminPass").value})});
@@ -721,9 +752,8 @@ async function save(){
   const r=await fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
   const result=await r.json();
   if(!r.ok){msg(D[L].failed+" ("+r.status+")","err");return;}
-  CFG.calendars=payload.calendars.map((c,i)=>({name:c.name,color:c.color,enabled:c.enabled,
-   hasUrl:!!c.url||(!c.clearUrl&&!!((CFG.calendars||[])[i]||{}).hasUrl)}));
-  for(let i=0;i<3;i++){$("cal"+i+"Url").value="";$("cal"+i+"Clear").checked=false;}
+  rememberCalendars(payload.calendars);
+  CFG.screens=payload.screens;
   $("newPass").value="";
   setLang($("uiLang").value);
   msg(D[L].saved,"ok");
