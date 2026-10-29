@@ -111,8 +111,11 @@ jas, vzhled hodin, filtry letadel a upozornění na nouzové squawky. Je tam i
 dálkové ovládání (přepínání obrazovek a rozsahu bez dotyku displeje), stavová
 stránka, export a import nastavení a aktualizace firmwaru.
 
-Většina položek se **ukládá hned po změně**. Tlačítko Uložit zůstává jen pro
-polohu, výběr obrazovek a zdroj meteoradaru — ty vyžadují restart zařízení.
+Většina položek se **ukládá hned po změně**. Pevná horní lišta vpravo nabízí
+uložení polohy, obrazovek, kalendářů, notifikací a systémových změn. Na kartách
+Vzhled a Letadla ukazuje průběžné ukládání. Změny polohy, obrazovek a zdroje
+meteoradaru vyžadují restart zařízení. Sekce se přepínají podtrženými záložkami;
+na mobilu lze jejich řádek posouvat vodorovně.
 
 ### Heslo
 

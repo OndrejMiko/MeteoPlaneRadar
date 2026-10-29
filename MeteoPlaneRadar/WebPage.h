@@ -30,78 +30,78 @@ static const char PAGE_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
 <meta name="color-scheme" content="dark">
 <title>MeteoPlaneRadar</title>
 <style>
-:root{--bg:#12161c;--card:#1b212b;--line:#2b3441;--fg:#e8edf4;--mut:#93a1b3;--acc:#37c0e8;--ok:#3fbf7f;--warn:#e8a33d;--err:#e05561}
+:root{--bg:#11161d;--card:#1a222c;--line:#303c49;--fg:#edf2f7;--mut:#a0adbc;--acc:#49c6e8;--ok:#68d49a;--warn:#ffc36b;--err:#ff8590;--header:88px}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-text-size-adjust:100%}
-header{padding:12px 16px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-h1{font-size:18px;margin:0}
-.ver{color:var(--mut);font-size:13px}
-nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:0 12px 10px;border-bottom:1px solid var(--line);
- position:sticky;top:0;background:var(--bg);z-index:5;scrollbar-width:none}
-nav.tabs::-webkit-scrollbar{display:none}
-nav.tabs button{background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:999px;
- padding:8px 15px;white-space:nowrap;font-weight:500;font-size:14px;cursor:pointer}
-nav.tabs button.on{background:var(--acc);color:#08202a;border-color:var(--acc);font-weight:600}
-.wrap{max-width:820px;margin:0 auto;padding:16px 16px 96px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
-.card h2{font-size:15px;margin:0 0 10px;color:var(--acc)}
-.row{display:flex;align-items:center;gap:10px;margin:8px 0;flex-wrap:wrap}
-.row label{flex:1 1 200px;min-width:150px}
-input[type=text],input[type=password],input[type=number],select{background:#0e1218;color:var(--fg);
- border:1px solid var(--line);border-radius:6px;padding:8px 9px;min-width:110px;font-size:15px}
-input[type=color]{background:#0e1218;border:1px solid var(--line);border-radius:6px;height:38px;width:60px;padding:2px}
-input[type=range]{flex:1 1 160px}
-input[type=checkbox]{width:20px;height:20px;accent-color:var(--acc)}
-button{background:var(--acc);color:#08202a;border:0;border-radius:7px;padding:10px 14px;font-weight:600;
- cursor:pointer;font-size:15px}
-button.sec{background:#39434f;color:var(--fg)}
-button.danger{background:var(--err);color:#fff}
-button:disabled{cursor:default}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
-.chk{display:flex;align-items:center;gap:8px}
-.hint{color:var(--mut);font-size:13px;margin:8px 0 0}
-.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);
- padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:12px;align-items:center;z-index:6}
-#msg{font-size:14px}
-.ok{color:var(--ok)}.err{color:var(--err)}.warn{color:var(--warn)}
-table{width:100%;border-collapse:collapse;font-size:14px}
-td{padding:5px 0;border-bottom:1px solid var(--line)}
-td:first-child{color:var(--mut);width:50%}
-.hide{display:none}
-#scrBtns button{padding:8px 12px;font-size:14px}
-@media (max-width:520px){
-  .row label{flex:1 1 100%}
-  .row input[type=text],.row input[type=password],.row input[type=number],.row select{flex:1 1 100%}
+body{margin:0;padding-top:var(--header);background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-text-size-adjust:100%}
+header{position:fixed;inset:0 0 auto;background:var(--bg);border-bottom:1px solid var(--line);z-index:10}
+.header-inner{max-width:1080px;height:var(--header);margin:auto;padding:16px 24px;display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:24px}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+h1{font-size:20px;letter-spacing:-.4px;margin:0}.ver{color:var(--mut);font-size:12px}
+#uiLang{font-size:13px;min-width:128px}.bar{display:flex;justify-content:flex-end;align-items:center;min-width:176px}
+#saveButton{min-height:44px}.save-mode{color:var(--mut);font-size:13px;text-align:right;max-width:190px}
+nav.tabs{display:flex;gap:24px;overflow-x:auto;padding:0 max(24px,calc((100% - 1032px)/2));border-bottom:1px solid var(--line);position:sticky;top:var(--header);background:var(--bg);z-index:9;scrollbar-width:thin}
+nav.tabs button{flex:none;background:transparent;color:var(--mut);border:0;border-bottom:3px solid transparent;border-radius:0;padding:17px 0 14px;white-space:nowrap;font-weight:500;font-size:14px;cursor:pointer}
+nav.tabs button:hover{color:var(--fg)}nav.tabs button.on{color:var(--acc);border-bottom-color:var(--acc)}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 24px 64px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px;margin-bottom:24px}
+.card h2{font-size:19px;letter-spacing:-.2px;margin:0 0 24px;color:var(--fg)}
+h3{font-size:15px;margin:0 0 16px}.row{display:flex;align-items:center;gap:16px;margin:16px 0;flex-wrap:wrap}
+.row label{flex:1 1 260px;min-width:0}.row>input:not([type=checkbox]):not([type=color]):not([type=range]),.row>select{width:340px;max-width:100%;flex:0 1 340px}
+input[type=text],input[type=password],input[type=number],select{background:#111820;color:var(--fg);border:1px solid #435365;border-radius:7px;padding:10px 12px;min-width:0;min-height:44px;font:inherit}
+input[type=color]{background:#111820;border:1px solid #435365;border-radius:7px;height:44px;width:64px;padding:4px}
+input[type=range]{flex:0 1 296px;accent-color:var(--acc)}.row>input[type=range]+span{width:28px;text-align:right}.row>input[type=color]{margin-right:276px}input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--acc);margin:0}
+button{background:var(--acc);color:#08202a;border:1px solid transparent;border-radius:7px;padding:10px 16px;font-weight:600;cursor:pointer;font-size:14px;min-height:44px}
+button.sec{background:#293541;border-color:#435365;color:var(--fg)}button.danger{background:transparent;border-color:var(--err);color:var(--err)}button:disabled{cursor:default;opacity:.5}
+:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.chk{display:flex;align-items:center;gap:12px;min-height:44px}.grid .chk{background:#111820;padding:12px;border:1px solid var(--line);border-radius:7px}
+.hint{color:var(--mut);font-size:13px;margin:8px 0 0;max-width:76ch}.card>.hint:first-of-type{margin-bottom:20px}
+.source{min-width:0;margin:28px 0;padding:20px;border:1px solid var(--line);border-radius:8px}.source legend{padding:0 8px;font-weight:600}.source>.chk{margin-top:4px}
+.help{margin-top:28px;padding-top:24px;border-top:1px solid var(--line)}.help .hint{margin:12px 0}.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;padding-top:24px;margin-top:28px;border-top:1px solid var(--line)}.actions .danger{grid-column:1/-1;justify-self:start;margin-top:12px}
+#msg{position:fixed;z-index:11;right:max(24px,calc((100% - 1032px)/2));top:calc(var(--header) + 64px);max-width:min(440px,calc(100vw - 32px));padding:12px 16px;border:1px solid var(--line);border-radius:8px;background:#202c38;box-shadow:0 8px 30px #0006;font-size:14px;overflow-wrap:anywhere}
+#msg:empty{display:none}.ok{color:var(--ok)}.err{color:var(--err)}.warn{color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:14px}td{padding:12px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}td:first-child{color:var(--mut);width:48%;padding-right:20px}tr:last-child td{border:0}
+a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-radius:7px;padding:16px;font-size:12px}li+li{margin-top:12px}
+.hide{display:none!important}#scrBtns{gap:8px;margin-bottom:24px}#scrBtns button{flex:1 1 120px}#rangeNow{font-variant-numeric:tabular-nums}.step-group{display:flex;align-items:center;gap:12px}.remote-steps{justify-content:space-between;border-top:1px solid var(--line);padding-top:20px}
+@media(max-width:680px){
+ :root{--header:124px}.header-inner{padding:12px 16px;grid-template-columns:1fr auto;gap:8px 12px}.brand{grid-column:1/-1;gap:8px}h1{font-size:18px}#uiLang{width:132px}.bar{min-width:0}#saveButton{font-size:13px;padding:10px 12px}.save-mode{font-size:12px;max-width:175px}
+ nav.tabs{gap:24px;padding:0 16px}.wrap{padding:24px 16px 40px}.card{padding:20px;margin-bottom:20px}.card h2{font-size:18px;margin-bottom:20px}
+ .row{gap:8px;margin:20px 0}.row label{flex:1 1 100%}.row>input:not([type=checkbox]):not([type=color]):not([type=range]),.row>select{width:100%;flex-basis:100%}.row input[type=range]{flex:1 1 70%}.row>input[type=color]{margin-right:0}.source{padding:16px;margin:24px 0}.grid{grid-template-columns:1fr 1fr;gap:8px}.grid .chk{font-size:13px;padding:10px;gap:8px}
+ #msg{right:16px}.remote-steps{gap:10px}td:first-child{width:46%}
 }
 </style></head><body>
-<header>
-  <h1>MeteoPlaneRadar</h1><span class="ver" id="ver"></span>
-  <span style="flex:1"></span>
-  <select id="uiLang" onchange="setLang(this.value)"><option value="0">Čeština</option><option value="1">English</option><option value="2">Slovenčina</option></select>
-</header>
+<header><div class="header-inner">
+  <div class="brand"><h1>MeteoPlaneRadar</h1><span class="ver" id="ver"></span></div>
+  <select id="uiLang" aria-label="Language" onchange="setLang(this.value)"><option value="0">Čeština</option><option value="1">English</option><option value="2">Slovenčina</option></select>
+  <div class="bar" id="saveBar">
+    <span class="save-mode hide" id="saveMode" data-i18n="autoMode"></span>
+    <button type="button" id="saveButton" class="hide" onclick="commitSettings()" data-i18n="save">Uložit nastavení</button>
+  </div>
+</div></header>
+<div id="msg" role="status" aria-live="polite" aria-atomic="true"></div>
 
-<nav class="tabs" id="tabs">
-  <button data-tab="tCtl"    class="on" data-i18n="tabCtl">Ovládání</button>
-  <button data-tab="tLoc"    data-i18n="tabLoc">Poloha</button>
-  <button data-tab="tScr"    data-i18n="tabScr">Obrazovky</button>
-  <button data-tab="tLook"   data-i18n="tabLook">Vzhled</button>
-  <button data-tab="tPlanes" data-i18n="tabPlanes">Letadla</button>
-  <button data-tab="tCal" data-i18n="scrCalendar">Kalendář</button>
-  <button data-tab="tNotify" data-i18n="ntTitle">Notifikácie</button>
-  <button data-tab="tSys"    data-i18n="tabSys">Systém</button>
+<nav class="tabs" id="tabs" role="tablist" aria-label="MeteoPlaneRadar">
+  <button type="button" role="tab" id="tab-tCtl" aria-controls="tCtl" aria-selected="true" tabindex="0" data-tab="tCtl"    class="on" data-i18n="tabCtl">Ovládání</button>
+  <button type="button" role="tab" id="tab-tLoc" aria-controls="tLoc" aria-selected="false" tabindex="-1" data-tab="tLoc"    data-i18n="tabLoc">Poloha</button>
+  <button type="button" role="tab" id="tab-tScr" aria-controls="tScr" aria-selected="false" tabindex="-1" data-tab="tScr"    data-i18n="tabScr">Obrazovky</button>
+  <button type="button" role="tab" id="tab-tLook" aria-controls="tLook" aria-selected="false" tabindex="-1" data-tab="tLook"   data-i18n="tabLook">Vzhled</button>
+  <button type="button" role="tab" id="tab-tPlanes" aria-controls="tPlanes" aria-selected="false" tabindex="-1" data-tab="tPlanes" data-i18n="tabPlanes">Letadla</button>
+  <button type="button" role="tab" id="tab-tCal" aria-controls="tCal" aria-selected="false" tabindex="-1" data-tab="tCal" data-i18n="scrCalendar">Kalendář</button>
+  <button type="button" role="tab" id="tab-tNotify" aria-controls="tNotify" aria-selected="false" tabindex="-1" data-tab="tNotify" data-i18n="ntTitle">Notifikácie</button>
+  <button type="button" role="tab" id="tab-tSys" aria-controls="tSys" aria-selected="false" tabindex="-1" data-tab="tSys"    data-i18n="tabSys">Systém</button>
 </nav>
 
 <div class="wrap">
 
 <!-- ================= OVLÁDÁNÍ ================= -->
-<section id="tCtl" class="tab">
+<section id="tCtl" role="tabpanel" aria-labelledby="tab-tCtl" class="tab">
   <div class="card hide" id="cardWifi">
     <h2 data-i18n="wifi">WiFi</h2>
     <p class="hint" id="wifiNow"></p>
     <div class="row"><label data-i18n="network">Síť</label>
-      <select id="ssid" style="flex:2 1 220px"></select>
+      <select id="ssid"></select>
       <button class="sec" onclick="scan()" data-i18n="scan">Vyhledat</button></div>
-    <div class="row"><label data-i18n="password">Heslo</label><input type="password" id="wpass" style="flex:2 1 220px"></div>
+    <div class="row"><label data-i18n="password">Heslo</label><input type="password" id="wpass"></div>
     <p class="hint" id="wifiHintTxt"></p>
     <button onclick="saveWifi()" data-i18n="connect">Připojit</button>
   </div>
@@ -109,14 +109,13 @@ td:first-child{color:var(--mut);width:50%}
   <div class="card" id="cardRemote">
     <h2 data-i18n="remote">Dálkové ovládání</h2>
     <div class="row" id="scrBtns"></div>
-    <div class="row">
-      <button class="sec" onclick="stepScreen(-1)">&#8592;</button>
-      <button class="sec" onclick="stepScreen(1)">&#8594;</button>
-      <span style="flex:1"></span>
-      <span data-i18n="rangeLbl">Rozsah</span>
+    <div class="row remote-steps">
+      <div class="step-group"><button class="sec" onclick="stepScreen(-1)" aria-label="Previous screen">&#8592;</button>
+      <button class="sec" aria-label="Next screen" onclick="stepScreen(1)">&#8594;</button>
+      </div><div class="step-group"><span data-i18n="rangeLbl">Rozsah</span>
       <button class="sec" id="rMinus" onclick="stepRange(-1)">&minus;</button>
       <b id="rangeNow" style="min-width:80px;text-align:center">&ndash;</b>
-      <button class="sec" id="rPlus" onclick="stepRange(1)">+</button>
+      <button class="sec" id="rPlus" onclick="stepRange(1)">+</button></div>
     </div>
     <p class="hint" data-i18n="remoteHint">Rozsah se mění jen na obrazovkách Letadla a Meteoradar. Zásah pozastaví automatické střídání.</p>
   </div>
@@ -128,14 +127,14 @@ td:first-child{color:var(--mut);width:50%}
 </section>
 
 <!-- ================= POLOHA ================= -->
-<section id="tLoc" class="tab hide">
+<section id="tLoc" role="tabpanel" aria-labelledby="tab-tLoc" class="tab hide">
   <div class="card">
     <h2 data-i18n="location">Poloha</h2>
     <div class="row"><label data-i18n="findCity">Najít město</label>
-      <input type="text" id="q" style="flex:2 1 200px" placeholder="Praha">
+      <input type="text" id="q" placeholder="Praha">
       <button class="sec" onclick="geo()" data-i18n="search">Hledat</button></div>
     <div class="row hide" id="geoRow"><label data-i18n="found">Nalezeno</label>
-      <select id="geoSel" style="flex:2 1 240px" onchange="pickCity()"></select></div>
+      <select id="geoSel" onchange="pickCity()"></select></div>
     <div class="row"><label data-i18n="lat">Zeměpisná šířka</label><input type="number" step="0.0001" id="lat"></div>
     <div class="row"><label data-i18n="lon">Zeměpisná délka</label><input type="number" step="0.0001" id="lon"></div>
     <p class="hint" data-i18n="locHint">Změna polohy vyžaduje restart, o který se zařízení postará samo.</p>
@@ -143,7 +142,7 @@ td:first-child{color:var(--mut);width:50%}
 </section>
 
 <!-- ================= OBRAZOVKY ================= -->
-<section id="tScr" class="tab hide">
+<section id="tScr" role="tabpanel" aria-labelledby="tab-tScr" class="tab hide">
   <div class="card">
     <h2 data-i18n="screens">Obrazovky</h2>
     <div class="grid">
@@ -154,7 +153,7 @@ td:first-child{color:var(--mut);width:50%}
       <label class="chk"><input type="checkbox" id="sCalendar"><span data-i18n="scrCalendar">Kalendář</span></label>
     </div>
     <p class="hint" data-i18n="scrHint">Vypnuté obrazovky se přeskakují. Nastavení je dostupné vždy.</p>
-    <p class="hint" data-i18n="restartHint">Změna obrazovek, zdroje radaru nebo polohy potřebuje restart, takže se ukládá až tlačítkem dole.</p>
+    <p class="hint" data-i18n="restartHint">Změna obrazovek, zdroje radaru nebo polohy potřebuje restart, takže se ukládá až tlačítkem vpravo nahoře.</p>
     <div class="row"><label data-i18n="autoRotate">Automatické střídání (sekundy, 0 = vypnuto)</label>
       <input type="number" id="autoRotate" min="0" max="3600" step="5"></div>
     <p class="hint" data-i18n="rotHint">Střídání pozastaví přejetí prstem, dlouhý stisk nebo přepnutí z prohlížeče — na trojnásobek intervalu, pak pokračuje samo. Obyčejné klepnutí ho nezastaví, otevřený detail letadla ho drží. Na obrazovce Nastavení se nestřídá.</p>
@@ -174,7 +173,7 @@ td:first-child{color:var(--mut);width:50%}
 </section>
 
 <!-- ================= VZHLED ================= -->
-<section id="tLook" class="tab hide">
+<section id="tLook" role="tabpanel" aria-labelledby="tab-tLook" class="tab hide">
   <div class="card">
     <h2 data-i18n="brightness">Jas</h2>
     <div class="row"><label data-i18n="briDay">Denní jas</label><input type="range" id="briDay" min="10" max="100"><span id="briDayV"></span></div>
@@ -199,7 +198,7 @@ td:first-child{color:var(--mut);width:50%}
 </section>
 
 <!-- ================= LETADLA ================= -->
-<section id="tPlanes" class="tab hide">
+<section id="tPlanes" role="tabpanel" aria-labelledby="tab-tPlanes" class="tab hide">
   <div class="card">
     <h2 data-i18n="planes">Letadla</h2>
     <div class="row"><label data-i18n="altMin">Nejnižší výška (ft)</label><input type="number" id="altMin" min="0" max="60000"></div>
@@ -221,46 +220,45 @@ td:first-child{color:var(--mut);width:50%}
 </section>
 
 <!-- ================= KALENDÁŘ ================= -->
-<section id="tCal" class="tab hide">
+<section id="tCal" role="tabpanel" aria-labelledby="tab-tCal" class="tab hide">
  <div class="card">
   <h2 data-i18n="scrCalendar">Kalendář</h2>
   <p class="hint" data-i18n="calIntro"></p>
   <p class="hint" id="calScreenState"></p>
-  <button type="button" onclick="saveCalendars()" data-i18n="calSaveEnable"></button>
   <div class="row"><label for="calendarView" data-i18n="calView"></label><select id="calendarView"><option value="0" data-i18n="calDay"></option><option value="1" data-i18n="calMonth"></option></select></div>
   <div class="row"><label for="calendarRefresh" data-i18n="calRefresh"></label><input id="calendarRefresh" type="number" min="5" max="1440" value="15"></div>
-  <h3><span data-i18n="calSource"></span> 1</h3>
+  <fieldset class="source"><legend><span data-i18n="calSource"></span> 1</legend>
   <label class="chk"><input type="checkbox" id="cal0On"><span data-i18n="calEnabled"></span></label>
   <div class="row"><label for="cal0Name" data-i18n="calName"></label><input type="text" id="cal0Name" maxlength="31"></div>
   <div class="row"><label for="cal0Color" data-i18n="calColor"></label><input id="cal0Color" type="color" value="#00bfff"></div>
   <div class="row"><label for="cal0Url" data-i18n="calUrl"></label><input id="cal0Url" type="password" autocomplete="off" spellcheck="false" maxlength="767"></div>
   <label class="chk"><input type="checkbox" id="cal0Clear"><span data-i18n="calClear"></span></label>
-  <p class="hint" id="cal0Status"></p>
-  <h3><span data-i18n="calSource"></span> 2</h3>
+  <p class="hint" id="cal0Status"></p></fieldset>
+  <fieldset class="source"><legend><span data-i18n="calSource"></span> 2</legend>
   <label class="chk"><input type="checkbox" id="cal1On"><span data-i18n="calEnabled"></span></label>
   <div class="row"><label for="cal1Name" data-i18n="calName"></label><input type="text" id="cal1Name" maxlength="31"></div>
   <div class="row"><label for="cal1Color" data-i18n="calColor"></label><input id="cal1Color" type="color" value="#ff9900"></div>
   <div class="row"><label for="cal1Url" data-i18n="calUrl"></label><input id="cal1Url" type="password" autocomplete="off" spellcheck="false" maxlength="767"></div>
   <label class="chk"><input type="checkbox" id="cal1Clear"><span data-i18n="calClear"></span></label>
-  <p class="hint" id="cal1Status"></p>
-  <h3><span data-i18n="calSource"></span> 3</h3>
+  <p class="hint" id="cal1Status"></p></fieldset>
+  <fieldset class="source"><legend><span data-i18n="calSource"></span> 3</legend>
   <label class="chk"><input type="checkbox" id="cal2On"><span data-i18n="calEnabled"></span></label>
   <div class="row"><label for="cal2Name" data-i18n="calName"></label><input type="text" id="cal2Name" maxlength="31"></div>
   <div class="row"><label for="cal2Color" data-i18n="calColor"></label><input id="cal2Color" type="color" value="#00ff00"></div>
   <div class="row"><label for="cal2Url" data-i18n="calUrl"></label><input id="cal2Url" type="password" autocomplete="off" spellcheck="false" maxlength="767"></div>
   <label class="chk"><input type="checkbox" id="cal2Clear"><span data-i18n="calClear"></span></label>
-  <p class="hint" id="cal2Status"></p>
-  <p class="hint" data-i18n="calUrlHint"></p>
+  <p class="hint" id="cal2Status"></p></fieldset>
+  <div class="help"><p class="hint" data-i18n="calUrlHint"></p>
   <p class="hint" data-i18n="calGoogleHint"></p>
   <p class="hint" data-i18n="calAppleHint"></p>
   <p class="hint" data-i18n="calDotsHint"></p>
   <p class="hint" data-i18n="calLimits"></p>
   <p class="hint" data-i18n="calSaveHint"></p>
-  <button class="sec" type="button" onclick="refreshCalendars()" data-i18n="calReload"></button>
+  <button class="sec" type="button" onclick="refreshCalendars()" data-i18n="calReload"></button></div>
  </div>
 </section>
 
-<section id="tNotify" class="tab hide">
+<section id="tNotify" role="tabpanel" aria-labelledby="tab-tNotify" class="tab hide">
  <div class="card">
   <h2 data-i18n="ntTitle"></h2>
   <p data-i18n="ntIntro"></p>
@@ -288,7 +286,7 @@ python3 tools/google-chat-bridge/bridge.py run</pre>
 </section>
 
 <!-- ================= SYSTÉM ================= -->
-<section id="tSys" class="tab hide">
+<section id="tSys" role="tabpanel" aria-labelledby="tab-tSys" class="tab hide">
   <div class="card">
     <h2 data-i18n="system">Systém</h2>
     <div class="row"><label data-i18n="adminPass">Současné heslo</label>
@@ -298,7 +296,7 @@ python3 tools/google-chat-bridge/bridge.py run</pre>
     <p class="hint" id="pwState"></p>
     <p class="hint" data-i18n="passHint">Současné heslo je potřeba pro aktualizaci, import, reset i pro změnu hesla. Prázdné nové heslo nic nemění; jedna mezera ochranu zruší.</p>
     <p class="hint" data-i18n="passNote">Poznámka: výchozí stav je bez hesla — aktualizace, import i reset jsou pak přístupné komukoli v síti. Heslo se ukládá v čitelné podobě, protože aktualizační stránka používá HTTP Basic, kde otisk použít nelze; chrání tedy před domácností, ne před útočníkem. Zapomenuté heslo jde zrušit jedině podržením tlačítka BOOT při startu (~3 s), což smaže i WiFi a všechna ostatní nastavení.</p>
-    <div class="row" style="margin-top:12px">
+    <div class="actions">
       <button class="sec" onclick="location='/update'" data-i18n="fwUpdate">Aktualizace firmwaru</button>
       <button class="sec" onclick="exportCfg()" data-i18n="export">Export nastavení</button>
       <button class="sec" onclick="document.getElementById('imp').click()" data-i18n="import">Import</button>
@@ -308,7 +306,9 @@ python3 tools/google-chat-bridge/bridge.py run</pre>
     </div>
 
     <!-- Attribution for the active data sources. -->
-    <h2 style="margin-top:22px" data-i18n="srcTitle">Zdroje dat</h2>
+  </div>
+  <div class="card">
+    <h2 data-i18n="srcTitle">Zdroje dat</h2>
     <p class="hint" data-i18n="srcIntro">Data pocházejí z těchto služeb. Několik z nich vyžaduje uvedení zdroje, proto jsou uvedeny zde. Podrobnosti a podmínky jsou v souboru LICENSE.txt.</p>
     <p class="hint">
       <a href="https://adsb.fi" target="_blank" rel="noopener">adsb.fi</a> ·
@@ -325,11 +325,11 @@ python3 tools/google-chat-bridge/bridge.py run</pre>
 
 </div>
 
-<div class="bar hide" id="saveBar"><button onclick="save()" data-i18n="save">Uložit nastavení</button><span id="msg"></span></div>
+
 
 <script>
 const D={
- cs:{"scrCalendar":"Kalendář","calIntro":"Události z Google Kalendáře, iCloudu nebo jiného ICS odběru. Na displeji přepnete den a měsíc; klepnutí na datum otevře jeho události.","calView":"Výchozí / poslední pohled","calDay":"Den","calMonth":"Měsíc","calRefresh":"Obnovování (minuty, 5–1440)","calSource":"Kalendář","calEnabled":"Používat tento kalendář","calName":"Název","calColor":"Barva","calUrl":"Nový ICS odkaz (HTTPS / webcal)","calClear":"Smazat uložený odkaz","calUrlHint":"Odkazy jsou přístup k událostem: nevracejí se do stránky ani do exportu. Prázdné pole ponechá uložený odkaz. Po importu zálohy do nového zařízení je zadejte znovu.","calGoogleHint":"Google: Nastavení kalendáře → Integrovat kalendář → Tajná adresa ve formátu iCal. Není potřeba zveřejňovat kalendář.","calAppleHint":"iCloud: zapněte Veřejný kalendář a vložte jeho odkaz. Kdokoli s tímto odkazem může kalendář číst. Jde o odběr pro zobrazení; přihlášení Apple/Google ani zápis událostí zde nejsou.","calDotsHint":"Jeden aktivní kalendář: zvýrazněné dny, bez barevných teček a názvu zdroje u události. Více kalendářů: barevné tečky a názvy zdrojů.","calLimits":"Ukládá se předchozí měsíc, aktuální a dva následující; nejvýše 256 výskytů a 512 KiB na zdroj. Podporovány jsou UTC, místní čas a běžná středoevropská pásma. Nepodporované opakování nebo pásmo se zobrazí jako chyba; poslední platná data zůstanou.","calSaveHint":"Zdroje a pohled uložte tlačítkem dole. Změna sady obrazovek restartuje zařízení. Je-li nastaveno heslo správce, vyplňte jej na kartě Systém.","calReload":"Obnovit uložené kalendáře","calConfigured":"Odkaz uložen","calMissing":"Odkaz není nastaven","calMemory":"Paměť kalendáře (PSRAM)",tabCtl:"Ovládání",tabLoc:"Poloha",tabScr:"Obrazovky",tabLook:"Vzhled",tabPlanes:"Letadla",tabSys:"Systém",
+ cs:{"scrCalendar":"Kalendář","calIntro":"Události z Google Kalendáře, iCloudu nebo jiného ICS odběru. Na displeji přepnete den a měsíc; klepnutí na datum otevře jeho události.","calView":"Výchozí / poslední pohled","calDay":"Den","calMonth":"Měsíc","calRefresh":"Obnovování (minuty, 5–1440)","calSource":"Kalendář","calEnabled":"Používat tento kalendář","calName":"Název","calColor":"Barva","calUrl":"Nový ICS odkaz (HTTPS / webcal)","calClear":"Smazat uložený odkaz","calUrlHint":"Odkazy jsou přístup k událostem: nevracejí se do stránky ani do exportu. Prázdné pole ponechá uložený odkaz. Po importu zálohy do nového zařízení je zadejte znovu.","calGoogleHint":"Google: Nastavení kalendáře → Integrovat kalendář → Tajná adresa ve formátu iCal. Není potřeba zveřejňovat kalendář.","calAppleHint":"iCloud: zapněte Veřejný kalendář a vložte jeho odkaz. Kdokoli s tímto odkazem může kalendář číst. Jde o odběr pro zobrazení; přihlášení Apple/Google ani zápis událostí zde nejsou.","calDotsHint":"Jeden aktivní kalendář: zvýrazněné dny, bez barevných teček a názvu zdroje u události. Více kalendářů: barevné tečky a názvy zdrojů.","calLimits":"Ukládá se předchozí měsíc, aktuální a dva následující; nejvýše 256 výskytů a 512 KiB na zdroj. Podporovány jsou UTC, místní čas a běžná středoevropská pásma. Nepodporované opakování nebo pásmo se zobrazí jako chyba; poslední platná data zůstanou.","calSaveHint":"Zdroje a pohled uložte tlačítkem vpravo nahoře. Změna sady obrazovek restartuje zařízení. Je-li nastaveno heslo správce, vyplňte jej na kartě Systém.","calReload":"Obnovit uložené kalendáře","calConfigured":"Odkaz uložen","calMissing":"Odkaz není nastaven","calMemory":"Paměť kalendáře (PSRAM)",tabCtl:"Ovládání",tabLoc:"Poloha",tabScr:"Obrazovky",tabLook:"Vzhled",tabPlanes:"Letadla",tabSys:"Systém",
   timezone:"Časové pásmo",
   wifi:"WiFi",network:"Síť",password:"Heslo",scan:"Vyhledat",connect:"Připojit",
   wifiHint:"Po uložení se zařízení připojí a přístupový bod zmizí.",
@@ -337,7 +337,7 @@ const D={
   wifiNow:"Připojeno k síti",
   autoSaved:"Uloženo",
   liveHint:"Změny na této záložce se ukládají hned, tlačítko Uložit tu nepotřebujete.",
-  restartHint:"Změna obrazovek, zdroje radaru nebo polohy potřebuje restart, takže se ukládá až tlačítkem dole.",
+  restartHint:"Změna obrazovek, zdroje radaru nebo polohy potřebuje restart, takže se ukládá až tlačítkem vpravo nahoře.",
   remote:"Dálkové ovládání",rangeLbl:"Rozsah",statusHdr:"Stav zařízení",
   remoteHint:"Rozsah se mění jen na obrazovkách Letadla a Meteoradar. Zásah pozastaví automatické střídání.",
   location:"Poloha",findCity:"Najít město",search:"Hledat",found:"Nalezeno",lat:"Zeměpisná šířka",lon:"Zeměpisná délka",
@@ -370,14 +370,14 @@ const D={
   settings:"Nastavení",
   saved:"Uloženo",failed:"Nepovedlo se",searching:"Hledám…",nothing:"Nic nenalezeno",
   disabled:"Obrazovka je vypnutá",confirmReset:"Opravdu smazat všechna nastavení včetně WiFi?"},
- en:{"scrCalendar":"Calendar","calIntro":"Events from Google Calendar, iCloud or another ICS subscription. Switch day/month on the display; tap a date to open its agenda.","calView":"Default / last view","calDay":"Day","calMonth":"Month","calRefresh":"Refresh interval (minutes, 5–1440)","calSource":"Calendar","calEnabled":"Use this calendar","calName":"Name","calColor":"Colour","calUrl":"New ICS URL (HTTPS / webcal)","calClear":"Delete the saved URL","calUrlHint":"URLs grant access to events: they are never returned to the page or exported. An empty field keeps the saved URL. Re-enter URLs after importing a backup on a new device.","calGoogleHint":"Google: Calendar settings → Integrate calendar → Secret address in iCal format. The calendar does not need to be public.","calAppleHint":"iCloud: enable Public Calendar and paste its link. Anyone with that link can read the calendar. This is a display subscription; Apple/Google sign-in and editing events are not provided.","calDotsHint":"One enabled calendar: highlighted dates, no coloured dots or source name in the agenda. Multiple calendars: source dots and names.","calLimits":"Caches the previous, current and next two months; up to 256 occurrences and 512 KiB per source. Supports UTC, local time and common Central European zones. Unsupported recurrence or zones report an error; the last valid data remains.","calSaveHint":"Save sources and view with the button below. Changing enabled screens restarts the device. If an admin password is set, enter it on the System tab.","calReload":"Refresh saved calendars","calConfigured":"URL saved","calMissing":"No URL configured","calMemory":"Calendar memory (PSRAM)",timezone:"Time zone",tabCtl:"Control",tabLoc:"Location",tabScr:"Screens",tabLook:"Appearance",tabPlanes:"Aircraft",tabSys:"System",
+ en:{"scrCalendar":"Calendar","calIntro":"Events from Google Calendar, iCloud or another ICS subscription. Switch day/month on the display; tap a date to open its agenda.","calView":"Default / last view","calDay":"Day","calMonth":"Month","calRefresh":"Refresh interval (minutes, 5–1440)","calSource":"Calendar","calEnabled":"Use this calendar","calName":"Name","calColor":"Colour","calUrl":"New ICS URL (HTTPS / webcal)","calClear":"Delete the saved URL","calUrlHint":"URLs grant access to events: they are never returned to the page or exported. An empty field keeps the saved URL. Re-enter URLs after importing a backup on a new device.","calGoogleHint":"Google: Calendar settings → Integrate calendar → Secret address in iCal format. The calendar does not need to be public.","calAppleHint":"iCloud: enable Public Calendar and paste its link. Anyone with that link can read the calendar. This is a display subscription; Apple/Google sign-in and editing events are not provided.","calDotsHint":"One enabled calendar: highlighted dates, no coloured dots or source name in the agenda. Multiple calendars: source dots and names.","calLimits":"Caches the previous, current and next two months; up to 256 occurrences and 512 KiB per source. Supports UTC, local time and common Central European zones. Unsupported recurrence or zones report an error; the last valid data remains.","calSaveHint":"Save sources and view with the button at the top right. Changing enabled screens restarts the device. If an admin password is set, enter it on the System tab.","calReload":"Refresh saved calendars","calConfigured":"URL saved","calMissing":"No URL configured","calMemory":"Calendar memory (PSRAM)",timezone:"Time zone",tabCtl:"Control",tabLoc:"Location",tabScr:"Screens",tabLook:"Appearance",tabPlanes:"Aircraft",tabSys:"System",
   wifi:"WiFi",network:"Network",password:"Password",scan:"Scan",connect:"Connect",
   wifiHint:"After saving the device connects and the access point disappears.",
   wifiHintSta:"Changing the network drops this page. If the connection fails, the device brings up its own MeteoPlaneRadar network and you enter it again.",
   wifiNow:"Connected to",
   autoSaved:"Saved",
   liveHint:"Changes on this tab are saved immediately - no need for the Save button.",
-  restartHint:"Changing the screens, the radar source or the location needs a restart, so those are saved with the button below.",
+  restartHint:"Changing the screens, the radar source or the location needs a restart, so those are saved with the button at the top right.",
   remote:"Remote control",rangeLbl:"Range",statusHdr:"Device status",
   remoteHint:"The range only applies to the Aircraft and Weather screens. Using this pauses the automatic cycling.",
   location:"Location",findCity:"Find a town",search:"Search",found:"Found",lat:"Latitude",lon:"Longitude",
@@ -410,7 +410,7 @@ const D={
   settings:"Settings",
   saved:"Saved",failed:"Failed",searching:"Searching…",nothing:"Nothing found",
   disabled:"That screen is switched off",confirmReset:"Really erase all settings including WiFi?"},
- sk:{"scrCalendar":"Kalendár","calIntro":"Udalosti z Google Kalendára, iCloudu alebo iného ICS odberu. Na displeji prepnete deň a mesiac; ťuknutie na dátum otvorí jeho udalosti.","calView":"Predvolený / posledný pohľad","calDay":"Deň","calMonth":"Mesiac","calRefresh":"Obnovovanie (minúty, 5–1440)","calSource":"Kalendár","calEnabled":"Používať tento kalendár","calName":"Názov","calColor":"Farba","calUrl":"Nový ICS odkaz (HTTPS / webcal)","calClear":"Vymazať uložený odkaz","calUrlHint":"Odkazy umožňujú prístup k udalostiam: nevracajú sa do stránky ani do exportu. Prázdne pole ponechá uložený odkaz. Po importe zálohy do nového zariadenia ich zadajte znova.","calGoogleHint":"Google: Nastavenia kalendára → Integrovať kalendár → Tajná adresa vo formáte iCal. Kalendár nemusí byť verejný.","calAppleHint":"iCloud: zapnite Verejný kalendár a vložte jeho odkaz. Ktokoľvek s odkazom môže kalendár čítať. Ide o odber na zobrazenie; prihlásenie Apple/Google ani úpravy udalostí tu nie sú.","calDotsHint":"Jeden aktívny kalendár: zvýraznené dni, bez farebných bodiek a názvu zdroja pri udalosti. Viac kalendárov: farebné bodky a názvy zdrojov.","calLimits":"Ukladá sa predchádzajúci mesiac, aktuálny a dva nasledujúce; najviac 256 výskytov a 512 KiB na zdroj. Podporované sú UTC, miestny čas a bežné stredoeurópske pásma. Nepodporované opakovanie alebo pásmo sa zobrazí ako chyba; posledné platné dáta zostanú.","calSaveHint":"Zdroje a pohľad uložte tlačidlom dole. Zmena sady obrazoviek reštartuje zariadenie. Ak je nastavené heslo správcu, vyplňte ho na karte Systém.","calReload":"Obnoviť uložené kalendáre","calConfigured":"Odkaz uložený","calMissing":"Odkaz nie je nastavený","calMemory":"Pamäť kalendára (PSRAM)",
+ sk:{"scrCalendar":"Kalendár","calIntro":"Udalosti z Google Kalendára, iCloudu alebo iného ICS odberu. Na displeji prepnete deň a mesiac; ťuknutie na dátum otvorí jeho udalosti.","calView":"Predvolený / posledný pohľad","calDay":"Deň","calMonth":"Mesiac","calRefresh":"Obnovovanie (minúty, 5–1440)","calSource":"Kalendár","calEnabled":"Používať tento kalendár","calName":"Názov","calColor":"Farba","calUrl":"Nový ICS odkaz (HTTPS / webcal)","calClear":"Vymazať uložený odkaz","calUrlHint":"Odkazy umožňujú prístup k udalostiam: nevracajú sa do stránky ani do exportu. Prázdne pole ponechá uložený odkaz. Po importe zálohy do nového zariadenia ich zadajte znova.","calGoogleHint":"Google: Nastavenia kalendára → Integrovať kalendár → Tajná adresa vo formáte iCal. Kalendár nemusí byť verejný.","calAppleHint":"iCloud: zapnite Verejný kalendár a vložte jeho odkaz. Ktokoľvek s odkazom môže kalendár čítať. Ide o odber na zobrazenie; prihlásenie Apple/Google ani úpravy udalostí tu nie sú.","calDotsHint":"Jeden aktívny kalendár: zvýraznené dni, bez farebných bodiek a názvu zdroja pri udalosti. Viac kalendárov: farebné bodky a názvy zdrojov.","calLimits":"Ukladá sa predchádzajúci mesiac, aktuálny a dva nasledujúce; najviac 256 výskytov a 512 KiB na zdroj. Podporované sú UTC, miestny čas a bežné stredoeurópske pásma. Nepodporované opakovanie alebo pásmo sa zobrazí ako chyba; posledné platné dáta zostanú.","calSaveHint":"Zdroje a pohľad uložte tlačidlom vpravo hore. Zmena sady obrazoviek reštartuje zariadenie. Ak je nastavené heslo správcu, vyplňte ho na karte Systém.","calReload":"Obnoviť uložené kalendáre","calConfigured":"Odkaz uložený","calMissing":"Odkaz nie je nastavený","calMemory":"Pamäť kalendára (PSRAM)",
   "tabCtl": "Ovládanie",
   "tabLoc": "Poloha",
   "tabScr": "Obrazovky",
@@ -428,7 +428,7 @@ const D={
   "wifiNow": "Pripojené k sieti",
   "autoSaved": "Uložené",
   "liveHint": "Zmeny na tejto karte sa ukladajú okamžite, tlačidlo Uložiť nepotrebujete.",
-  "restartHint": "Zmena obrazoviek, zdroja radaru alebo polohy vyžaduje reštart, preto sa ukladá tlačidlom dole.",
+  "restartHint": "Zmena obrazoviek, zdroja radaru alebo polohy vyžaduje reštart, preto sa ukladá tlačidlom vpravo hore.",
   "remote": "Diaľkové ovládanie",
   "rangeLbl": "Rozsah",
   "statusHdr": "Stav zariadenia",
@@ -503,30 +503,61 @@ const D={
   "confirmReset": "Naozaj vymazať všetky nastavenia vrátane WiFi?",
   "import": "Import"
 }};
-Object.assign(D.en,{"ntTitle": "Notifications", "ntIntro": "Compact banner above every screen. Tap for details; the large X dismisses the message only on this display.", "ntEnabled": "Enable notifications", "ntSeconds": "Banner duration (seconds)", "ntTimeoutHint": "0 = until closed, otherwise 5–120 s. After timeout, messages stay behind the count badge. Details stay open until dismissed.", "ntTest": "Save and show a test", "ntPair": "Pair bridge / download configuration", "ntPairHint": "Enables notifications and rotates the pairing key. Previous bridges stop working. Keep the downloaded file private; it is sent over your home LAN. If set, enter the current admin password on System first.", "ntStep1": "Run the included Python 3 bridge on a computer or Raspberry Pi in the same LAN. It must stay running. No Python packages are needed.", "ntStep2": "In Google Cloud enable Google Chat API, configure the OAuth consent screen (add your account as a test user), create an OAuth client of type Desktop app and download its JSON as client_secret.json.", "ntStep3": "Download pairing configuration below. In the repository folder run the setup command. A browser opens for Google sign-in; select Chat spaces in the terminal.", "ntStep4": "Run the second command and leave it running. Then use the test button here. Save changes with the button below.", "ntLimit": "Google documents this API for Workspace accounts; availability depends on your account and administrator. Incoming Chat webhooks cannot receive messages. The bridge reads new text and attachment notices, not message history or edits. Up to 6 pending messages, 1024 UTF-8 bytes each; closing does not mark Chat messages read. Delivery may wait during radar downloads. Pairing keys and Google tokens are excluded from backups.", "ntPaired": "Bridge paired", "ntUnpaired": "Bridge not paired", "ntBridge": "Bridge contact (s ago; −1 = none)", "ntQueue": "Pending", "ntMemory": "Notification PSRAM"});
-Object.assign(D.sk,{"ntTitle": "Notifikácie", "ntIntro": "Kompaktný banner nad každou obrazovkou. Ťuknutie otvorí detail; veľký krížik zavrie správu iba na displeji.", "ntEnabled": "Zapnúť notifikácie", "ntSeconds": "Trvanie bannera (sekundy)", "ntTimeoutHint": "0 = do zatvorenia, inak 5–120 s. Po uplynutí času zostanú správy pod odznakom s počtom. Detail zostáva otvorený do zatvorenia.", "ntTest": "Uložiť a zobraziť skúšku", "ntPair": "Spárovať most / stiahnuť konfiguráciu", "ntPairHint": "Zapne notifikácie a vymení párovací kľúč. Predchádzajúci most prestane fungovať. Stiahnutý súbor uchovajte súkromne; prenáša sa cez domácu LAN. Ak máte heslo správcu, najprv ho zadajte na karte Systém.", "ntStep1": "Priložený most pre Python 3 spustite na počítači alebo Raspberry Pi v rovnakej LAN. Musí zostať spustený. Netreba inštalovať balíčky Pythonu.", "ntStep2": "V Google Cloud zapnite Google Chat API, nastavte súhlas OAuth (pridajte svoj účet medzi testovacích používateľov), vytvorte OAuth klienta typu Desktop app a stiahnite JSON ako client_secret.json.", "ntStep3": "Nižšie stiahnite párovaciu konfiguráciu. V priečinku repozitára spustite príkaz setup. Otvorí sa prehliadač na prihlásenie ku Googlu; v termináli vyberiete priestory Chatu.", "ntStep4": "Spustite druhý príkaz a nechajte ho bežať. Potom tu použite skúšobné tlačidlo. Zmeny uložte tlačidlom dole.", "ntLimit": "Google dokumentuje toto API pre účty Workspace; dostupnosť závisí od účtu a správcu. Prichádzajúci webhook Chatu nedokáže prijímať správy. Most číta nové texty a oznámenia o prílohách, nie históriu ani úpravy. Najviac 6 čakajúcich správ, každá 1024 bajtov UTF-8; zatvorenie neoznačí správu v Chate ako prečítanú. Počas sťahovania radaru môže doručenie chvíľu čakať. Párovacie kľúče a tokeny Googlu nie sú v zálohách.", "ntPaired": "Most spárovaný", "ntUnpaired": "Most ešte nie je spárovaný", "ntBridge": "Kontakt mosta (pred s; −1 = žiadny)", "ntQueue": "Čakajúce správy", "ntMemory": "PSRAM notifikácií"});
-Object.assign(D.cs,{"ntTitle": "Notifikace", "ntIntro": "Kompaktní banner nad každou obrazovkou. Klepnutí otevře detail; velký křížek zavře zprávu pouze na displeji.", "ntEnabled": "Zapnout notifikace", "ntSeconds": "Trvání banneru (sekundy)", "ntTimeoutHint": "0 = do zavření, jinak 5–120 s. Po uplynutí času zůstanou zprávy pod odznakem s počtem. Detail zůstává otevřený do zavření.", "ntTest": "Uložit a zobrazit test", "ntPair": "Spárovat most / stáhnout konfiguraci", "ntPairHint": "Zapne notifikace a vymění párovací klíč. Předchozí most přestane fungovat. Stažený soubor uchovejte soukromě; přenáší se přes domácí LAN. Máte-li heslo správce, nejprve jej vyplňte na kartě Systém.", "ntStep1": "Přiložený most pro Python 3 spusťte na počítači nebo Raspberry Pi ve stejné LAN. Musí zůstat spuštěný. Není třeba instalovat balíčky Pythonu.", "ntStep2": "V Google Cloud zapněte Google Chat API, nastavte souhlas OAuth (přidejte svůj účet mezi testovací uživatele), vytvořte OAuth klienta typu Desktop app a stáhněte JSON jako client_secret.json.", "ntStep3": "Níže stáhněte párovací konfiguraci. Ve složce repozitáře spusťte příkaz setup. Otevře se prohlížeč pro přihlášení ke Googlu; v terminálu vyberete prostory Chatu.", "ntStep4": "Spusťte druhý příkaz a nechte jej běžet. Potom zde použijte testovací tlačítko. Změny uložte tlačítkem dole.", "ntLimit": "Google dokumentuje toto API pro účty Workspace; dostupnost závisí na účtu a správci. Příchozí webhook Chatu neumí přijímat zprávy. Most čte nové texty a oznámení o přílohách, ne historii ani úpravy. Nejvýše 6 čekajících zpráv, každá 1024 bajtů UTF-8; zavření neoznačí zprávu v Chatu jako přečtenou. Během stahování radaru může doručení chvíli čekat. Párovací klíče a tokeny Googlu nejsou v zálohách.", "ntPaired": "Most spárovaný", "ntUnpaired": "Most ještě není spárovaný", "ntBridge": "Kontakt mostu (před s; −1 = žádný)", "ntQueue": "Čekající zprávy", "ntMemory": "PSRAM notifikací"});
+Object.assign(D.en,{"ntTitle": "Notifications", "ntIntro": "Compact banner above every screen. Tap for details; the large X dismisses the message only on this display.", "ntEnabled": "Enable notifications", "ntSeconds": "Banner duration (seconds)", "ntTimeoutHint": "0 = until closed, otherwise 5–120 s. After timeout, messages stay behind the count badge. Details stay open until dismissed.", "ntTest": "Save and show a test", "ntPair": "Pair bridge / download configuration", "ntPairHint": "Enables notifications and rotates the pairing key. Previous bridges stop working. Keep the downloaded file private; it is sent over your home LAN. If set, enter the current admin password on System first.", "ntStep1": "Run the included Python 3 bridge on a computer or Raspberry Pi in the same LAN. It must stay running. No Python packages are needed.", "ntStep2": "In Google Cloud enable Google Chat API, configure the OAuth consent screen (add your account as a test user), create an OAuth client of type Desktop app and download its JSON as client_secret.json.", "ntStep3": "Download pairing configuration below. In the repository folder run the setup command. A browser opens for Google sign-in; select Chat spaces in the terminal.", "ntStep4": "Run the second command and leave it running. Then use the test button here. Save changes with the button at the top right.", "ntLimit": "Google documents this API for Workspace accounts; availability depends on your account and administrator. Incoming Chat webhooks cannot receive messages. The bridge reads new text and attachment notices, not message history or edits. Up to 6 pending messages, 1024 UTF-8 bytes each; closing does not mark Chat messages read. Delivery may wait during radar downloads. Pairing keys and Google tokens are excluded from backups.", "ntPaired": "Bridge paired", "ntUnpaired": "Bridge not paired", "ntBridge": "Bridge contact (s ago; −1 = none)", "ntQueue": "Pending", "ntMemory": "Notification PSRAM"});
+Object.assign(D.sk,{"ntTitle": "Notifikácie", "ntIntro": "Kompaktný banner nad každou obrazovkou. Ťuknutie otvorí detail; veľký krížik zavrie správu iba na displeji.", "ntEnabled": "Zapnúť notifikácie", "ntSeconds": "Trvanie bannera (sekundy)", "ntTimeoutHint": "0 = do zatvorenia, inak 5–120 s. Po uplynutí času zostanú správy pod odznakom s počtom. Detail zostáva otvorený do zatvorenia.", "ntTest": "Uložiť a zobraziť skúšku", "ntPair": "Spárovať most / stiahnuť konfiguráciu", "ntPairHint": "Zapne notifikácie a vymení párovací kľúč. Predchádzajúci most prestane fungovať. Stiahnutý súbor uchovajte súkromne; prenáša sa cez domácu LAN. Ak máte heslo správcu, najprv ho zadajte na karte Systém.", "ntStep1": "Priložený most pre Python 3 spustite na počítači alebo Raspberry Pi v rovnakej LAN. Musí zostať spustený. Netreba inštalovať balíčky Pythonu.", "ntStep2": "V Google Cloud zapnite Google Chat API, nastavte súhlas OAuth (pridajte svoj účet medzi testovacích používateľov), vytvorte OAuth klienta typu Desktop app a stiahnite JSON ako client_secret.json.", "ntStep3": "Nižšie stiahnite párovaciu konfiguráciu. V priečinku repozitára spustite príkaz setup. Otvorí sa prehliadač na prihlásenie ku Googlu; v termináli vyberiete priestory Chatu.", "ntStep4": "Spustite druhý príkaz a nechajte ho bežať. Potom tu použite skúšobné tlačidlo. Zmeny uložte tlačidlom vpravo hore.", "ntLimit": "Google dokumentuje toto API pre účty Workspace; dostupnosť závisí od účtu a správcu. Prichádzajúci webhook Chatu nedokáže prijímať správy. Most číta nové texty a oznámenia o prílohách, nie históriu ani úpravy. Najviac 6 čakajúcich správ, každá 1024 bajtov UTF-8; zatvorenie neoznačí správu v Chate ako prečítanú. Počas sťahovania radaru môže doručenie chvíľu čakať. Párovacie kľúče a tokeny Googlu nie sú v zálohách.", "ntPaired": "Most spárovaný", "ntUnpaired": "Most ešte nie je spárovaný", "ntBridge": "Kontakt mosta (pred s; −1 = žiadny)", "ntQueue": "Čakajúce správy", "ntMemory": "PSRAM notifikácií"});
+Object.assign(D.cs,{"ntTitle": "Notifikace", "ntIntro": "Kompaktní banner nad každou obrazovkou. Klepnutí otevře detail; velký křížek zavře zprávu pouze na displeji.", "ntEnabled": "Zapnout notifikace", "ntSeconds": "Trvání banneru (sekundy)", "ntTimeoutHint": "0 = do zavření, jinak 5–120 s. Po uplynutí času zůstanou zprávy pod odznakem s počtem. Detail zůstává otevřený do zavření.", "ntTest": "Uložit a zobrazit test", "ntPair": "Spárovat most / stáhnout konfiguraci", "ntPairHint": "Zapne notifikace a vymění párovací klíč. Předchozí most přestane fungovat. Stažený soubor uchovejte soukromě; přenáší se přes domácí LAN. Máte-li heslo správce, nejprve jej vyplňte na kartě Systém.", "ntStep1": "Přiložený most pro Python 3 spusťte na počítači nebo Raspberry Pi ve stejné LAN. Musí zůstat spuštěný. Není třeba instalovat balíčky Pythonu.", "ntStep2": "V Google Cloud zapněte Google Chat API, nastavte souhlas OAuth (přidejte svůj účet mezi testovací uživatele), vytvořte OAuth klienta typu Desktop app a stáhněte JSON jako client_secret.json.", "ntStep3": "Níže stáhněte párovací konfiguraci. Ve složce repozitáře spusťte příkaz setup. Otevře se prohlížeč pro přihlášení ke Googlu; v terminálu vyberete prostory Chatu.", "ntStep4": "Spusťte druhý příkaz a nechte jej běžet. Potom zde použijte testovací tlačítko. Změny uložte tlačítkem vpravo nahoře.", "ntLimit": "Google dokumentuje toto API pro účty Workspace; dostupnost závisí na účtu a správci. Příchozí webhook Chatu neumí přijímat zprávy. Most čte nové texty a oznámení o přílohách, ne historii ani úpravy. Nejvýše 6 čekajících zpráv, každá 1024 bajtů UTF-8; zavření neoznačí zprávu v Chatu jako přečtenou. Během stahování radaru může doručení chvíli čekat. Párovací klíče a tokeny Googlu nejsou v zálohách.", "ntPaired": "Most spárovaný", "ntUnpaired": "Most ještě není spárovaný", "ntBridge": "Kontakt mostu (před s; −1 = žádný)", "ntQueue": "Čekající zprávy", "ntMemory": "PSRAM notifikací"});
 Object.assign(D.cs,{"calSaveEnable": "Uložit a zapnout kalendář", "calScreenOff": "Obrazovka Kalendář je vypnutá. Samotné uložení odkazu ji nezapne. Tlačítko „Uložit a zapnout kalendář“ uloží odběry a zpřístupní obrazovku.", "calScreenOn": "Obrazovka Kalendář je zapnutá. Stav stahování najdete pod jednotlivými odběry.", "calNeedSource": "Zadejte odkaz a zapněte alespoň jeden odběr, případně použijte již uložený odkaz.", "calEnabledSaved": "Kalendář uložen a zapnut. Při změně obrazovek se zařízení restartuje; po chvíli obnovte stránku.", "calSaveHint": "Odběry i obrazovku zapnete tlačítkem Uložit a zapnout kalendář nahoře. Obnovit uložené kalendáře používá pouze již uložené odkazy. Máte-li heslo správce, vyplňte jej na kartě Systém."});
-Object.assign(D.en,{"calSaveEnable": "Save and enable calendar", "calScreenOff": "The Calendar screen is disabled. Saving a URL alone does not enable it. Save and enable calendar saves subscriptions and enables the screen.", "calScreenOn": "The Calendar screen is enabled. Download status appears below each subscription.", "calNeedSource": "Enter a URL and enable at least one subscription, or use a saved URL.", "calEnabledSaved": "Calendar saved and enabled. A change of enabled screens restarts the device; reload this page shortly.", "calSaveHint": "Use Save and enable calendar above to save subscriptions and enable the screen. Refresh saved calendars only uses URLs already saved. If an admin password is set, enter it on System."});
-Object.assign(D.sk,{"calSaveEnable": "Uložiť a zapnúť kalendár", "calScreenOff": "Obrazovka Kalendár je vypnutá. Samotné uloženie odkazu ju nezapne. Tlačidlo „Uložiť a zapnúť kalendár“ uloží odbery a sprístupní obrazovku.", "calScreenOn": "Obrazovka Kalendár je zapnutá. Stav sťahovania nájdete pod jednotlivými odbermi.", "calNeedSource": "Zadajte odkaz a zapnite aspoň jeden odber, prípadne použite už uložený odkaz.", "calEnabledSaved": "Kalendár uložený a zapnutý. Pri zmene obrazoviek sa zariadenie reštartuje; po chvíli obnovte stránku.", "calSaveHint": "Odbery aj obrazovku zapnete tlačidlom Uložiť a zapnúť kalendár vyššie. Obnoviť uložené kalendáre používa iba už uložené odkazy. Ak máte heslo správcu, vyplňte ho na karte Systém."});
+Object.assign(D.en,{"calSaveEnable": "Save and enable calendar", "calScreenOff": "The Calendar screen is disabled. Saving a URL alone does not enable it. Save and enable calendar saves subscriptions and enables the screen.", "calScreenOn": "The Calendar screen is enabled. Download status appears below each subscription.", "calNeedSource": "Enter a URL and enable at least one subscription, or use a saved URL.", "calEnabledSaved": "Calendar saved and enabled. A change of enabled screens restarts the device; reload this page shortly.", "calSaveHint": "Use Save and enable calendar at the top right to save subscriptions and enable the screen. Refresh saved calendars only uses URLs already saved. If an admin password is set, enter it on System."});
+Object.assign(D.sk,{"calSaveEnable": "Uložiť a zapnúť kalendár", "calScreenOff": "Obrazovka Kalendár je vypnutá. Samotné uloženie odkazu ju nezapne. Tlačidlo „Uložiť a zapnúť kalendár“ uloží odbery a sprístupní obrazovku.", "calScreenOn": "Obrazovka Kalendár je zapnutá. Stav sťahovania nájdete pod jednotlivými odbermi.", "calNeedSource": "Zadajte odkaz a zapnite aspoň jeden odber, prípadne použite už uložený odkaz.", "calEnabledSaved": "Kalendár uložený a zapnutý. Pri zmene obrazoviek sa zariadenie reštartuje; po chvíli obnovte stránku.", "calSaveHint": "Odbery aj obrazovku zapnete tlačidlom Uložiť a zapnúť kalendár vpravo hore. Obnoviť uložené kalendáre používa iba už uložené odkazy. Ak máte heslo správcu, vyplňte ho na karte Systém."});
+Object.assign(D.cs,{autoMode:"Změny se ukládají průběžně"});
+Object.assign(D.en,{autoMode:"Changes save automatically"});
+Object.assign(D.sk,{autoMode:"Zmeny sa ukladajú priebežne"});
 let L="cs", CFG={}, TAB="tCtl";
 const $=id=>document.getElementById(id);
 
 function setLang(v){L=(v==2||v=="sk")?"sk":(v==1||v=="en")?"en":"cs";$("uiLang").value=String({cs:0,en:1,sk:2}[L]);
  document.documentElement.lang=L;
  document.querySelectorAll("[data-i18n]").forEach(e=>{const t=D[L][e.dataset.i18n];if(t)e.textContent=t;});
- pwState();calendarLabels();notificationLabels();status();}
+ pwState();calendarLabels();notificationLabels();updateActions();status();}
 
-// Tabs. The Save bar is hidden on Control - nothing there is saved, it is sent
-// straight away - so the button cannot look like it applies to the buttons.
+// Shared fixed action area; immediate settings keep their existing autosave.
+function updateActions(){
+ const manual=["tLoc","tScr","tCal","tNotify","tSys"].includes(TAB);
+ $("saveButton").classList.toggle("hide",!manual);
+ $("saveMode").classList.toggle("hide",manual||TAB=="tCtl");
+ $("saveButton").textContent=TAB=="tCal"?D[L].calSaveEnable:D[L].save;
+}
+let committing=false;
+async function commitSettings(){
+ if(committing)return;
+ committing=true;$("saveButton").disabled=true;
+ try{if(TAB=="tCal")await saveCalendars();else await save();}
+ finally{committing=false;$("saveButton").disabled=false;}
+}
 function showTab(id){
  TAB=id;
  document.querySelectorAll("section.tab").forEach(s=>s.classList.toggle("hide",s.id!=id));
- document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab==id));
- $("saveBar").classList.toggle("hide",id=="tCtl");
- window.scrollTo(0,0);
+ document.querySelectorAll("#tabs button").forEach(b=>{
+  const active=b.dataset.tab==id;
+  b.classList.toggle("on",active);b.setAttribute("aria-selected",String(active));b.tabIndex=active?0:-1;
+ });
+ updateActions();window.scrollTo(0,0);
 }
-document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+const tabButtons=Array.from(document.querySelectorAll("#tabs button"));
+tabButtons.forEach((b,i)=>{
+ b.onclick=()=>showTab(b.dataset.tab);
+ b.onkeydown=e=>{
+  let next;if(e.key=="ArrowRight")next=(i+1)%tabButtons.length;
+  else if(e.key=="ArrowLeft")next=(i+tabButtons.length-1)%tabButtons.length;
+  else if(e.key=="Home")next=0;else if(e.key=="End")next=tabButtons.length-1;else return;
+  e.preventDefault();const target=tabButtons[next];showTab(target.dataset.tab);target.focus();target.scrollIntoView({block:"nearest",inline:"nearest"});
+ };
+});
+// Associate row labels with their controls without changing API field IDs.
+document.querySelectorAll(".row").forEach(row=>{
+ const label=row.querySelector("label"),input=row.querySelector("input,select");
+ if(label&&input&&!label.contains(input))label.htmlFor=input.id;
+});
 
 function msg(t,c){$("msg").textContent=t;$("msg").className=c||"";setTimeout(()=>{$("msg").textContent=""},4000);}
 function rgb565ToHex(v){const r=(v>>11&31)*255/31|0,g=(v>>5&63)*255/63|0,b=(v&31)*255/31|0;

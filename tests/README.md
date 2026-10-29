@@ -44,3 +44,15 @@ also verify that badges leave Today and settings controls usable.
 `SCREEN_LAYOUT_SCREENSHOTS=/absolute/directory` writes SVG snapshots; weather
 coverage renders only the shared chrome, without fetching or decoding radar PNGs.
 These snapshots use approximate host fonts, not physical panel pixels.
+
+Optional browser layout and navigation checks (requires Playwright and Chrome):
+
+```sh
+NODE_PATH=/absolute/path/to/node_modules node tests/web_layout.cjs
+```
+
+Checks all eight tabs in three languages at 320/390/768/1280 px, page overflow,
+fixed save placement after scrolling, keyboard tab navigation, preservation of
+unsaved fields and calendar activation payloads. All requests use local fixtures;
+no device or external service is contacted. `WEB_SCREENSHOTS=/absolute/directory`
+records desktop/mobile snapshots with synthetic device data.

@@ -11,6 +11,31 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.10] - 2026-10-29
+
+### Změněno
+
+- Webové nastavení má podtržené záložky místo pilulkových tlačítek, sjednocenou
+  šířku obsahu, zarovnání polí, odstupy a hierarchii nadpisů. Související položky
+  tvoří skupiny; každý kalendář má vlastní ohraničený oddíl, nápověda je zvlášť.
+- Ukládání je v pevné horní liště vpravo, dostupné i po posunutí stránky.
+  Kalendář používá „Uložit a zapnout kalendář“, ručně ukládané karty běžné
+  uložení. Vzhled a Letadla ukazují průběžné ukládání. Připojení WiFi,
+  párování a test notifikace zůstávají samostatnými akcemi.
+- Zprávy o výsledku se zobrazují nad obsahem i na kartě Ovládání. Nápovědy
+  ve všech třech jazycích odkazují na nové umístění ukládání.
+- Záložky podporují klávesové šipky, Home/End, role tab/tabpanel a vybraný stav.
+  Políčka mají přiřazené popisky, ovládání viditelný fokus. Přepínání záložek
+  zachovává rozpracovaná pole; během ukládání se blokuje opakované odeslání.
+- Mobilní hlavička má dva řádky, taby se posouvají vodorovně. Přepínání
+  obrazovek a rozsahu v dálkovém ovládání tvoří samostatné skupiny.
+
+### Ověření
+
+- Prohlížeč: 320, 390, 768 a 1280 px, všechny tři jazyky a osm záložek;
+  kontrola přetečení, pevného ukládání, klávesnice, rozpracovaných polí a
+  odeslání kalendáře. Host testy a build ESP32-S3, bez fyzického zařízení.
+
 ## [0.7.9] - 2026-10-29
 
 ### Změněno
