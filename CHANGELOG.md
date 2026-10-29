@@ -11,6 +11,31 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.9] - 2026-10-29
+
+### Změněno
+
+- Dosah obou map je o 22 px níže (y=444), v neprůhledném černém výřezu
+  u spodního okraje. Horní černý výřez odděluje hodiny, stav a legendu od mapy;
+  kompas se vykresluje pod ním. Žlutá letadla již nesplývají s dosahem.
+- Celé ikony letadel včetně výstražného kroužku respektují výřezy a odstup
+  12 px. Skryté ikony nejsou dotykovými cíli; nouzové a sledované lety se nadále
+  vyhodnocují i za výřezem. Mapa i popisky používají stejný rezervovaný prostor.
+- Zkontrolovány všechny obrazovky z hlediska seskupování a odstupů: stavový řádek
+  má společný oddělovač, kalendář větší odstup titulku od hodin. V nastavení se
+  režim jasu nepřekrývá s anglickým popiskem a dlouhá WiFi SSID se zkracují.
+  Rozložení hlavních hodin a řádků předpovědi zůstává zachováno.
+- Odznak nepřečtených notifikací se umisťuje podle obrazovky, aby neblokoval
+  tlačítko Dnes, nastavení, údaje o kvalitě ovzduší ani dosah mapy.
+
+### Ověření
+
+- Host testy skutečného vykreslování, kruhových okrajů, rezervací mapy a dotyků;
+  SVG náhledy mapy letadel, detailu, hodin, předpovědi, nastavení a kalendáře.
+  U meteoradaru ověřena geometrie společných výřezů; PNG radarová data nejsou
+  součástí host náhledu. Změna nepřidává framebuffer ani dynamické buffery.
+- Host testy a build ESP32-S3. Fyzický displej zatím nebyl ověřen.
+
 ## [0.7.8] - 2026-10-29
 
 ### Opraveno

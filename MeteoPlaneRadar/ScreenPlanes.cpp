@@ -16,6 +16,7 @@
 #include "UI.h"
 #include "Layout.h"
 #include "Navigation.h"
+#include "ScreenChrome.h"
 #include "Lang.h"
 #include "Status.h"
 #include "Display_ST7701.h"
@@ -337,6 +338,7 @@ void ScreenPlanes_Draw() {
   refreshRotation();           // pick up a changed rotation setting
   float range = currentRange();
 
+  Chrome_ReserveMap(false);
   // Reserve the chrome BEFORE the map is drawn. City labels and callsigns are
   // placed by data rather than by design, so they have to lose the argument -
   // and they can only lose it if the space is already taken when they ask.
@@ -422,6 +424,9 @@ void ScreenPlanes_Draw() {
     project(list[i].lat, list[i].lon, Settings_Lat(), Settings_Lon(), range, &sx, &sy);
     int dx = sx - R_CX, dy = sy - R_CY;
     if (dx * dx + dy * dy > R_RADIUS * R_RADIUS) continue;   // outside the circle
+    // Keep the whole icon/alert ring and a 12px gap outside the clock and range
+    // notches. This also prevents invisible targets from remaining tappable.
+    if (Chrome_MapOverlaps(sx-22,sy-22,44,44)) continue;
     // Store position *and* identity, so a tap resolves to an aircraft and not
     // to a list slot that may mean something else by the time it is used.
     s_planeX[i] = sx; s_planeY[i] = sy;
@@ -467,10 +472,27 @@ void ScreenPlanes_Draw() {
     shown++;
   }
 
-  // Top of the screen, under the screen-selector dots at y=18:
-  //   y 30..45  clock + outside temperature (size 2, the same as the range)
-  //   y 52..59  aircraft count (size 1 - it is a secondary number)
-  //   y 74      altitude legend
+  // --- Compass marks ---
+  // Bearing b appears on screen at angle (b - rotation), 0 = up, clockwise.
+  // Small size-1 letters at r = 205 are painted before the opaque header
+  // and range notches, so compass labels cannot collide with their text.
+  {
+    const int   cr = 205;
+    const char* lbl[4] = { "S", "V", "J", "Z" };   // sever, vychod, jih, zapad
+    const int   brg[4] = { 0, 90, 180, 270 };
+    gfx->setTextSize(1);
+    gfx->setTextColor(C_GRAY);
+    for (int i = 0; i < 4; i++) {
+      // Bearing b shows up at screen angle (b - topBearing).
+      float a = (brg[i] - (int)s_topDeg) * 0.0174532925f;
+      int cxp = R_CX + (int)(cr * sinf(a)) - 3;   // -3/-4 centres the glyph
+      int cyp = R_CY - (int)(cr * cosf(a)) - 4;
+      gfx->setCursor(cxp, cyp);
+      gfx->print(lbl[i]);
+    }
+  }
+
+  Chrome_DrawMapHeader(false);
   UI_DrawStatusLine(LY_STATUS);
 
   // The line under the clock: normally the aircraft count, but an emergency
@@ -526,30 +548,10 @@ void ScreenPlanes_Draw() {
     gfx->print("km");
   }
 
-  // --- Compass marks ---
-  // Bearing b appears on screen at angle (b - rotation), 0 = up, clockwise.
-  // Small size-1 letters at r = 205 slot in between the screen dots (y=18),
-  // the status line (y=30), the aircraft count (y=52) and the range row.
-  {
-    const int   cr = 205;
-    const char* lbl[4] = { "S", "V", "J", "Z" };   // sever, vychod, jih, zapad
-    const int   brg[4] = { 0, 90, 180, 270 };
-    gfx->setTextSize(1);
-    gfx->setTextColor(C_GRAY);
-    for (int i = 0; i < 4; i++) {
-      // Bearing b shows up at screen angle (b - topBearing).
-      float a = (brg[i] - (int)s_topDeg) * 0.0174532925f;
-      int cxp = R_CX + (int)(cr * sinf(a)) - 3;   // -3/-4 centres the glyph
-      int cyp = R_CY - (int)(cr * cosf(a)) - 4;
-      gfx->setCursor(cxp, cyp);
-      gfx->print(lbl[i]);
-    }
-  }
-
-  // Range readout occupies the old bottom dot row; steps are on the right.
+  // Opaque bottom notch keeps the range readable against every aircraft colour.
   char rbuf[16];
   snprintf(rbuf, sizeof(rbuf), "%.0f km", range);
-  UI_TextCentered(rbuf, LY_RANGE, C_YELLOW, 2);
+  Chrome_DrawRange(rbuf);
 
   Navigation_DrawRangeDots(s_rangeIdx, RANGE_COUNT);
 

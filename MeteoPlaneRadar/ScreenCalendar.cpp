@@ -206,7 +206,7 @@ void ScreenCalendar_Draw() {
   Layout_Begin();
   Layout_ReserveBand(LY_STATUS, 16);
   UI_DrawStatusLine(LY_STATUS);
-  UI_TextCentered(T(S_CALENDAR), 66, C_CYAN, 1);
+  UI_TextCentered(T(S_CALENDAR), 78, C_CYAN, 1);
   char b[48];
   struct tm date{};
   time_t value = selected ? selected : time(nullptr);

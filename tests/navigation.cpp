@@ -37,7 +37,7 @@ int main() {
   assert(display.circles==5);
   auto svg=display.drawing.str();
   assert(svg.find("cx='444' cy='224' r='4' fill='#ffff00'")!=std::string::npos);
-  assert(LY_RANGE==422); // text centre at y=430, the former range dot row
+  assert(LY_RANGE==444); // bottom notch, below the notification count badge
   testMillis = 20999; assert(!Navigation_Tick());
   Navigation_RangeChanged(); Navigation_Drawn();
   testMillis = 21000; assert(!Navigation_Tick()); // interaction extends timeout

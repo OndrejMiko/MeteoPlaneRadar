@@ -15,6 +15,7 @@
 #include "Display_ST7701.h"
 #include "Config.h"
 #include "Version.h"
+#include "ScreenChrome.h"
 
 #include <WiFi.h>
 #include <math.h>
@@ -121,6 +122,8 @@ void ScreenSettings_Draw() {
   { char v[28]; snprintf(v, sizeof(v), "firmware v%s", FW_VERSION);
     UI_TextCentered(v, 68, C_GRAY, 1); }
 
+  Chrome_DrawHeaderDivider(84);
+
   // --- Brightness ---
   gfx->setTextSize(2); gfx->setTextColor(C_GRAY);
   gfx->setCursor(SL_X, ROW_BRIGHT);
@@ -129,7 +132,7 @@ void ScreenSettings_Draw() {
   // looks like it did not stick, when in fact the other level was changed.
   if (Settings_NightAuto() || Settings_IsNight()) {
     gfx->setTextSize(1);
-    gfx->setCursor(SL_X + 60, ROW_BRIGHT + 6);
+    gfx->setCursor(SL_X + Layout_TextW(T(S_BRIGHTNESS), 2) + 12, ROW_BRIGHT + 6);
     gfx->print(Settings_IsNight() ? (Lang_Get() == LANG_EN ? "(night)" : (Lang_Get() == LANG_SK ? "(nocny)" : "(nocni)"))
                                   : (Lang_Get() == LANG_EN ? "(day)"   : (Lang_Get() == LANG_SK ? "(denny)" : "(denni)")));
   }
@@ -149,7 +152,10 @@ void ScreenSettings_Draw() {
   gfx->setCursor(SL_X, ROW_WIFI); gfx->print("WiFi: ");
   if (WiFi_IsConnected()) {
     gfx->setTextColor(C_GREEN);
-    gfx->print(WiFi_SSID());
+    char ssid[20];
+    snprintf(ssid, sizeof(ssid), "%s", WiFi_SSID().c_str());
+    if (WiFi_SSID().length() >= sizeof(ssid)) memcpy(ssid + sizeof(ssid) - 4, "...", 3);
+    gfx->print(ssid);
     gfx->setTextColor(C_WHITE);
     gfx->setCursor(SL_X, ROW_IP); gfx->print(WiFi_IP());
     gfx->setTextSize(1); gfx->setTextColor(C_CYAN);

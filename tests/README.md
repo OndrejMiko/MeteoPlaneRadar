@@ -35,3 +35,12 @@ the zoom timer, redraw requests surviving throttling, right-side geometry and
 Timezone tests cover namespaced aliases, VTIMEZONE order, yearly transitions,
 DST gaps/folds, southern hemisphere, fractional offsets, bounded definitions,
 source isolation and reporting an unsupported TZID while preserving cached data.
+
+Screen layout coverage exercises actual aircraft/detail, forecast, clock and
+settings draw calls with a busy map and long SSID, plus calendar day/month views.
+It checks shared header/range reservations, whole-icon exclusion and hidden touch
+targets, circular chord fit, and opaque backing before text. Notification tests
+also verify that badges leave Today and settings controls usable.
+`SCREEN_LAYOUT_SCREENSHOTS=/absolute/directory` writes SVG snapshots; weather
+coverage renders only the shared chrome, without fetching or decoding radar PNGs.
+These snapshots use approximate host fonts, not physical panel pixels.

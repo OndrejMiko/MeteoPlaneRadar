@@ -30,13 +30,13 @@
 // tall, size-1 is 8 px, and the self-test checks these do not run into each
 // other.
 #define LY_DOTS        18    // screen selector dots (this one is a CENTRE y)
-#define LY_STATUS      30    // clock + outside temperature      (size 2)
-#define LY_SUB         52    // aircraft count / frame dots      (size 1)
-#define LY_LEGEND      74    // altitude legend / frame time     (size 1)
-#define LY_NOTE        86    // small note under the legend      (size 1)
+#define LY_STATUS      36    // clock + outside temperature      (size 2)
+#define LY_SUB         76    // aircraft count / frame dots      (size 1)
+#define LY_LEGEND      98    // altitude legend / frame time     (size 1)
+#define LY_NOTE        124    // small note under the legend      (size 1)
 
 // Bottom stack, from the rim up.
-#define LY_RANGE       (LCD_HEIGHT - 58)   // range centred on the old dot row (size 2)
+#define LY_RANGE       (LCD_HEIGHT - 36)   // range inside the bottom black notch (size 2)
 // Zoom steps form a temporary vertical column at the right edge of either map.
 #define LY_ZOOM_DOTS_X   (LCD_WIDTH - 36)
 #define LY_ZOOM_DOTS_Y   (LCD_HEIGHT / 2)

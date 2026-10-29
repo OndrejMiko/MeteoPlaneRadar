@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Calendar.h"
+#include "ScreenChrome.h"
 #include "Lang.h"
 #include "ScreenCalendar.h"
 #include "Settings.h"
@@ -37,14 +38,8 @@ bool Net_GetCalendar(const char* url, uint8_t* buf, size_t cap, size_t* len, boo
 }
 Arduino_GFX canvas;
 Arduino_GFX* gfx = &canvas;
-void Layout_Begin() {}
-void Layout_ReserveBand(int, int) {}
-void UI_DrawStatusLine(int y) {
-  gfx->setTextSize(2);
-  gfx->setTextColor(C_WHITE);
-  gfx->setCursor(162, y);
-  gfx->print("15:00  18 C");
-}
+void Outside_StatusText(char* out,size_t cap){snprintf(out,cap,"15:00  18 C");}
+void UI_DrawStatusLine(int y) { Chrome_DrawStatus(y); }
 void UI_TextCenteredIn(const char* text, int x, int width, int y, uint16_t color, uint8_t size) {
   gfx->setTextSize(size);
   gfx->setTextColor(color);

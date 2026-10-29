@@ -25,6 +25,21 @@ unsigned count = 0, recentIndex = 0, detailPage = 0;
 uint32_t dropped = 0, lastReceived = 0, openedAt = 0;
 bool visible = false, expanded = false, dirty = false;
 constexpr uint16_t PANEL = 0x1105;
+struct BadgeBox {
+  int x, y, w, h;
+};
+BadgeBox badgeBox() {
+  switch (Settings_Screen()) {
+    case SCREEN_PLANES_I:
+    case SCREEN_METEO_I:
+      return {208, 391, 64, 48};  // above the lower range notch
+    case SCREEN_CALENDAR_I:
+      return {366, 134, 48, 40};  // beside view tabs, clear of Today
+    default:
+      return {208, 438, 64, 40};  // clear of forecast AQI and settings buttons
+  }
+}
+
 const char* label(const char* cz, const char* en, const char* sk) {
   return Lang_Get() == LANG_EN ? en : (Lang_Get() == LANG_SK ? sk : cz);
 }
@@ -177,9 +192,10 @@ void Notifications_Draw() {
   if (!count || !Settings_NotificationsEnabled()) return;
   char b[64];
   if (!visible) {
-    gfx->fillRoundRect(208, 391, 64, 48, 20, PANEL);
+    const auto box = badgeBox();
+    gfx->fillRoundRect(box.x, box.y, box.w, box.h, 20, PANEL);
     snprintf(b, sizeof(b), "%u", count);
-    UI_TextCenteredIn(b, 208, 64, 407, C_WHITE, 2);
+    UI_TextCenteredIn(b, box.x, box.w, box.y + (box.h - 16) / 2, C_WHITE, 2);
     return;
   }
   Message& m = store->messages[0];
@@ -223,7 +239,8 @@ bool Notifications_Visible() { return visible && Settings_NotificationsEnabled()
 bool Notifications_Touch(int x, int y, bool tap) {
   if (!count || !Settings_NotificationsEnabled()) return false;
   if (!visible) {
-    if (tap && x >= 208 && x < 272 && y >= 391 && y < 439) {
+    const auto box = badgeBox();
+    if (tap && x >= box.x && x < box.x + box.w && y >= box.y && y < box.y + box.h) {
       show();
       return true;
     }

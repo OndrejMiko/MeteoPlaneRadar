@@ -13,7 +13,7 @@ c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -IMeteoPlaneRadar \
 "$test_build_dir/calendar_ics"
 c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoPlaneRadar -I"$ARDUINOJSON_SRC" \
   MeteoPlaneRadar/Lang.cpp MeteoPlaneRadar/Settings.cpp MeteoPlaneRadar/CalendarIcs.cpp \
-  MeteoPlaneRadar/Calendar.cpp MeteoPlaneRadar/ScreenCalendar.cpp tests/calendar_runtime.cpp -o "$test_build_dir/calendar_runtime"
+  MeteoPlaneRadar/Calendar.cpp MeteoPlaneRadar/ScreenCalendar.cpp MeteoPlaneRadar/ScreenChrome.cpp MeteoPlaneRadar/Layout.cpp tests/calendar_runtime.cpp -o "$test_build_dir/calendar_runtime"
 "$test_build_dir/calendar_runtime"
 node tests/web.mjs
 c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoPlaneRadar -I"$ARDUINOJSON_SRC" \
@@ -27,3 +27,9 @@ c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoP
 c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -IMeteoPlaneRadar \
   MeteoPlaneRadar/CalendarIcs.cpp tests/calendar_zones.cpp -o "$test_build_dir/calendar_zones"
 "$test_build_dir/calendar_zones"
+c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoPlaneRadar -I"$ARDUINOJSON_SRC" \
+  MeteoPlaneRadar/Settings.cpp MeteoPlaneRadar/Lang.cpp MeteoPlaneRadar/Layout.cpp MeteoPlaneRadar/ScreenChrome.cpp \
+  MeteoPlaneRadar/Navigation.cpp MeteoPlaneRadar/ScreenPlanes.cpp MeteoPlaneRadar/ScreenSettings.cpp \
+  MeteoPlaneRadar/ScreenClock.cpp MeteoPlaneRadar/ScreenForecast.cpp MeteoPlaneRadar/WxIcon.cpp \
+  tests/screen_layout.cpp -o "$test_build_dir/screen_layout"
+"$test_build_dir/screen_layout"

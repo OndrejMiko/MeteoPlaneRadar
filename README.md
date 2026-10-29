@@ -99,6 +99,10 @@ Přístupový bod zůstane aktivní, dokud síť nezadáte. Potom najdete nastav
 **`http://meteoplaneradar.local/`** nebo na IP adrese, která je vypsaná na
 obrazovce Nastavení.
 
+Hodiny a stav map jsou oddělené v černém horním výřezu, dosah je v dolním
+výřezu. Ikony letadel a mapové popisky udržují kolem těchto údajů odstup,
+aby byly čitelné i při hustém provozu nebo barevných srážkách.
+
 ## Nastavení v prohlížeči
 
 Web běží trvale. Nastavíte v něm polohu (i vyhledáním města), které obrazovky

@@ -23,6 +23,7 @@
 #include "UI.h"
 #include "Layout.h"
 #include "Navigation.h"
+#include "ScreenChrome.h"
 #include "Lang.h"
 #include "Status.h"
 #include "RainViewer.h"
@@ -376,11 +377,12 @@ static void drawOverlay() {
     }
   }
 
-  // Clock + outside temperature, directly under the screen-selector dots.
+  Chrome_DrawMapHeader(true);
+  // Clock + outside temperature, grouped apart from animation controls.
   UI_DrawStatusLine(LY_STATUS);
 
   // Animation indicator - dots + the frame's time label. Moved down to make
-  // room for the status line above it: dots at y=62, label at y=74.
+  // room for the status line above it; dots and time share the header notch.
   {
     int have = srcCount();
     int n = have > 0 ? have : 1;
@@ -415,8 +417,7 @@ static void drawOverlay() {
   else if (rvMode())    snprintf(rbuf, sizeof(rbuf), "%.0f %s",
                                  RainViewer_EffectiveRadiusKm(), T(S_KM));
   else                  snprintf(rbuf, sizeof(rbuf), "%.0f %s", currentRange(), T(S_KM));
-  gfx->fillRect(CX - 56, LY_RANGE - 4, 112, 24, C_BLACK);
-  UI_TextCenteredIn(rbuf, 0, LCD_WIDTH, LY_RANGE, C_YELLOW, 2);
+  Chrome_DrawRange(rbuf);
   Navigation_DrawRangeDots(s_rangeIdx, RANGE_COUNT);
 }
 
@@ -566,6 +567,7 @@ void ScreenWeather_Draw() {
   gfx->fillScreen(C_BLACK);
   Layout_Begin();
 
+  Chrome_ReserveMap(true);
   // Chrome owns its lines before the map draws a single city label.
   if (Navigation_ScreenDotsVisible()) Layout_ReserveBand(LY_DOTS - 6, 12);
   Layout_ReserveBand(LY_STATUS - 3, 22);

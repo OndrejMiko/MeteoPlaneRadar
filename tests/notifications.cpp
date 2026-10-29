@@ -101,6 +101,17 @@ int main() {
     display.snapshot((std::string(snapshots) + "/detail.svg").c_str());
   }
   std::cout << "Notification queue PSRAM: " << Notifications_MemoryBytes() << " B\n";
+  // Return from the intentionally persistent detail to a timed banner.
+  if (snapshots) assert(Notifications_Touch(359, 95, true));
+  // An unread badge must leave calendar Today, forecast AQI and map range usable.
+  testMillis += 15000; Notifications_Tick();
+  Settings_SetScreen(SCREEN_CALENDAR_I);
+  assert(!Notifications_Touch(240,420,true));
+  assert(Notifications_Touch(366,134,true));
+  testMillis += 15000; Notifications_Tick();
+  Settings_SetScreen(SCREEN_SETTINGS_I);
+  assert(!Notifications_Touch(240,390,true));
+  assert(Notifications_Touch(240,450,true));
   settings(false);
   assert(Notifications_Tick());
   assert(!Notifications_Count() && !Notifications_Visible() && !Notifications_MemoryBytes());
