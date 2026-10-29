@@ -56,3 +56,7 @@ fixed save placement after scrolling, keyboard tab navigation, preservation of
 unsaved fields and calendar activation payloads. All requests use local fixtures;
 no device or external service is contacted. `WEB_SCREENSHOTS=/absolute/directory`
 records desktop/mobile snapshots with synthetic device data.
+
+Aircraft detail tests cover the shared 32px close icon and invisible 64px hit
+area, capture of body/outside taps, exact target edges, and route/type rendering
+in all languages and both unit systems.

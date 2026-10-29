@@ -142,6 +142,7 @@ nastavení.
 | **Přejetí nahoru na mapě** | přiblížení mapy |
 | **Přejetí dolů na mapě** | oddálení mapy |
 | **Krátké klepnutí** | výběr letadla / přepnutí den–noc na hodinách |
+| **Křížek v detailu letadla** | zavření detailu; neviditelná aktivní plocha 64 × 64 px, klepnutí do obsahu jej nezavře |
 | **Dlouhý stisk vlevo / vpravo** | předchozí / následující obrazovka |
 | **BOOT při startu (~3 s)** | tovární reset |
 

@@ -9,6 +9,7 @@
 #include "Lang.h"
 #include "Settings.h"
 #include "UI.h"
+#include "Overlay.h"
 
 namespace {
 constexpr unsigned CAPACITY = 6;
@@ -24,7 +25,7 @@ Store* store = nullptr;
 unsigned count = 0, recentIndex = 0, detailPage = 0;
 uint32_t dropped = 0, lastReceived = 0, openedAt = 0;
 bool visible = false, expanded = false, dirty = false;
-constexpr uint16_t PANEL = 0x1105;
+constexpr uint16_t PANEL = OVERLAY_PANEL;
 struct BadgeBox {
   int x, y, w, h;
 };
@@ -84,13 +85,6 @@ size_t line(const char* s, size_t at, char* out, unsigned width) {
   while (s[next] == ' ') ++next;
   if (s[next] == '\n') ++next;
   return next;
-}
-void cross(int x, int y) {
-  // 32x32 visible X, twice the 16px text height; invisible 64x64 target.
-  for (int t = -1; t <= 1; ++t) {
-    gfx->drawLine(x + 16, y + 16 + t, x + 47, y + 47 + t, C_GRAY);
-    gfx->drawLine(x + 16, y + 47 + t, x + 47, y + 16 + t, C_GRAY);
-  }
 }
 void show() {
   visible = true;
@@ -205,7 +199,7 @@ void Notifications_Draw() {
     text("Google Chat", 80, 132, C_GRAY);
     snprintf(b, sizeof(b), "%u/%u", 1, count);
     text(b, 294, 132, C_GRAY, 2);
-    cross(368, 120);
+    Overlay_DrawClose(368, 120);
     clipped(m.sender, 63, 165, 24, C_WHITE);
     size_t at = line(m.text, 0, b, 28);
     text(b, 63, 199, C_WHITE);
@@ -216,7 +210,7 @@ void Notifications_Draw() {
     gfx->fillScreen(C_BLACK);
     gfx->fillCircle(166, 82, 4, C_GREEN);
     text("Google Chat", 180, 75, C_GRAY, 2);
-    cross(359, 95);
+    Overlay_DrawClose(359, 95);
     clipped(m.sender, 85, 120, 22, C_WHITE);
     clipped(m.room, 85, 147, 25, C_GRAY);
     snprintf(b, sizeof(b), "%u / %u", 1, count);
@@ -248,7 +242,7 @@ bool Notifications_Touch(int x, int y, bool tap) {
   }
   if (!tap) return true;
   if (!expanded) {
-    if (x >= 368 && x < 432 && y >= 120 && y < 184)
+    if (Overlay_CloseHit(x, y, 368, 120))
       dismiss();
     else if (x >= 43 && x < 437 && y >= 115 && y < 312) {
       expanded = true;
@@ -256,7 +250,7 @@ bool Notifications_Touch(int x, int y, bool tap) {
       dirty = true;
     }
   } else {
-    if ((x >= 359 && x < 423 && y >= 95 && y < 159) || (x >= 108 && x < 372 && y >= 400 && y < 448))
+    if (Overlay_CloseHit(x, y, 359, 95) || (x >= 108 && x < 372 && y >= 400 && y < 448))
       dismiss();
     else if (y >= 360 && y < 400) {
       unsigned pages = pageCount(store->messages[0].text);

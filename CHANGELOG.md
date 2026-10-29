@@ -11,6 +11,25 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.11] - 2026-10-29
+
+### Změněno
+
+- Detail letadla používá stejný tmavý panel, zaoblení a šedý křížek jako
+  notifikace. Bez červeného kolečka a tyrkysového obrysu; viditelný křížek má
+  32 × 32 px, neviditelná aktivní plocha 64 × 64 px se nezvýrazňuje.
+- Panel má více místa, oddělený nadpis a datové řádky; typ, registrace, oba
+  řádky trasy a výpadek signálu zůstávají uvnitř kruhového displeje.
+- Detail se zavírá křížkem. Klepnutí do obsahu ani vedle okna jej nezavře
+  a nevybere jiné letadlo. Dlouhý stisk pro přepnutí obrazovky zůstává.
+- Notifikace i letadla sdílejí vykreslování křížku a výpočet dotykové zóny.
+
+### Ověření
+
+- Testy hran dotykové plochy, zachycení klepnutí, vykreslení panelu a trasy
+  ve třech jazycích a obou jednotkových systémech. Host testy a build ESP32-S3;
+  fyzický displej zatím nebyl ověřen.
+
 ## [0.7.10] - 2026-10-29
 
 ### Změněno

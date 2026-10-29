@@ -8,6 +8,7 @@
 #include "UI.h"
 #include "Layout.h"
 #include "ScreenChrome.h"
+#include "Overlay.h"
 #include "ScreenPlanes.h"
 #include "ScreenClock.h"
 #include "ScreenForecast.h"
@@ -60,8 +61,10 @@ const char* ADSB_EmergencyCode(const Aircraft&) { return nullptr; }
 void Route_Clear() {}
 bool Route_TakeChanged() { return false; }
 void Route_Select(const char*, float, float) {}
-RouteState Route_GetState() { return ROUTE_NONE; }
-const RouteInfo* Route_Get() { return nullptr; }
+static RouteInfo route;
+static bool routeReady = false;
+RouteState Route_GetState() { return routeReady ? ROUTE_OK : ROUTE_NONE; }
+const RouteInfo* Route_Get() { return routeReady ? &route : nullptr; }
 void EuBorder_Draw(ProjectFn, uint16_t, float, float, float, float) {
   for (int y = 20; y < 470; y += 18) gfx->drawLine(0, y, 480, y - 14, C_DKGRAY);
 }
@@ -134,9 +137,45 @@ int main() {
   assert(!ScreenPlanes_HandleTap(240, 132));
   assert(!ScreenPlanes_HandleTap(240, 444));
   assert(ScreenPlanes_HandleTap(240, 245));
+  routeReady = true;
+  snprintf(route.from, sizeof(route.from), "Frankfurt am Main");
+  snprintf(route.to, sizeof(route.to), "Bratislava");
+  snprintf(planes[2].type, sizeof(planes[2].type), "A320");
+  snprintf(planes[2].reg, sizeof(planes[2].reg), "OM-TEST");
   ScreenPlanes_Draw();
   snapshot("aircraft-detail");
-  ScreenPlanes_CloseDetail();
+  svg = display.drawing.str();
+  assert(svg.find("x='55' y='100' width='370' height='300' rx='20' fill='" +
+                  Arduino_GFX::rgb(OVERLAY_PANEL)) != std::string::npos);
+  assert(svg.find("M372 120L403 151") != std::string::npos); // shared 32px X
+  assert(svg.find("x='188' y='98' width='26' height='6'") == std::string::npos);
+  assert(svg.find("cx='376' cy='132' r='15'") == std::string::npos); // no red button
+  assert(ScreenPlanes_HandleTap(200, 220) && ScreenPlanes_DetailOpen());
+  assert(ScreenPlanes_HandleTap(10, 10) && ScreenPlanes_DetailOpen());
+  assert(ScreenPlanes_HandleTap(355, 105) && ScreenPlanes_DetailOpen());
+  assert(ScreenPlanes_HandleTap(356, 104) && ScreenPlanes_DetailOpen());
+  assert(ScreenPlanes_HandleTap(420, 105) && ScreenPlanes_DetailOpen());
+  assert(ScreenPlanes_HandleTap(356, 169) && ScreenPlanes_DetailOpen());
+  assert(ScreenPlanes_HandleTap(419, 168) && !ScreenPlanes_DetailOpen());
+  assert(ScreenPlanes_HandleTap(240, 245));
+  assert(ScreenPlanes_HandleTap(356, 105) && !ScreenPlanes_DetailOpen());
+  // Data, type/registration and both route rows stay inside the taller panel
+  // in every language and both unit systems.
+  for (uint8_t lang = 0; lang < 3; ++lang) {
+    Settings_SetLanguage(lang);
+    for (bool metric : {false, true}) {
+      JsonDocument config; config["metric"] = metric;
+      assert(Settings_FromJson(config.as<JsonObjectConst>()));
+      assert(ScreenPlanes_HandleTap(240, 245));
+      ScreenPlanes_Draw();
+      snapshot((std::string("aircraft-detail-") + std::to_string(lang) +
+                (metric ? "-metric" : "-aviation")).c_str());
+      assert(display.drawing.str().find("Bratislava</text>") != std::string::npos);
+      ScreenPlanes_CloseDetail();
+    }
+  }
+  Settings_SetLanguage(LANG_SK);
+
   for (int i = 0; i < 12; ++i) {
     hours[i].t = now + i * 3600;
     hours[i].temp = 8 + i * .5;
