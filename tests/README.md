@@ -31,3 +31,7 @@ records the real screen's drawing calls as SVG for layout inspection.
 Navigation tests cover transient screen/zoom indicators, exact expiry, refreshing
 the zoom timer, redraw requests surviving throttling, right-side geometry and
 32-bit millis rollover. Physical gesture recognition still needs device testing.
+
+Timezone tests cover namespaced aliases, VTIMEZONE order, yearly transitions,
+DST gaps/folds, southern hemisphere, fractional offsets, bounded definitions,
+source isolation and reporting an unsupported TZID while preserving cached data.

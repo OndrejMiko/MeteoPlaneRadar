@@ -86,7 +86,7 @@ int main() {
   Calendar_Tick();
   assert(calls == 1 && Calendar_State(0) == CAL_OK && Calendar_State(1) == CAL_WAIT);
   assert(Calendar_Incomplete());
-  assert(Calendar_MemoryBytes() < 700 * 1024);
+  assert(Calendar_MemoryBytes() < 768 * 1024);
   std::cout << "Calendar PSRAM budget: " << Calendar_MemoryBytes() << " bytes\n";
   Calendar_Tick();
   assert(calls == 2 && Calendar_State(1) == CAL_OK && !Calendar_Incomplete());
@@ -162,6 +162,13 @@ int main() {
     std::string path = std::string(dir) + "/calendar-month-single.svg";
     canvas.snapshot(path.c_str());
   }
+  // A failed zone is diagnosed per source without replacing its valid cache.
+  payload[0]="BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nDTSTART;TZID=Unknown/PrivateZone:20261024T100000\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
+  Calendar_Refresh();Calendar_Tick();
+  assert(Calendar_State(0)==CAL_TIMEZONE);
+  assert(!strcmp(Calendar_UnsupportedTimezone(0),"Unknown/PrivateZone"));
+  assert(Calendar_Day(now,rows,CALENDAR_SOURCES*CALENDAR_EVENTS_PER_SOURCE)>0);
+  assert(!*Calendar_UnsupportedTimezone(1));
   // A new subscription must not display the previous URL's private events.
   settings.clear();
   deserializeJson(settings, R"({"calendars":[{"clearUrl":true},{"enabled":false}]})");

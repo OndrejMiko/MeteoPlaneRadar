@@ -24,3 +24,6 @@ python3 tests/chat_bridge.py
 c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoPlaneRadar \
   MeteoPlaneRadar/Navigation.cpp tests/navigation.cpp -o "$test_build_dir/navigation"
 "$test_build_dir/navigation"
+c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -IMeteoPlaneRadar \
+  MeteoPlaneRadar/CalendarIcs.cpp tests/calendar_zones.cpp -o "$test_build_dir/calendar_zones"
+"$test_build_dir/calendar_zones"

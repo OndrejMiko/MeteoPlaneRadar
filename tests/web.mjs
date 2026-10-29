@@ -125,3 +125,7 @@ requests.length=0;elements.get('cal0Url').value='';elements.get('cal0Clear').che
 context.fetch=async(...args)=>{requests.push(args);throw Error('should not request');};
 await run('saveCalendars()');assert.equal(requests.length,0);
 console.log('Calendar activation, saved URL reuse, restart handling and failed saves passed');
+
+context.fetch=async()=>({json:async()=>({calendarSources:[{state:'Nepodporovane casove pasmo',unsupportedTimezone:'Unknown/Zone',updated:0}]})});
+await run('status()');
+assert(elements.get('cal0Status').textContent.includes('TZID: Unknown/Zone'));

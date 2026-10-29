@@ -290,6 +290,7 @@ static void handleStatus() {
     JsonObject c = calendars.add<JsonObject>();
     c["state"] = Calendar_StateText(Calendar_State(i));
     c["updated"] = (long long)Calendar_Updated(i);
+    c["unsupportedTimezone"] = Calendar_UnsupportedTimezone(i);
   }
   sendJson(200, doc);
 }

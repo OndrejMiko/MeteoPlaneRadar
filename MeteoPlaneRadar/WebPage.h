@@ -661,7 +661,7 @@ async function status(){
   [D[L].timezone,s.timezone],[D[L].calMemory,(s.calendarMemory||0)+" B"],
   ["Firmware","v"+s.version],[D[L].board,s.board]];
  $("ntStatus").textContent=D[L].ntQueue+": "+(s.notificationCount||0)+" · "+D[L].ntBridge+": "+(s.notificationBridgeAge??-1)+" · "+D[L].ntMemory+": "+(s.notificationMemory||0)+" B";
- (s.calendarSources||[]).forEach((c,i)=>{if(i<3)$("cal"+i+"Status").textContent=c.state+(c.updated?" · "+new Date(c.updated*1000).toLocaleString(L):"");});
+ (s.calendarSources||[]).forEach((c,i)=>{if(i<3)$("cal"+i+"Status").textContent=c.state+(c.unsupportedTimezone?" · TZID: "+c.unsupportedTimezone:"")+(c.updated?" · "+new Date(c.updated*1000).toLocaleString(L):"");});
  $("statusTab").innerHTML=rows.map(r=>"<tr><td>"+r[0]+"</td><td>"+r[1]+"</td></tr>").join("");}catch(e){}
 }
 setInterval(status,10000);

@@ -44,6 +44,12 @@ Odkazy se nevracejí na web ani do exportu; prázdné pole ponechá uložený od
 zaškrtnutí „Smazat uložený odkaz“ ho odstraní. Po obnově zálohy do nového zařízení
 odkazy zadejte znovu. Názvy, barvy a ostatní nastavení se zálohují.
 
+Podporované definice časových pásem `VTIMEZONE` se čtou přímo z odběru:
+standardní/letní čas, běžné roční přechody a explicitní data změn. Limity jsou
+8 pásem a 512 přechodů na pásmo, roky 1900–2100; složitější definice zůstanou
+odmítnuté. Webový stav ukáže konkrétní `TZID`, není potřeba sdílet soukromý odkaz.
+Paměťový rozpočet kalendáře je přibližně 746 kB PSRAM.
+
 Na kartě **Kalendář** použijte **Uložit a zapnout kalendář**. Uložený odkaz sám
 o sobě nezapíná obrazovku; její stav ukazuje tato karta. Máte-li adresu již uloženou,
 není nutné ji zadávat znovu. Při zapnutí se zařízení může restartovat.
@@ -53,7 +59,7 @@ agendu, **DNES** vrátí dnešní datum. Více než tři události se stránkuj�
 na agendu. Jeden aktivní kalendář nemá barevné tečky ani popisky zdroje; při více
 kalendářích jsou odlišeny barvou a názvem.
 
-Cache zabírá přibližně **0,65 MiB PSRAM**, nevytváří další framebuffer a má pevné
+Cache zabírá přibližně **0,71 MiB PSRAM**, nevytváří další framebuffer a má pevné
 limity: předchozí, aktuální a dva příští měsíce, 256 výskytů a 512 KiB ICS na zdroj.
 Obnovování je nastavitelné po 5–1440 minutách; chyby se zkouší znovu po dvou minutách.
 Při chybě zůstanou poslední platná data s upozorněním. Stav a přidělená PSRAM jsou
@@ -62,7 +68,7 @@ vidět ve webu. Vypnutý kalendář nestahuje data a uvolní pracovní buffery.
 Podporováno je UTC, místní čas zařízení a běžná středoevropská pásma (např.
 Europe/Bratislava, Europe/Prague). Parser podporuje běžné denní, týdenní, měsíční
 (včetně `1MO` / `-1FR`) a roční opakování, intervaly, COUNT/UNTIL, EXDATE/RDATE,
-přesuny a rušení jednotlivých výskytů. Složitější pravidla a jiná pásma jsou
+přesuny a rušení jednotlivých výskytů. Složitější pravidla a pásma bez podporované definice jsou
 hlášena jako chyba; úplná implementace RFC 5545 to není. Přesný seznam je v kódu
 `CalendarIcs.cpp`. Tato verze byla ověřena sestavením a host testy, nikoli na hardwaru.
 

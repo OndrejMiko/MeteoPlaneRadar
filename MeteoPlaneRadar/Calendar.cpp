@@ -13,6 +13,7 @@
 
 namespace {
 struct Cache {
+  CalendarParseDiagnostics diagnostics;
   CalendarEvent events[CALENDAR_EVENTS_PER_SOURCE];
   size_t count;
   uint64_t sourceHash;
@@ -127,6 +128,9 @@ bool dayRange(time_t day, time_t& a, time_t& b) {
 }
 }  // namespace
 void Calendar_Refresh() { refresh = true; }
+const char* Calendar_UnsupportedTimezone(uint8_t i) {
+  return cache && i < CALENDAR_SOURCES && Calendar_State(i)==CAL_TIMEZONE ? cache[i].diagnostics.timezone : "";
+}
 uint32_t Calendar_Generation() { return generation; }
 size_t Calendar_MemoryBytes() { return memoryBytes; }
 CalendarSourceState Calendar_State(uint8_t i) {
@@ -272,7 +276,7 @@ void Calendar_Tick() {
     bool fetched = Net_GetCalendar(config.url, feed, CALENDAR_MAX_FEED + 1, &length, &tooLarge);
     if (fetched) {
       auto result = CalendarIcs_Parse((char*)feed, length, windowStart, windowEnd, i, staging,
-                                      CALENDAR_EVENTS_PER_SOURCE, count, scratch, parsePoll);
+                                      CALENDAR_EVENTS_PER_SOURCE, count, scratch, parsePoll, &c.diagnostics);
       if (result == CAL_PARSE_OK) {
         qsort(staging, count, sizeof(CalendarEvent), order);
         memcpy(c.events, staging, count * sizeof(CalendarEvent));

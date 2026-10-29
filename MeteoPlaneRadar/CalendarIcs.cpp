@@ -15,7 +15,7 @@ struct Date {
 struct Stamp {
   Date wall;
   time_t epoch = 0;
-  char zone[64]{};
+  char zone[128]{};
 };
 struct Raw {
   Stamp start, end, rid;
@@ -32,7 +32,23 @@ struct Exception {
   uint64_t uid;
   time_t rid;
 };
+constexpr int ZONE_COUNT = 8, ZONE_TRANSITIONS = 512;
+struct Transition {
+  time_t utc;
+  int from, to;
+};
+struct Zone {
+  char id[128];
+  Transition transitions[ZONE_TRANSITIONS];
+  int count;
+  bool valid;
+};
+struct Zones {
+  Zone entries[ZONE_COUNT];
+  int count;
+};
 struct Work {
+  Zones zones;
   Raw raw;
   Exception exceptions[EXCEPTIONS];
   size_t exceptionN;
@@ -75,6 +91,50 @@ int lastSunday(int y, int m) {
   const int n = dim(y, m);
   return n - weekday(civil(y, m, n));
 }
+// Recognised registry prefixes only; never interpret an arbitrary suffix as a zone.
+const char* canonicalZone(const char* z) {
+  const char* prefixes[] = {"/freeassociation.sourceforge.net/Tzfile/",
+                            "/var/db/timezone/zoneinfo/"};
+  for (auto prefix : prefixes)
+    if (!strncmp(z, prefix, strlen(prefix))) return z + strlen(prefix);
+  if (!strncmp(z, "/mozilla.org/", 13)) {
+    const char* slash = strchr(z + 13, '/');
+    if (slash && slash[1]) return slash + 1;
+  }
+  if (!strncmp(z, "/Europe/", 8) || !strncmp(z, "/Etc/", 5)) return z + 1;
+  return z;
+}
+void reportZone(CalendarParseDiagnostics* d, const char* zone) {
+  if (!d) return;
+  snprintf(d->timezone, sizeof(d->timezone), "%s", zone);
+  for (char* p = d->timezone; *p; ++p)
+    if ((unsigned char)*p < 32) *p = ' ';
+}
+// Convert a wall time using explicit UTC transitions, including repeated and
+// nonexistent local hours. RFC 5545 chooses the first repeated time and the
+// offset before a forward jump for a nonexistent time.
+bool zoneEpoch(const Zone& zone, time_t naive, time_t& out) {
+  if (!zone.valid || !zone.count) return false;
+  bool found = false;
+  for (int i = 0; i <= zone.count; ++i) {
+    int offset = i ? zone.transitions[i - 1].to : zone.transitions[0].from;
+    time_t candidate = naive - offset;
+    if ((!i || candidate >= zone.transitions[i - 1].utc) &&
+        (i == zone.count || candidate < zone.transitions[i].utc)) {
+      if (!found || candidate < out) out = candidate;
+      found = true;
+    }
+  }
+  if (found) return true;
+  for (int i = 0; i < zone.count; ++i) {
+    const auto& t = zone.transitions[i];
+    if (t.to > t.from && naive >= t.utc + t.from && naive < t.utc + t.to) {
+      out = naive - t.from;
+      return true;
+    }
+  }
+  return false;
+}
 bool euZone(const char* z) {
   const char* names[] = {"Europe/Bratislava",
                          "Europe/Prague",
@@ -96,7 +156,7 @@ bool euZone(const char* z) {
     if (!strcmp(z, n)) return true;
   return false;
 }
-bool epoch(const Date& d, const char* zone, time_t& out) {
+bool epoch(const Date& d, const char* zone, time_t& out, const Zones* zones = nullptr) {
   if (d.y < 1900 || d.y > 2100 || d.m < 1 || d.m > 12 || d.d < 1 || d.d > dim(d.y, d.m) ||
       d.h > 23 || d.min > 59 || d.s > 59)
     return false;
@@ -118,6 +178,10 @@ bool epoch(const Date& d, const char* zone, time_t& out) {
     out = mktime(&t);
     return out != (time_t)-1;
   }
+  if (zones)
+    for (int i = 0; i < zones->count; ++i)
+      if (!strcmp(zone, zones->entries[i].id) && zones->entries[i].valid)
+        return zoneEpoch(zones->entries[i], naive, out);
   if (euZone(zone)) {
     const bool dst =
         (d.m > 3 && d.m < 10) ||
@@ -126,6 +190,9 @@ bool epoch(const Date& d, const char* zone, time_t& out) {
     out = naive - (dst ? 7200 : 3600);
     return true;
   }
+  if (zones)
+    for (int i = 0; i < zones->count; ++i)
+      if (!strcmp(zone, zones->entries[i].id)) return zoneEpoch(zones->entries[i], naive, out);
   return false;
 }
 int digits(const char* s, int n) {
@@ -136,7 +203,8 @@ int digits(const char* s, int n) {
   }
   return v;
 }
-CalendarParseResult stamp(const char* s, const char* zone, Stamp& out) {
+CalendarParseResult stamp(const char* s, const char* zone, Stamp& out,
+                          const Zones* zones = nullptr) {
   size_t n = strlen(s);
   if (n != 8 && n != 15 && n != 16) return CAL_PARSE_INVALID;
   Date d;
@@ -154,7 +222,7 @@ CalendarParseResult stamp(const char* s, const char* zone, Stamp& out) {
   if (d.h < 0 || d.min < 0 || d.s < 0) return CAL_PARSE_INVALID;
   out.wall = d;
   snprintf(out.zone, sizeof(out.zone), "%s", zone);
-  if (!epoch(d, zone, out.epoch))
+  if (!epoch(d, zone, out.epoch, zones))
     return (*zone && !euZone(zone) && !d.utc && !d.all && strcmp(zone, "UTC") &&
             strcmp(zone, "Etc/UTC") && strcmp(zone, "GMT"))
                ? CAL_PARSE_TIMEZONE
@@ -187,7 +255,7 @@ int weekDay(const char* s) {
     if (!strcmp(s, names[i])) return i;
   return -1;
 }
-bool ruleParse(const Raw& raw, Rule& r) {
+bool ruleParse(const Raw& raw, Rule& r, bool observance = false, const Zones* zones = nullptr) {
   char text[256];
   snprintf(text, sizeof(text), "%s", raw.rule);
   char* save = nullptr;
@@ -212,7 +280,7 @@ bool ruleParse(const Raw& raw, Rule& r) {
       if (!integer(v, r.count, 1, 100000)) return false;
     } else if (!strcmp(t, "UNTIL")) {
       Stamp u;
-      if (stamp(v, raw.start.zone, u) != CAL_PARSE_OK) return false;
+      if (stamp(v, raw.start.zone, u, zones) != CAL_PARSE_OK) return false;
       r.until = u.epoch;
       if (u.wall.all) r.until += 86399;
     } else if (!strcmp(t, "WKST")) {
@@ -237,9 +305,9 @@ bool ruleParse(const Raw& raw, Rule& r) {
       return false;  // Never silently misinterpret a more complex rule.
   }
   if (!r.freq || (r.count && r.until)) return false;
-  if (r.freq == 4 && (r.dayN || (!r.monthN && r.mdayN))) return false;
+  if (r.freq == 4 && ((!observance && r.dayN) || (!r.monthN && r.mdayN))) return false;
   for (int i = 0; i < r.dayN; i++)
-    if (r.ordinals[i] && r.freq != 3) return false;
+    if (r.ordinals[i] && r.freq != 3 && !(observance && r.freq == 4 && r.monthN == 1)) return false;
   return true;
 }
 bool member(const int* a, int n, int v) {
@@ -306,6 +374,145 @@ bool line(const char* data, size_t len, size_t& pos, char* out, bool& over) {
   out[n] = 0;
   return true;
 }
+bool offsetValue(const char* s, int& out) {
+  size_t n = strlen(s);
+  if ((n != 5 && n != 7) || (*s != '+' && *s != '-')) return false;
+  int h = digits(s + 1, 2), m = digits(s + 3, 2), sec = n == 7 ? digits(s + 5, 2) : 0;
+  if (h < 0 || h > 23 || m < 0 || m > 59 || sec < 0 || sec > 59) return false;
+  out = (h * 3600 + m * 60 + sec) * (*s == '-' ? -1 : 1);
+  return true;
+}
+bool addTransition(Zone& z, time_t wall, int before, int after) {
+  time_t utc = wall - before;
+  for (int i = 0; i < z.count; ++i)
+    if (z.transitions[i].utc == utc)
+      return z.transitions[i].from == before && z.transitions[i].to == after;
+  if (z.count == ZONE_TRANSITIONS) return false;
+  z.transitions[z.count++] = {utc, before, after};
+  return true;
+}
+bool observance(Zone& z, const Raw& raw, int before, int after, void (*poll)()) {
+  if (!raw.hasStart || !addTransition(z, raw.start.epoch, before, after)) return false;
+  for (int i = 0; i < raw.extraN; ++i)
+    if (!addTransition(z, raw.extra[i], before, after)) return false;
+  if (!*raw.rule) return true;
+  Rule r;
+  if (!ruleParse(raw, r, true) || r.freq != 4 || r.monthN != 1) return false;
+  int count = 1;
+  for (int y = raw.start.wall.y; y <= 2100; ++y) {
+    if (poll) poll();
+    for (int day = 1; day <= dim(y, r.months[0]); ++day) {
+      Date d = raw.start.wall;
+      d.y = y;
+      d.m = r.months[0];
+      d.d = day;
+      time_t wall;
+      if (!epoch(d, "UTC", wall)) return false;
+      if (wall <= raw.start.epoch) continue;
+      if (r.until && wall - before > r.until) continue;
+      if (!matches(d, civil(y, d.m, day), raw, r)) continue;
+      if (r.count && ++count > r.count) return true;
+      if (!addTransition(z, wall, before, after)) return false;
+    }
+  }
+  return true;
+}
+// Read definitions before either event pass, so VTIMEZONE can follow VEVENT.
+// Unsupported definitions fail only when an event actually references them.
+CalendarParseResult readZones(const char* data, size_t len, Work& w, void (*poll)()) {
+  w.zones.count = 0;
+  size_t pos = 0;
+  Zone* zone = nullptr;
+  bool component = false, over = false, hasFrom = false, hasTo = false;
+  int before = 0, after = 0;
+  while (line(data, len, pos, w.line, over)) {
+    if (poll) poll();
+    if (!strcmp(w.line, "BEGIN:VTIMEZONE")) {
+      if (zone) return CAL_PARSE_INVALID;
+      if (w.zones.count == ZONE_COUNT) return CAL_PARSE_LIMIT;
+      zone = &w.zones.entries[w.zones.count++];
+      memset(zone, 0, sizeof(*zone));
+      zone->valid = true;
+      continue;
+    }
+    if (!zone) continue;
+    if (!strcmp(w.line, "BEGIN:STANDARD") || !strcmp(w.line, "BEGIN:DAYLIGHT")) {
+      if (component) zone->valid = false;
+      component = true;
+      w.raw = {};
+      hasFrom = hasTo = false;
+      continue;
+    }
+    if (!strcmp(w.line, "END:STANDARD") || !strcmp(w.line, "END:DAYLIGHT")) {
+      if (!component || !hasFrom || !hasTo || !observance(*zone, w.raw, before, after, poll))
+        zone->valid = false;
+      component = false;
+      continue;
+    }
+    if (!strcmp(w.line, "END:VTIMEZONE")) {
+      if (component || !*zone->id || !zone->count) zone->valid = false;
+      // Small bounded insertion sort; no recursion or heap allocation.
+      for (int i = 1; i < zone->count; ++i) {
+        auto t = zone->transitions[i];
+        int j = i;
+        while (j && zone->transitions[j - 1].utc > t.utc) {
+          zone->transitions[j] = zone->transitions[j - 1];
+          --j;
+        }
+        zone->transitions[j] = t;
+      }
+      for (int i = 0; i < w.zones.count - 1; ++i)
+        if (!strcmp(w.zones.entries[i].id, zone->id)) return CAL_PARSE_INVALID;
+      zone = nullptr;
+      continue;
+    }
+    char* value = strchr(w.line, ':');
+    if (!value) continue;
+    *value++ = 0;
+    char* parameters = strchr(w.line, ';');
+    if (parameters) *parameters = 0;
+    if (!component) {
+      if (!strcmp(w.line, "TZID")) {
+        value = (char*)canonicalZone(value);
+        if (over || strlen(value) >= sizeof(zone->id)) zone->valid = false;
+        snprintf(zone->id, sizeof(zone->id), "%s", value);
+      }
+      continue;
+    }
+    if (over &&
+        (!strcmp(w.line, "DTSTART") || !strcmp(w.line, "RRULE") || !strcmp(w.line, "RDATE")))
+      zone->valid = false;
+    if (!strcmp(w.line, "TZOFFSETFROM")) {
+      hasFrom = offsetValue(value, before);
+    } else if (!strcmp(w.line, "TZOFFSETTO")) {
+      hasTo = offsetValue(value, after);
+    } else if (!strcmp(w.line, "DTSTART")) {
+      if (stamp(value, "UTC", w.raw.start) != CAL_PARSE_OK || w.raw.start.wall.all ||
+          w.raw.start.wall.utc)
+        zone->valid = false;
+      else
+        w.raw.hasStart = true;
+    } else if (!strcmp(w.line, "RRULE")) {
+      if (*w.raw.rule || strlen(value) >= sizeof(w.raw.rule))
+        zone->valid = false;
+      else
+        strcpy(w.raw.rule, value);
+    } else if (!strcmp(w.line, "RDATE")) {
+      char* save = nullptr;
+      for (char* v = strtok_r(value, ",", &save); v; v = strtok_r(nullptr, ",", &save)) {
+        Stamp date;
+        if (w.raw.extraN == 64 || stamp(v, "UTC", date) != CAL_PARSE_OK || date.wall.all ||
+            date.wall.utc) {
+          zone->valid = false;
+          break;
+        }
+        w.raw.extra[w.raw.extraN++] = date.epoch;
+      }
+    } else if (!strcmp(w.line, "EXDATE") || !strcmp(w.line, "EXRULE"))
+      zone->valid = false;
+  }
+  return zone ? CAL_PARSE_INVALID : CAL_PARSE_OK;
+}
 bool zoneParam(char* prop, char* zone, size_t cap) {
   zone[0] = 0;
   char* t = strstr(prop, ";TZID=");
@@ -320,14 +527,23 @@ bool zoneParam(char* prop, char* zone, size_t cap) {
     char* e = strchr(t, ';');
     if (e) *e = 0;
   }
+  t = (char*)canonicalZone(t);
   if (strlen(t) >= cap) return false;
   strcpy(zone, t);
   return true;
 }
-CalendarParseResult property(Raw& r, char* key, char* val) {
-  char zone[64];
+CalendarParseResult property(Raw& r, char* key, char* val, const Zones* zones,
+                             CalendarParseDiagnostics* diagnostics) {
+  char zone[128];
   if (strstr(key, ";RANGE=")) return CAL_PARSE_RULE;
-  if (!zoneParam(key, zone, sizeof(zone))) return CAL_PARSE_TIMEZONE;
+  char originalZone[128]{};
+  const char* tz = strstr(key, ";TZID=");
+  if (tz) snprintf(originalZone, sizeof(originalZone), "%s", tz + 6);
+  if (!zoneParam(key, zone, sizeof(zone))) {
+    reportZone(diagnostics, originalZone);
+    return CAL_PARSE_TIMEZONE;
+  }
+  reportZone(diagnostics, zone);
   char* sem = strchr(key, ';');
   if (sem) *sem = 0;
   if (!strcmp(key, "UID"))
@@ -339,16 +555,16 @@ CalendarParseResult property(Raw& r, char* key, char* val) {
   else if (!strcmp(key, "STATUS"))
     r.cancelled = !strcmp(val, "CANCELLED");
   else if (!strcmp(key, "DTSTART")) {
-    auto e = stamp(val, zone, r.start);
+    auto e = stamp(val, zone, r.start, zones);
     if (e != CAL_PARSE_OK) return e;
     r.hasStart = true;
   } else if (!strcmp(key, "DTEND")) {
-    auto e = stamp(val, zone, r.end);
+    auto e = stamp(val, zone, r.end, zones);
     if (e != CAL_PARSE_OK) return e;
     r.hasEnd = true;
   } else if (!strcmp(key, "RECURRENCE-ID")) {
     if (strstr(sem ? sem + 1 : "", "RANGE=")) return CAL_PARSE_RULE;
-    auto e = stamp(val, zone, r.rid);
+    auto e = stamp(val, zone, r.rid, zones);
     if (e != CAL_PARSE_OK) return e;
     r.hasRid = true;
   } else if (!strcmp(key, "EXRULE"))
@@ -364,7 +580,7 @@ CalendarParseResult property(Raw& r, char* key, char* val) {
     for (char* t = strtok_r(val, ",", &save); t; t = strtok_r(nullptr, ",", &save)) {
       if (n == 64) return CAL_PARSE_LIMIT;
       Stamp s;
-      auto e = stamp(t, zone, s);
+      auto e = stamp(t, zone, s, zones);
       if (e != CAL_PARSE_OK) return e;
       a[n++] = s.epoch;
     }
@@ -448,12 +664,16 @@ void Calendar_Ascii(const char* in, char* out, size_t cap, bool icsEscapes, bool
 }
 CalendarParseResult CalendarIcs_Parse(const char* data, size_t len, time_t from, time_t until,
                                       uint8_t source, CalendarEvent* out, size_t capacity,
-                                      size_t& count, void* workspace, void (*poll)()) {
+                                      size_t& count, void* workspace, void (*poll)(),
+                                      CalendarParseDiagnostics* diagnostics) {
   count = 0;
+  if (diagnostics) *diagnostics = {};
   if (!data || !out || !workspace || until <= from) return CAL_PARSE_INVALID;
   auto& w = *(Work*)workspace;
   w.exceptionN = 0;
   w.steps = 0;
+  auto zonesResult = readZones(data, len, w, poll);
+  if (zonesResult != CAL_PARSE_OK) return zonesResult;
   auto emit = [&](const Raw& r, time_t start) -> CalendarParseResult {
     if (!r.hasStart || r.cancelled) return CAL_PARSE_OK;
     long duration = r.hasEnd ? (long)(r.end.epoch - r.start.epoch) : r.duration;
@@ -536,7 +756,7 @@ CalendarParseResult CalendarIcs_Parse(const char* data, size_t len, time_t from,
             if (e != CAL_PARSE_OK) return e;
           } else {
             Rule rule;
-            if (!ruleParse(r, rule)) return CAL_PARSE_RULE;
+            if (!ruleParse(r, rule, false, &w.zones)) return CAL_PARSE_RULE;
             long startDay = civil(r.start.wall.y, r.start.wall.m, r.start.wall.d);
             long first = startDay;
             if (!rule.count) {
@@ -559,7 +779,10 @@ CalendarParseResult CalendarIcs_Parse(const char* data, size_t len, time_t from,
               d.all = r.start.wall.all;
               d.utc = r.start.wall.utc;
               time_t start;
-              if (!epoch(d, r.start.zone, start)) return CAL_PARSE_TIMEZONE;
+              if (!epoch(d, r.start.zone, start, &w.zones)) {
+                reportZone(diagnostics, r.start.zone);
+                return CAL_PARSE_TIMEZONE;
+              }
               if (start >= until || d.y > 2100 || (rule.until && start > rule.until)) break;
               if (day == startDay || matches(d, day, r, rule)) {
                 occurrence++;
@@ -600,7 +823,7 @@ CalendarParseResult CalendarIcs_Parse(const char* data, size_t len, time_t from,
       if (over && strncmp(w.line, "DESCRIPTION", 11) && strncmp(w.line, "ATTACH", 6) &&
           strncmp(w.line, "X-", 2))
         return CAL_PARSE_LIMIT;
-      auto e = property(w.raw, w.line, colon);
+      auto e = property(w.raw, w.line, colon, &w.zones, diagnostics);
       if (e != CAL_PARSE_OK) return e;
     }
     if (!calendar || !ended || inside) return CAL_PARSE_INVALID;

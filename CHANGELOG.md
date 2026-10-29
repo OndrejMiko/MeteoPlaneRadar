@@ -11,6 +11,25 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.7] - 2026-10-29
+
+### Opraveno
+
+- ICS parser rozpozná známé registry před názvem pásma (Tzfile, Mozilla,
+  systémový zoneinfo) a načítá podporované definice VTIMEZONE přímo z odběru.
+  Kalendář tak může používat i pásmo mimo původní seznam středoevropských názvů.
+- Podpora STANDARD/DAYLIGHT, TZOFFSETFROM/TO včetně minut a sekund, DTSTART,
+  RDATE a běžných ročních přechodů RRULE s BYMONTH a BYDAY/BYMONTHDAY.
+  Převod řeší opakovanou i chybějící hodinu a jižní polokouli. Nepodporované
+  definice se nenahrazují místním časem.
+- Chyba časového pásma nyní ve webovém stavu ukáže konkrétní TZID. Neposílá
+  se adresa odběru ani obsah události; poslední platná cache zůstává zachována.
+- Omezeno na 8 definic a 512 přechodů na pásmo, roky 1900–2100. Celkový hostem
+  ověřený rozpočet kalendáře je 745 969 B PSRAM (bez dalšího framebufferu).
+  Nejde o úplnou databázi IANA ani úplnou implementaci pravidel VTIMEZONE.
+- Přidány regresní testy aliasů, definice před i za událostmi, přechodů DST,
+  týdenního opakování přes změnu času, minutových posunů a diagnostiky.
+
 ## [0.7.6] - 2026-10-29
 
 ### Opraveno

@@ -174,6 +174,12 @@ URLs are write-only and omitted from configuration responses and backups. Blank
 URL fields preserve saved links; the explicit delete checkbox removes them.
 Re-enter links after restoring a backup on another device.
 
+Supported VTIMEZONE definitions are read from the feed: standard/daylight
+observances, common yearly transition rules and explicit transition dates.
+Limits: 8 zones, 512 transitions per zone, years 1900–2100. Unsupported definitions
+remain errors; web status now reports the specific TZID without exposing the
+subscription URL. Calendar storage is bounded at approximately 746 kB PSRAM.
+
 Use **Save and enable calendar** on the Calendar tab to save subscriptions and
 enable the screen together. A previously saved URL can be reused; enabling the
 screen may restart the device.
@@ -183,7 +189,7 @@ open its agenda, or TODAY to return. Tap an agenda with more than three events t
 page through it. Source dots, names and a legend appear only with multiple enabled
 subscriptions; one subscription highlights dates without dots or source labels.
 
-The bounded cache uses about **0.65 MiB PSRAM** without another framebuffer. It
+The bounded cache uses about **0.71 MiB PSRAM** without another framebuffer. It
 covers the previous, current and next two months, with at most 256 occurrences
 and a 512 KiB ICS download per source. Refresh is configurable from 5 to 1440
 minutes; failed requests retry after two minutes and preserve the last valid data
@@ -194,7 +200,7 @@ Supported times are UTC, device-local floating time and listed Central European
 zones such as Europe/Bratislava and Europe/Prague. Common daily, weekly, monthly
 (including ordinal weekdays), yearly date-based recurrence, COUNT/UNTIL,
 EXDATE/RDATE and individual moved/cancelled instances are supported. More complex
-rules and other zones report an error rather than an incorrect agenda. This is
+rules and zones without supported definitions report an error rather than an incorrect agenda. This is
 a bounded subset of RFC 5545; see `CalendarIcs.cpp` for the exact rules.
 Build and host tests have passed; physical display/touch and real accounts still
 need validation on the device.

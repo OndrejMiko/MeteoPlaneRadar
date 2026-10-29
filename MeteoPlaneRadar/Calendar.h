@@ -27,3 +27,5 @@ bool Calendar_Incomplete();
 size_t Calendar_Day(time_t day, const CalendarEvent** rows, size_t capacity);
 uint8_t Calendar_DayMask(time_t day);
 const char* Calendar_StateText(CalendarSourceState state);
+
+const char* Calendar_UnsupportedTimezone(uint8_t source);
