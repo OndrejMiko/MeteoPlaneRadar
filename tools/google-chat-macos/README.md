@@ -15,12 +15,12 @@ Jednoduchá natívna aplikácia pre **macOS 13 a novší**, Apple Silicon aj Int
    displeja (predvolené `meteoplaneradar.local`, prípadne IP z webového UI),
    zadajte šesťmiestny kód a kliknite **Spárovať kódom**. Žiadny párovací
    súbor netreba. **Overiť displej** doručí skúšobnú správu.
-3. Pri prvom nastavení vytvorte v Google Cloud OAuth klienta typu **Desktop
-   app** podľa postupu nižšie. Jeho stiahnutý JSON vyberte cez
-   **Importovať OAuth klienta…**.
-4. Kliknite **Prihlásiť cez Google**. Otvorí sa predvolený prehliadač;
-   vyberte účet a povoľte čítanie Chatu. Po návrate môžete kartu zatvoriť.
-   Heslo do Meteo Chatu nezadávate.
+3. V zostave s pripraveným Google prihlásením kliknite **Prihlásiť cez Google**.
+   Otvorí sa predvolený prehliadač; vyberte účet a povoľte čítanie Chatu.
+4. Po návrate môžete kartu zatvoriť. Heslo do Meteo Chatu nezadávate.
+   Ak zostavujete aplikáciu sami, pripravte raz registračné údaje podľa
+   [kompletného postupu pre autora](OAUTH_SETUP.sk.md). Používateľ hotovej
+   zostavy už neimportuje žiadny OAuth súbor.
 5. Vyberte chaty a kliknite **Zapnúť mostík**. Prvý výber začína od aktuálneho
    času, stará história sa neposiela. Načítanie je každých 15 sekúnd.
 
@@ -36,7 +36,10 @@ ID ani notarizovaná. Ak ju macOS pri prvom otvorení zablokuje, použite jeho
 a bezpečnosť. Nevypínajte Gatekeeper. Na verejnú distribúciu treba podpis
 Developer ID a notarizáciu účtom autora distribúcie.
 
-## Google Cloud – iba pri prvom nastavení
+## Google Cloud – registrácia na strane autora
+
+Presný postup od Google Cloud cez build po test skutočnej správy je v
+[OAUTH_SETUP.sk.md](OAUTH_SETUP.sk.md). Na zajtrajšiu integráciu začnite tam.
 
 Kód vyššie páruje Mac s displejom, nenahrádza Google OAuth klienta.
 Prihlásenie cez prehliadač potrebuje identitu aplikácie u Googlu. Repozitár
@@ -48,8 +51,10 @@ neobsahuje cudzí OAuth projekt ani univerzálne prihlasovacie údaje.
    testovacom projekte pridajte vlastný účet medzi **Test users**.
 3. Povoľte prístupy `openid`, `chat.spaces.readonly` a
    `chat.messages.readonly`. Správca organizácie ich môže blokovať.
-4. Vytvorte OAuth client ID typu **Desktop app**, stiahnite JSON a importujte
-   ho do aplikácie. Webový OAuth klient ani súbor servisného účtu nefunguje.
+4. Vytvorte OAuth client ID typu **Desktop app**, stiahnite JSON a použite
+   `configure-oauth.sh` a strict build podľa úplného návodu. Aplikácia potom
+   použije zabudované prihlásenie. Manuálny import je iba v Pokročilom nastavení
+   Googlu; webový OAuth klient ani súbor servisného účtu nefunguje.
 
 Google dokumentuje používateľské čítanie správ pre Workspace účty; dostupnosť
 osobného Gmail účtu tu nie je overená. Externý OAuth projekt v testovacom
@@ -120,6 +125,12 @@ tools/google-chat-macos/build.sh
 Výstup je v ignorovanom `tools/google-chat-macos/dist/`: univerzálna `.app`
 a ZIP pre Apple Silicon aj Intel. Voliteľný prvý argument skriptu je výstupný
 adresár. Verziu preberá z `MeteoPlaneRadar/Version.h`; neudržiava druhé číslo.
+Na zostavu so zabudovaným Google prihlásením použite
+`METEO_CHAT_REQUIRE_OAUTH=1 tools/google-chat-macos/build.sh` po jednorazovom
+`configure-oauth.sh`. Predvolený lokálny `config/google-oauth.json` je ignorovaný
+Gitom; vlastný súbor zvolí `METEO_CHAT_OAUTH_CONFIG`. Hodnota `none` vytvorí
+vývojovú zostavu bez klienta a odstráni predchádzajúcu vloženú konfiguráciu.
+
 Natívny SwiftPM build system je zvolený aj pre prostredia iba s Command Line
 Tools, bez XCBuild a XCTest z plného Xcode.
 

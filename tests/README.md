@@ -71,3 +71,8 @@ Code pairing checks cover single use, exact expiry, five guesses, cancellation,
 replacement and millis rollover. Web checks cover the admin-password payload for code generation,
 local expiry and cancellation; native checks cover code claim formatting,
 address validation, unsupported firmware and invalid response keys.
+
+`tests/macos_oauth_build.sh` validates native OAuth packaging offline: strict
+missing/placeholder refusal, normalized registration with no token fields, and
+removal of a stale bundled client when reusing an output directory. It uses only
+synthetic registration in a temporary folder; no real credentials or Keychain.

@@ -21,6 +21,8 @@ import ChatCore
     @Published var delivered = 0
     @Published var launchAtLogin = SMAppService.mainApp.status == .enabled
     private(set) var storageReady = true
+    private(set) var bundledClient: OAuthClient?
+    var usesBundledClient: Bool { bundledClient != nil && service.secrets.client?.client_id == bundledClient?.client_id }
     private var service: ChatService
     private var worker: Task<Void, Never>?
     private var operation: Task<Void, Never>?
@@ -32,6 +34,10 @@ import ChatCore
         var secrets = Secrets(), preferences = Preferences(), failure: String?
         do {
             secrets = try Vault.read(); preferences = try LocalState.read()
+            if let url = Bundle.main.url(forResource: "GoogleOAuth", withExtension: "json") {
+                bundledClient = try OAuthConfiguration.decode(Data(contentsOf: url))
+                secrets = OAuthConfiguration.applying(bundledClient, to: secrets)
+            }
             if preferences.accountID != secrets.selfID {
                 preferences = Preferences(); preferences.accountID = secrets.selfID
                 try LocalState.write(preferences)
@@ -94,16 +100,24 @@ import ChatCore
         guard !running else { return }
         chooseFile { data in
             let client = try OAuthClient.decodeFile(data)
-            // Importing the same client preserves an existing valid sign-in.
-            if self.service.secrets.client != client {
-                var next = self.service.secrets; next.client = client; next.token = nil; next.selfID = nil
-                var p = Preferences()
-                p.accountID = nil
-                try LocalState.write(p); self.service.preferences = p; self.spaces = []
-                try Vault.write(next); self.service.secrets = next
-            }
+            try self.installClient(client)
             self.sync(); self.status = "OAuth klient je pripravený. Prihláste sa cez prehliadač."
         }
+    }
+    private func installClient(_ client: OAuthClient) throws {
+        defer { sync() }
+        if service.secrets.client != client {
+            var next = service.secrets; next.client = client; next.token = nil; next.selfID = nil
+            let p = Preferences()
+            try LocalState.write(p); service.preferences = p; spaces = []
+            try Vault.write(next); service.secrets = next
+        }
+        sync()
+    }
+    func useDefaultClient() {
+        guard !running && !busy, let client = bundledClient else { return }
+        do { try installClient(client); status = "Predvolené Google prihlásenie je pripravené."; error = nil }
+        catch { self.error = describe(error) }
     }
     private func chooseFile(_ action: (Data) throws -> Void) {
         guard !busy && storageReady else { return }

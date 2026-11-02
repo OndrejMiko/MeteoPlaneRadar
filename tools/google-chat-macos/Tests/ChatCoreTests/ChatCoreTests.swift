@@ -189,6 +189,38 @@ final class FakeHTTP: HTTPClient {
         http.reply = { _ in Data(#"{"key":"short"}"#.utf8) }
         do { _ = try await Pairing.claim(address: "host", code: "123456", http: http); fail("Invalid returned key") } catch {}
     }
+    func testBundledOAuthDefaultsAndExport() throws {
+        let input = Data(#"{"installed":{"client_id":"123456789012-desktop.apps.googleusercontent.com","client_secret":"test-client-secret","project_id":"example","access_token":"SHOULD_NOT_SHIP","auth_uri":"https://untrusted.invalid"},"tokens":"SHOULD_NOT_SHIP"}"#.utf8)
+        let client = try OAuthConfiguration.decode(input)
+        let exported = try OAuthConfiguration.export(client)
+        let root = try JSONSerialization.jsonObject(with: exported) as! [String: Any]
+        expectEqual(Set(root.keys), Set(["installed"]))
+        expectEqual(Set((root["installed"] as! [String: Any]).keys), Set(["client_id", "client_secret"]))
+        expectFalse(String(data: exported, encoding: .utf8)!.contains("SHOULD_NOT_SHIP"))
+        for raw in [#"{"web":{"client_id":"web"}}"#, #"{"installed":{"client_id":"REPLACE_WITH_DESKTOP_CLIENT_ID","client_secret":"REPLACE_WITH_DESKTOP_CLIENT_SECRET"}}"#, #"{"installed":{"client_id":"123-test.apps.googleusercontent.com"}}"#] {
+            expectThrows(try OAuthConfiguration.decode(Data(raw.utf8)))
+        }
+        let fresh = OAuthConfiguration.applying(client, to: Secrets())
+        expectEqual(fresh.client?.client_id, client.client_id); expectNil(fresh.token)
+        var old = Secrets(); old.client = client; old.selfID = "own"
+        old.pair = Pairing(device: "http://host/api/notifications", key: String(repeating: "a", count: 64))
+        old.token = try JSONDecoder().decode(Token.self, from: Data(#"{"access_token":"old","refresh_token":"refresh"}"#.utf8))
+        let same = OAuthConfiguration.applying(client, to: old)
+        expectEqual(same.token?.refresh_token, "refresh"); expectEqual(same.pair, old.pair)
+        var rotated = client; rotated.client_secret = "rotated-secret"
+        let updated = OAuthConfiguration.applying(rotated, to: old)
+        expectEqual(updated.client?.client_secret, "rotated-secret")
+        expectEqual(updated.token?.refresh_token, "refresh"); expectEqual(updated.selfID, "own")
+        let different = try OAuthConfiguration.decode(Data(#"{"installed":{"client_id":"456-other.apps.googleusercontent.com","client_secret":"other-secret"}}"#.utf8))
+        let preserved = OAuthConfiguration.applying(different, to: old)
+        expectEqual(preserved.client, old.client); expectEqual(preserved.selfID, old.selfID)
+        expectEqual(preserved.token?.access_token, "old")
+        let withoutBundle = OAuthConfiguration.applying(nil, to: old)
+        expectEqual(withoutBundle.client, old.client)
+        var orphan = old; orphan.client = nil
+        let recovered = OAuthConfiguration.applying(client, to: orphan)
+        expectNil(recovered.token); expectNil(recovered.selfID); expectEqual(recovered.pair, old.pair)
+    }
     func testSelectionAndDisabledDisplay() async throws {
         var p = Preferences(); let space = Space(name: "spaces/a")
         p.select(space, enabled: true); let checkpoint = p.checkpoints[space.id]
@@ -209,10 +241,11 @@ final class FakeHTTP: HTTPClient {
         try await tests.testRetryRestartEqualTimesPaginationAndOwnMessages()
         try await tests.testRefreshKeepsOfflineTokenAndPersistsBeforeGoogle()
         try await tests.testSelectionAndDisabledDisplay()
+        try tests.testBundledOAuthDefaultsAndExport()
         try await tests.testCodePairingRequestAndErrors()
         try await tests.testLiveLoopbackOAuthAndCancellation()
         try await tests.testNativeRedirectAndCancelledDelivery()
-        print("9 native bridge checks passed: pairing, OAuth/PKCE, bounded payloads, retry/restart/pagination, token refresh and selection")
+        print("10 native bridge checks passed: pairing, OAuth/PKCE, bounded payloads, retry/restart/pagination, token refresh and selection")
     }
 }
 

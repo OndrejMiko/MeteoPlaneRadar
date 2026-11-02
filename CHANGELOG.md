@@ -11,6 +11,33 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.14] - 2026-11-02
+
+### Přidáno
+
+- Mac aplikace načítá výchozího Desktop OAuth klienta z vlastního balíku.
+  Po přípravě registrace autorem se přihlásí tlačítkem přes prohlížeč, bez
+  uživatelského importu JSON a nezávisle na spárování displeje.
+- `configure-oauth.sh` a nástroj pro validaci/normalizaci klienta. Skutečná
+  konfigurace zůstává mimo Git; do balíku jdou jen client_id/client_secret,
+  nikoli tokeny nebo neznámá metadata původního souboru.
+- Strict build odmítne chybějící registraci; běžné balení ověří vložený
+  soubor a při dalším buildu bez konfigurace odstraní starou identitu.
+- Vlastní dříve importovaný klient a funkční účet se zachovají. Pokročilá
+  volba přepne na výchozího klienta; aktualizace secret stejného client ID
+  zachová tokeny. Manuální import zůstává v pokročilé části.
+- Kompletní slovenský návod pro Google Cloud, scopes, Desktop klienta,
+  zabudování, první přihlášení, test displeje a diagnostiku. Odděluje vlastní
+  test od požadavků na veřejné vydání a upozorňuje na Testing expiraci.
+
+### Ověření
+
+- Nativní testy výchozí konfigurace, zachování účtu, odmítnutí šablony a
+  exportu bez tokenů. Testy balení s umělou registrací a následným odebráním;
+  univerzální macOS aplikace, host testy a build ESP32-S3.
+- Reálný Google projekt/klient nebyl vytvořen; po jeho doplnění je ještě
+  potřeba ověřit skutečné přihlášení a doručení na připojený displej.
+
 ## [0.7.13] - 2026-11-02
 
 ### Přidáno

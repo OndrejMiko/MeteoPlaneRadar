@@ -9,3 +9,6 @@ __pycache__/
 tools/google-chat-macos/.build/
 tools/google-chat-macos/.swiftpm/
 tools/google-chat-macos/dist/
+
+# Author Google OAuth registration, embedded only by the Mac packaging script
+tools/google-chat-macos/config/google-oauth.json

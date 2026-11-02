@@ -92,16 +92,24 @@ struct SetupView: View {
                 GroupBox {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(model.signedIn ? "Google je prihlásený" : "Prihláste sa cez prehliadač").font(.headline)
-                        Text("Pri prvom nastavení importujte OAuth JSON typu Desktop app z Google Cloud. Prihlásenie sa otvorí v predvolenom prehliadači, heslo nezadávate do tejto aplikácie.")
+                        Text(model.hasClient
+                             ? "Kliknite na prihlásenie, v prehliadači vyberte účet a povoľte čítanie Chatu. Heslo nezadávate do tejto aplikácie."
+                             : "Google prihlásenie v tejto zostave ešte nie je nakonfigurované. Použite zostavu s pripraveným prihlásením alebo pokročilé nastavenie.")
                             .font(.callout).foregroundStyle(.secondary)
-                        HStack {
-                            Button(model.hasClient ? "Zmeniť OAuth klienta…" : "Importovať OAuth klienta…") { model.importClient() }.disabled(locked)
-                            Button(model.signedIn ? "Prihlásiť znova" : "Prihlásiť cez Google") { model.signIn() }
-                                .buttonStyle(.borderedProminent).disabled(locked || !model.hasClient)
-                        }
+                        Button(model.signedIn ? "Prihlásiť znova" : "Prihlásiť cez Google") { model.signIn() }
+                            .buttonStyle(.borderedProminent).disabled(locked || !model.hasClient)
                         if model.signedIn { Button("Odhlásiť Google na tomto Macu") { model.signOut() }.disabled(locked) }
-                        Link("Ako vytvoriť Desktop OAuth klienta", destination: URL(string: "https://developers.google.com/workspace/chat/authenticate-authorize-chat-user")!)
-                            .font(.caption)
+                        DisclosureGroup("Pokročilé nastavenie Googlu") {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text(model.usesBundledClient ? "Používa sa predvolené prihlásenie Meteo Chat." : (model.hasClient ? "Používa sa vlastný OAuth klient." : "OAuth klient zatiaľ nie je pripravený."))
+                                Button("Importovať vlastného OAuth klienta…") { model.importClient() }.disabled(locked)
+                                if model.bundledClient != nil && !model.usesBundledClient {
+                                    Button("Použiť predvolené prihlásenie Meteo Chat") { model.useDefaultClient() }.disabled(locked)
+                                    Text("Prepnutie odhlási aktuálny Google účet a vymaže výber chatov. Párovanie displeja zostane zachované.")
+                                }
+                                Link("Návod Google OAuth pre autora aplikácie", destination: URL(string: "https://developers.google.com/workspace/chat/authenticate-authorize-chat-user")!)
+                            }.font(.caption).padding(.top, 8)
+                        }
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(10)
                 } label: { Label("2 · Google účet", systemImage: "person.crop.circle") }
                 GroupBox {

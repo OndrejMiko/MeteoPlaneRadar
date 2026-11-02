@@ -6,6 +6,7 @@ let package = Package(
     products: [.executable(name: "MeteoChat", targets: ["MeteoChat"])],
     targets: [
         .target(name: "ChatCore"),
+        .executableTarget(name: "OAuthConfigTool", dependencies: ["ChatCore"]),
         .executableTarget(name: "MeteoChat", dependencies: ["ChatCore"]),
         .executableTarget(name: "ChatCoreChecks", dependencies: ["ChatCore"], path: "Tests/ChatCoreTests")
     ]
