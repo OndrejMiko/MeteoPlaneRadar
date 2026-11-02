@@ -11,6 +11,34 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.12] - 2026-11-02
+
+### Přidáno
+
+- Samostatná nativní aplikace Meteo Chat pro macOS 13+, s univerzálním
+  sestavením Apple Silicon / Intel a ikonou v horní liště. Python ani další
+  balíčky nepotřebuje; notifikační protokol displeje se nemění.
+- Zapnutí/pozastavení, stav spojení, test displeje, import párovacího JSON,
+  výběr chatů a volitelné spouštění po přihlášení do macOS. Zavření okna
+  ponechá most spuštěný; Ukončit ukončí celý proces.
+- Google OAuth přihlášení ve výchozím prohlížeči přes lokální loopback,
+  PKCE a kontrolu state; import klienta typu Desktop app, automatická obnova
+  tokenu a odhlášení. Google klient, tokeny a párovací klíč jsou v macOS Klíčence.
+- Obnova doručování po výpadku, stránkování, vlastní/zmazané zprávy se
+  přeskakují, UTF-8 a JSON limity odpovídají firmware. Checkpointy se ukládají
+  po potvrzení; obsah zpráv se do souborů ani logů nezapisuje. Síťové
+  požadavky nepředávají přihlašovací údaje přes HTTP přesměrování.
+- Skript vytváří ad-hoc podepsanou .app a ZIP. Verzi aplikace přebírá z
+  Version.h. Návod popisuje první přihlášení, Google Cloud a omezení účtů.
+
+### Ověření
+
+- Offline kontroly Swift: PKCE/OAuth state, skutečný loopback návrat včetně
+  zrušení, odmítnutí redirectu, limity zpráv, obnova tokenů, stránkování,
+  stejné časové značky a retry po restartu/plné frontě displeje.
+- Host testy firmware a build ESP32-S3. Skutečné Google přihlášení vyžaduje
+  uživatelova OAuth klienta a účet; fyzické ESP32 nebylo připojeno.
+
 ## [0.7.11] - 2026-10-29
 
 ### Změněno

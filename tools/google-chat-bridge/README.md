@@ -1,4 +1,9 @@
-# Google Chat → MeteoPlaneRadar (0.7.3)
+# Google Chat → MeteoPlaneRadar (Python)
+
+**Pre Mac je dostupná aj [natívna aplikácia Meteo Chat](../google-chat-macos/README.md)**
+s ikonou v hornej lište, pauzou a prihlásením cez prehliadač, bez Pythonu.
+Používa rovnaký párovací súbor a notifikačný protokol. Nespúšťajte oba
+mostíky pre tie isté chaty naraz.
 
 Most číta nové správy z vybraných priestorov Google Chat a doručuje ich na
 ESP32 cez domácu LAN. Funguje s Pythonom 3.9+ bez ďalších balíčkov. Počítač,
@@ -22,7 +27,7 @@ slúži na opačný smer, posielanie do priestoru Chatu.
    vytvorí nový kľúč a stiahne `meteoplaneradar-chat.json`.
    Každé nové párovanie zneplatní predchádzajúci kľúč. Nezdieľajte súbor.
 6. **Uložiť a zobraziť skúšku** ukáže banner aj bez pripojeného Googlu.
-   Zmeny ostatných nastavení uložte štandardným tlačidlom dole.
+   Zmeny ostatných nastavení uložte tlačidlom vpravo hore.
 
 Po importe zálohy do nového zariadenia zopakujte párovanie.
 

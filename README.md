@@ -2,6 +2,9 @@
 
 **0.7.3 – Notifikácie / Google Chat:** globálny banner, detail a webové párovanie. Postup zapojenia a výsledky pamäte: [Google Chat bridge](tools/google-chat-bridge/README.md). Google Chat potrebuje spustený most na počítači/Pi a povolený prístup k Chat API.
 
+**macOS aplikace:** [Meteo Chat](tools/google-chat-macos/README.md) běží v horní liště, umí zapnout/pozastavit most, přihlásit Google přes prohlížeč a vybrat chaty. Nevyžaduje Python; používá současné párování displeje.
+
+
 **Hodiny, radar letadel, srážkový meteoradar, předpověď počasí na kulatém dotykovém displeji.** Běží na deskách Waveshare
 ESP32-S3-Touch-LCD-2.1 a ESP32-S3-Touch-LCD-2.8C a nastavuje se z prohlížeče.
 

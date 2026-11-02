@@ -60,3 +60,9 @@ records desktop/mobile snapshots with synthetic device data.
 Aircraft detail tests cover the shared 32px close icon and invisible 64px hit
 area, capture of body/outside taps, exact target edges, and route/type rendering
 in all languages and both unit systems.
+
+The native Mac bridge has separate offline Swift checks. With Apple Command Line
+Tools, run `swift run --build-system native --package-path tools/google-chat-macos
+ChatCoreChecks` as a single command. They cover actual local OAuth callbacks,
+cancellation, redirect refusal and the native delivery/checkpoint implementation.
+No Google account, Keychain item or real display is used by these checks.

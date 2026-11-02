@@ -4,3 +4,8 @@ meteoplaneradar-chat*.json
 .chat-bridge/
 __pycache__/
 *.pyc
+
+# Native macOS Chat bridge build output
+tools/google-chat-macos/.build/
+tools/google-chat-macos/.swiftpm/
+tools/google-chat-macos/dist/
