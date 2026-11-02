@@ -3,7 +3,7 @@ func expect(_ condition: @autoclosure () -> Bool, file: StaticString = #file, li
     if !condition() { fatalError("Check failed", file: file, line: line) }
 }
 func expectFalse(_ value: @autoclosure () -> Bool) { expect(!value()) }
-func expectEqual<T: Equatable>(_ a: @autoclosure () throws -> T, _ b: T) rethrows { let value = try a(); expect(value == b) }
+func expectEqual<T: Equatable>(_ a: @autoclosure () throws -> T, _ b: T, file: StaticString = #file, line: UInt = #line) rethrows { let value = try a(); expect(value == b, file: file, line: line) }
 func expectNotEqual<T: Equatable>(_ a: T, _ b: T) { expect(a != b) }
 func expectNil<T>(_ a: T?) { expect(a == nil) }
 func expectAtLeast<T: Comparable>(_ a: T, _ b: T) { expect(a >= b) }
@@ -97,7 +97,9 @@ final class FakeHTTP: HTTPClient {
         expectNil(saved.checkpoints["spaces/one"]?.pageToken)
         let posts = http.requests.filter { $0.httpMethod == "POST" }
         expectEqual(posts.count, 4) // first attempt, failed second, retried second, third
-        expectEqual(posts[1].httpBody, posts[2].httpBody)
+        let firstPayload = try JSONDecoder().decode([String: String].self, from: posts[1].httpBody!)
+        let retriedPayload = try JSONDecoder().decode([String: String].self, from: posts[2].httpBody!)
+        expectEqual(firstPayload, retriedPayload) // JSON property order is not significant.
         expectEqual(posts[0].value(forHTTPHeaderField: "Authorization"), "Bearer " + String(repeating: "a", count: 64))
     }
     func testRefreshKeepsOfflineTokenAndPersistsBeforeGoogle() async throws {
@@ -161,6 +163,32 @@ final class FakeHTTP: HTTPClient {
         do { _ = try await task.value; fail("Cancelled delivery must stop") } catch is CancellationError {}
         expect(http.requests.isEmpty)
     }
+    func testCodePairingRequestAndErrors() async throws {
+        let http = FakeHTTP()
+        http.reply = { request in
+            expectEqual(request.url?.absoluteString, "http://meteoplaneradar.local/api/notifications/pair/claim")
+            expectEqual(request.httpMethod, "POST")
+            let fields = try JSONDecoder().decode([String: String].self, from: request.httpBody!)
+            expectEqual(fields, ["code": "001234"])
+            expectNil(request.value(forHTTPHeaderField: "Authorization"))
+            return try JSONEncoder().encode(["key": String(repeating: "b", count: 64)])
+        }
+        let pair = try await Pairing.claim(address: "meteoplaneradar.local", code: "001 234", http: http)
+        expectEqual(pair.device, "http://meteoplaneradar.local/api/notifications")
+        expectEqual(pair.key, String(repeating: "b", count: 64))
+        for address in ["https://user:pass@host", "file:///test", "http://host/private", "http://host/?secret=key"] {
+            do { _ = try await Pairing.claim(address: address, code: "001234", http: http); fail("Invalid address") } catch {}
+        }
+        do { _ = try await Pairing.claim(address: "host", code: "12345", http: http); fail("Invalid code") } catch {}
+        expectEqual(http.requests.count, 1)
+        for status in [403, 404, 410, 429] {
+            http.reply = { _ in throw BridgeError.http(status) }
+            do { _ = try await Pairing.claim(address: "host", code: "123456", http: http); fail("Must reject failed pairing") }
+            catch BridgeError.message(let message) { expect(!message.isEmpty) }
+        }
+        http.reply = { _ in Data(#"{"key":"short"}"#.utf8) }
+        do { _ = try await Pairing.claim(address: "host", code: "123456", http: http); fail("Invalid returned key") } catch {}
+    }
     func testSelectionAndDisabledDisplay() async throws {
         var p = Preferences(); let space = Space(name: "spaces/a")
         p.select(space, enabled: true); let checkpoint = p.checkpoints[space.id]
@@ -181,9 +209,10 @@ final class FakeHTTP: HTTPClient {
         try await tests.testRetryRestartEqualTimesPaginationAndOwnMessages()
         try await tests.testRefreshKeepsOfflineTokenAndPersistsBeforeGoogle()
         try await tests.testSelectionAndDisabledDisplay()
+        try await tests.testCodePairingRequestAndErrors()
         try await tests.testLiveLoopbackOAuthAndCancellation()
         try await tests.testNativeRedirectAndCancelledDelivery()
-        print("8 native bridge checks passed: pairing, OAuth/PKCE, bounded payloads, retry/restart/pagination, token refresh and selection")
+        print("9 native bridge checks passed: pairing, OAuth/PKCE, bounded payloads, retry/restart/pagination, token refresh and selection")
     }
 }
 

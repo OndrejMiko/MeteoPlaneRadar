@@ -19,7 +19,7 @@ const document = {
   getElementById(id) { assert(elements.has(id), `Missing DOM element: ${id}`); return elements.get(id); },
   querySelectorAll(selector) { return selector === '[data-i18n]' ? translations : []; }
 };
-const context = vm.createContext({document, crypto:webcrypto, URL, Blob, location:{href:'http://192.168.1.42/'}, window:{scrollTo(){}}, setInterval(){}, setTimeout(){},
+const context = vm.createContext({document, crypto:webcrypto, URL, Blob, location:{href:'http://192.168.1.42/'}, window:{scrollTo(){}}, setInterval(){}, clearInterval(){}, setTimeout(){},
   fetch: async () => ({json: async () => ({screen:4,enabled:[true,true,true,true,true],range:''})})});
 // load is exercised below with a realistic config; all other initial handlers
 // execute so missing DOM references left by screen removal fail immediately.
@@ -129,3 +129,26 @@ console.log('Calendar activation, saved URL reuse, restart handling and failed s
 context.fetch=async()=>({json:async()=>({calendarSources:[{state:'Nepodporovane casove pasmo',unsupportedTimezone:'Unknown/Zone',updated:0}]})});
 await run('status()');
 assert(elements.get('cal0Status').textContent.includes('TZID: Unknown/Zone'));
+
+// Code pairing uses only the admin-gated start/cancel APIs; no file/key export.
+requests.length=0;
+context.fetch=async(url,options)=>{requests.push({url,options});return{ok:true,json:async()=>({code:'001234',expiresIn:120})};};
+await run('startPairCode()');
+assert.equal(elements.get('ntCode').textContent,'001 234');
+assert.equal(elements.get('ntCodeAddress').textContent,'http://192.168.1.42');
+assert.equal(requests[0].url,'/api/notifications/pair/start');
+assert.deepEqual(Object.keys(JSON.parse(requests[0].options.body)),['password']);
+await run('cancelPairCode()');assert.equal(elements.get('ntCode').textContent,'');
+assert.equal(requests[1].url,'/api/notifications/pair/cancel');
+context.fetch=async()=>({ok:true,json:async()=>({code:'123456',expiresIn:1})});
+await run('startPairCode()');run('pairDeadline=Date.now()-1;tickPairCode()');
+assert.equal(elements.get('ntCode').textContent,'');assert.equal(elements.get('ntCodeExpiry').textContent,run('D[L].ntCodeExpired'));
+console.log('One-time code display, cancellation and local expiry passed');
+
+context.fetch=async()=>({ok:true,json:async()=>({code:'012345',expiresIn:120})});
+await run('startPairCode()');
+context.fetch=async()=>({json:async()=>({notificationPairingComplete:true})});
+await run('status()');assert.equal(elements.get('ntCode').textContent,'');
+assert.equal(elements.get('ntCodeExpiry').textContent,run('D[L].ntCodeDone'));
+assert.equal(run('CFG.notifications.paired'),true);assert.equal(elements.get('ntEnabled').checked,true);
+console.log('Successful code pairing clears code and updates paired/enabled state without reloading fields');

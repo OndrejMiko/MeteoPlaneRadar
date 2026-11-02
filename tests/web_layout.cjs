@@ -11,13 +11,13 @@ const status={version,screen:1,enabled:[true,true,true,true,true,true],range:'10
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true});
  try{
- const page=await browser.newPage();const errors=[];const posts=[];
+ const page=await browser.newPage();const errors=[];const posts=[];let pairingComplete=false;
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('http://meteoradar.test/**',async route=>{
   const req=route.request(),url=new URL(req.url());
-  if(req.method()==='POST'){posts.push({url:url.pathname,body:req.postDataJSON()});await route.fulfill({json:{ok:true,restart:true}});return;}
+  if(req.method()==='POST'){posts.push({url:url.pathname,body:req.postDataJSON()});await route.fulfill({json:url.pathname==='/api/notifications/pair/start'?{code:'001234',expiresIn:120}:{ok:true,restart:true}});return;}
   if(url.pathname==='/')await route.fulfill({contentType:'text/html',body:html});
-  else await route.fulfill({json:url.pathname==='/api/config'?config:url.pathname==='/api/scan'?[]:status});
+  else await route.fulfill({json:url.pathname==='/api/config'?config:url.pathname==='/api/scan'?[]:{...status,notificationPairingComplete:pairingComplete}});
  });
  const dir=process.env.WEB_SCREENSHOTS;if(dir)mkdirSync(dir,{recursive:true});
  for(const width of [320,390,768,1280]){
@@ -39,11 +39,24 @@ const status={version,screen:1,enabled:[true,true,true,true,true,true],range:'10
    }
   }
  }
+ for(const width of [320,390,1280]){
+  await page.setViewportSize({width,height:900});await page.goto('http://meteoradar.test/');await page.waitForFunction(()=>document.querySelector('#ver').textContent.startsWith('v'));
+  await page.locator('[data-tab=tNotify]').click();await page.locator('#ntCodeBtn').click();
+  await page.waitForFunction(()=>document.querySelector('#ntCode').textContent==='001 234');
+  assert(await page.locator('#ntCode').isVisible());
+  const box=await page.locator('#ntCode').boundingBox();assert(box.x>=0&&box.x+box.width<=width);
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  if(dir)await page.screenshot({path:path.join(dir,`${width}-code-pairing.png`),fullPage:true});
+  await page.locator('#ntCodeCancel').click();await page.waitForFunction(()=>document.querySelector('#ntCode').classList.contains('hide'));assert(!(await page.locator('#ntCode').isVisible()));
+ }
+ await page.locator('#ntCodeBtn').click();await page.waitForFunction(()=>document.querySelector('#ntCode').textContent==='001 234');
+ pairingComplete=true;await page.evaluate(()=>status());assert(!(await page.locator('#ntCode').isVisible()));
+ assert(await page.locator('#ntEnabled').isChecked());
  await page.locator('[data-tab=tLoc]').click();await page.locator('#lat').fill('49.1234');await page.locator('[data-tab=tCal]').click();await page.locator('[data-tab=tLoc]').click();assert.equal(await page.locator('#lat').inputValue(),'49.1234');
  await page.locator('[data-tab=tLoc]').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('[data-tab=tScr]').getAttribute('aria-selected'),'true');await page.keyboard.press('End');assert.equal(await page.locator('[data-tab=tSys]').getAttribute('aria-selected'),'true');await page.keyboard.press('Home');assert.equal(await page.locator('[data-tab=tCtl]').getAttribute('aria-selected'),'true');
  await page.locator('[data-tab=tCal]').click();await page.locator('#saveButton').click();await page.waitForFunction(()=>!document.querySelector('#saveButton').disabled);
  const calendar=posts.find(p=>p.url==='/api/config');assert.deepEqual(calendar.body.screens,{calendar:true});assert(!('lat' in calendar.body));assert.equal(calendar.body.calendars[0].url,'');
  await page.evaluate(()=>msg('Testovacia správa','ok'));assert(await page.locator('#msg').isVisible());
- assert.deepEqual(errors,[]);console.log('Web browser: 4 widths × 3 languages × 8 tabs; fixed saves, keyboard navigation, unsaved fields and calendar save passed');
+ assert.deepEqual(errors,[]);console.log('Web browser: 4 widths × 3 languages × 8 tabs; fixed saves, keyboard navigation, unsaved fields and calendar save and code pairing passed');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});

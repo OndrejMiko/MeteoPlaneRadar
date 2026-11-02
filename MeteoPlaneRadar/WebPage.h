@@ -52,6 +52,7 @@ input[type=color]{background:#111820;border:1px solid #435365;border-radius:7px;
 input[type=range]{flex:0 1 296px;accent-color:var(--acc)}.row>input[type=range]+span{width:28px;text-align:right}.row>input[type=color]{margin-right:276px}input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--acc);margin:0}
 button{background:var(--acc);color:#08202a;border:1px solid transparent;border-radius:7px;padding:10px 16px;font-weight:600;cursor:pointer;font-size:14px;min-height:44px}
 button.sec{background:#293541;border-color:#435365;color:var(--fg)}button.danger{background:transparent;border-color:var(--err);color:var(--err)}button:disabled{cursor:default;opacity:.5}
+.pair-code{display:block;font:600 44px/1.4 ui-monospace,monospace;letter-spacing:6px;color:var(--acc);margin:16px 0}summary{cursor:pointer;color:var(--mut);padding:8px 0}details[open]>summary{margin-bottom:16px}
 :focus-visible{outline:2px solid var(--acc);outline-offset:4px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 .chk{display:flex;align-items:center;gap:12px;min-height:44px}.grid .chk{background:#111820;padding:12px;border:1px solid var(--line);border-radius:7px}
@@ -260,6 +261,18 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
 
 <section id="tNotify" role="tabpanel" aria-labelledby="tab-tNotify" class="tab hide">
  <div class="card">
+  <h2 data-i18n="ntCodeTitle"></h2>
+  <p class="hint" data-i18n="ntCodeHint"></p>
+  <div class="row">
+   <button type="button" id="ntCodeBtn" onclick="startPairCode()" data-i18n="ntCodeStart"></button>
+   <button type="button" id="ntCodeCancel" class="sec hide" onclick="cancelPairCode()" data-i18n="ntCodeCancel"></button>
+  </div>
+  <output id="ntCode" class="pair-code hide" aria-live="polite"></output>
+  <p class="hint" id="ntCodeAddress"></p>
+  <p class="hint" id="ntCodeExpiry" role="status"></p>
+ </div>
+
+ <div class="card">
   <h2 data-i18n="ntTitle"></h2>
   <p data-i18n="ntIntro"></p>
   <label class="chk"><input type="checkbox" id="ntEnabled"><span data-i18n="ntEnabled"></span></label>
@@ -271,6 +284,7 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
  </div>
  <div class="card">
   <h2>Google Chat</h2>
+  <details><summary data-i18n="ntAdvanced"></summary>
   <ol>
    <li data-i18n="ntStep1"></li>
    <li data-i18n="ntStep2"></li>
@@ -280,7 +294,7 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
   <pre style="white-space:pre-wrap;overflow-wrap:anywhere">python3 tools/google-chat-bridge/bridge.py setup --client client_secret.json --pair meteoplaneradar-chat.json
 python3 tools/google-chat-bridge/bridge.py run</pre>
   <button type="button" id="ntPairBtn" onclick="pairNotifications()" data-i18n="ntPair"></button>
-  <p class="hint" data-i18n="ntPairHint"></p>
+  <p class="hint" data-i18n="ntPairHint"></p></details>
   <p class="hint" data-i18n="ntLimit"></p>
  </div>
 </section>
@@ -512,13 +526,16 @@ Object.assign(D.sk,{"calSaveEnable": "Uložiť a zapnúť kalendár", "calScreen
 Object.assign(D.cs,{autoMode:"Změny se ukládají průběžně"});
 Object.assign(D.en,{autoMode:"Changes save automatically"});
 Object.assign(D.sk,{autoMode:"Zmeny sa ukladajú priebežne"});
+Object.assign(D.cs,{ntCodeTitle:"Spárovat Mac kódem",ntCodeHint:"Vygenerujte kód a zadejte jej v aplikaci Meteo Chat spolu s adresou tohoto displeje. Kód platí 2 minuty a lze jej použít jednou. Po spárování se notifikace zapnou a původní párování se nahradí.",ntCodeStart:"Vygenerovat párovací kód",ntCodeCancel:"Zrušit kód",ntCodeRemaining:"Platnost kódu (s): ",ntCodeExpired:"Kód vypršel. Vygenerujte nový.",ntCodeCancelled:"Párovací kód byl zrušen.",ntCodeDone:"Mac byl úspěšně spárován.",ntCodeClosed:"Párování je ukončené. Vygenerujte nový kód.",ntAdvanced:"Python / pokročilé párování souborem"});
+Object.assign(D.en,{ntCodeTitle:"Pair a Mac with a code",ntCodeHint:"Generate a code and enter it in Meteo Chat with this display's address. The code lasts 2 minutes and works once. Pairing enables notifications and replaces the previous pairing.",ntCodeStart:"Generate pairing code",ntCodeCancel:"Cancel code",ntCodeRemaining:"Code valid for (s): ",ntCodeExpired:"Code expired. Generate a new one.",ntCodeCancelled:"Pairing code cancelled.",ntCodeDone:"Mac paired successfully.",ntCodeClosed:"Pairing window closed. Generate a new code.",ntAdvanced:"Python / advanced file pairing"});
+Object.assign(D.sk,{ntCodeTitle:"Spárovať Mac kódom",ntCodeHint:"Vygenerujte kód a zadajte ho v aplikácii Meteo Chat spolu s adresou tohto displeja. Kód platí 2 minúty a dá sa použiť raz. Po spárovaní sa notifikácie zapnú a pôvodné párovanie sa nahradí.",ntCodeStart:"Vygenerovať párovací kód",ntCodeCancel:"Zrušiť kód",ntCodeRemaining:"Platnosť kódu (s): ",ntCodeExpired:"Kód vypršal. Vygenerujte nový.",ntCodeCancelled:"Párovací kód bol zrušený.",ntCodeDone:"Mac bol úspešne spárovaný.",ntCodeClosed:"Párovanie je ukončené. Vygenerujte nový kód.",ntAdvanced:"Python / pokročilé párovanie súborom"});
 let L="cs", CFG={}, TAB="tCtl";
 const $=id=>document.getElementById(id);
 
 function setLang(v){L=(v==2||v=="sk")?"sk":(v==1||v=="en")?"en":"cs";$("uiLang").value=String({cs:0,en:1,sk:2}[L]);
  document.documentElement.lang=L;
  document.querySelectorAll("[data-i18n]").forEach(e=>{const t=D[L][e.dataset.i18n];if(t)e.textContent=t;});
- pwState();calendarLabels();notificationLabels();updateActions();status();}
+ pwState();calendarLabels();notificationLabels();updateActions();if(pairDeadline)tickPairCode();status();}
 
 // Shared fixed action area; immediate settings keep their existing autosave.
 function updateActions(){
@@ -646,7 +663,7 @@ async function load(){
  $("ntEnabled").checked=!!(CFG.notifications||{}).enabled;
  $("ntSeconds").value=(CFG.notifications||{}).seconds??15;
  notificationLabels();
- $("ntTestBtn").disabled=$("ntPairBtn").disabled=!!CFG.apMode;
+ $("ntTestBtn").disabled=$("ntPairBtn").disabled=$("ntCodeBtn").disabled=!!CFG.apMode;
  $("calendarView").value=CFG.calendarView||0;$("calendarRefresh").value=CFG.calendarRefresh||15;
  for(let i=0;i<3;i++){
   const c=(CFG.calendars||[])[i]||{};
@@ -680,6 +697,10 @@ $("briDay").addEventListener("input",bri);$("briNight").addEventListener("input"
 
 async function status(){
  try{const s=await(await fetch("/api/status")).json();
+ if(pairDeadline&&s.notificationPairingComplete===true){
+  clearPairCode(D[L].ntCodeDone);CFG.notifications={...(CFG.notifications||{}),paired:true,enabled:true};
+  $("ntEnabled").checked=true;notificationLabels();
+ }else if(pairDeadline&&s.notificationPairingActive===false){clearPairCode(D[L].ntCodeClosed);}
  drawScrBtns(s.screen,s.enabled);
  if(!CFG.apMode&&$("wifiNow")) $("wifiNow").textContent=D[L].wifiNow+" "+s.ssid+".";
  const hasR=(s.range&&s.range.length>0);
@@ -759,12 +780,44 @@ async function saveNotificationSettings(key){
  if(key){notifications.key=key;notifications.enabled=true;}
  const r=await fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({notifications,password:$("adminPass").value})});
  if(!r.ok)throw Error(r.status);
+ if(pairDeadline)clearPairCode(D[L].ntCodeCancelled);
  $("ntEnabled").checked=notifications.enabled;
  return notifications;
 }
 async function testNotification(){
  try{$("ntEnabled").checked=true;await saveNotificationSettings();const r=await fetch("/api/notifications/test",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:$("adminPass").value})});
  if(!r.ok)throw Error(r.status);msg(D[L].autoSaved,"ok");await status();}catch(e){msg(D[L].failed+" ("+e.message+")","err");}
+}
+let pairDeadline=0,pairTimer=null;
+function clearPairCode(text){
+ pairDeadline=0;clearInterval(pairTimer);pairTimer=null;
+ $("ntCode").textContent="";$("ntCode").classList.add("hide");$("ntCodeCancel").classList.add("hide");
+ $("ntCodeExpiry").textContent=text||"";
+}
+function tickPairCode(){
+ const seconds=Math.max(0,Math.ceil((pairDeadline-Date.now())/1000));
+ if(!seconds){clearPairCode(D[L].ntCodeExpired);return;}
+ $("ntCodeExpiry").textContent=D[L].ntCodeRemaining+seconds;
+}
+async function startPairCode(){
+ $("ntCodeBtn").disabled=true;
+ try{
+  const r=await fetch("/api/notifications/pair/start",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:$("adminPass").value})});
+  if(!r.ok)throw Error(r.status);
+  const result=await r.json();
+  if(!/^[0-9]{6}$/.test(result.code)||!Number.isInteger(result.expiresIn)||result.expiresIn<1||result.expiresIn>120)throw Error("response");
+  clearPairCode();$("ntCode").textContent=result.code.slice(0,3)+" "+result.code.slice(3);
+  $("ntCode").classList.remove("hide");$("ntCodeCancel").classList.remove("hide");
+  $("ntCodeAddress").textContent=new URL(location.href).origin;
+  pairDeadline=Date.now()+result.expiresIn*1000;tickPairCode();pairTimer=setInterval(tickPairCode,1000);
+ }catch(e){msg(D[L].failed+" ("+e.message+")","err");}
+ finally{$("ntCodeBtn").disabled=!!CFG.apMode;}
+}
+async function cancelPairCode(){
+ try{
+  const r=await fetch("/api/notifications/pair/cancel",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:$("adminPass").value})});
+  if(!r.ok)throw Error(r.status);clearPairCode(D[L].ntCodeCancelled);
+ }catch(e){msg(D[L].failed+" ("+e.message+")","err");}
 }
 async function pairNotifications(){
  try{
@@ -783,6 +836,7 @@ async function save(){
   const r=await fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
   const result=await r.json();
   if(!r.ok){msg(D[L].failed+" ("+r.status+")","err");return;}
+  if(pairDeadline)clearPairCode(D[L].ntCodeCancelled);
   rememberCalendars(payload.calendars);
   CFG.screens=payload.screens;
   $("newPass").value="";

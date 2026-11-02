@@ -67,12 +67,26 @@ struct SetupView: View {
                 GroupBox {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(model.deviceHost).font(.headline)
-                        Text("Vo webovom UI displeja otvorte Notifikácie → Spárovať most / stiahnuť konfiguráciu. Vyberte stiahnutý súbor meteoplaneradar-chat.json.")
+                        Text("Vo webovom UI displeja otvorte Notifikácie → Vygenerovať párovací kód. Sem zadajte adresu displeja a šesťmiestny kód. Súbor nepotrebujete.")
                             .font(.callout).foregroundStyle(.secondary)
+                        LabeledContent("Adresa displeja") {
+                            TextField("meteoplaneradar.local", text: $model.pairAddress)
+                                .textFieldStyle(.roundedBorder).disabled(locked)
+                        }
+                        LabeledContent("Párovací kód") {
+                            TextField("123 456", text: $model.pairCode)
+                                .font(.system(.body, design: .monospaced)).textFieldStyle(.roundedBorder)
+                                .frame(width: 140).disabled(locked).onSubmit { model.claimPair() }
+                        }
                         HStack {
-                            Button("Importovať párovanie…") { model.importPair() }.disabled(locked)
+                            Button("Spárovať kódom") { model.claimPair() }.buttonStyle(.borderedProminent)
+                                .disabled(locked || model.pairCode.isEmpty)
                             Button("Overiť displej") { model.testDisplay() }.disabled(!model.hasPair || model.busy)
                         }
+                        DisclosureGroup("Pokročilé: import párovacieho súboru") {
+                            Button("Importovať párovanie…") { model.importPair() }.disabled(locked)
+                                .padding(.top, 8)
+                        }.font(.caption)
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(10)
                 } label: { Label("1 · Displej", systemImage: "display") }
                 GroupBox {

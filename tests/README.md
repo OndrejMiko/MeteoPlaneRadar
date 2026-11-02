@@ -66,3 +66,8 @@ Tools, run `swift run --build-system native --package-path tools/google-chat-mac
 ChatCoreChecks` as a single command. They cover actual local OAuth callbacks,
 cancellation, redirect refusal and the native delivery/checkpoint implementation.
 No Google account, Keychain item or real display is used by these checks.
+
+Code pairing checks cover single use, exact expiry, five guesses, cancellation,
+replacement and millis rollover. Web checks cover the admin-password payload for code generation,
+local expiry and cancellation; native checks cover code claim formatting,
+address validation, unsupported firmware and invalid response keys.

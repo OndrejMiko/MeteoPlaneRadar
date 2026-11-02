@@ -9,9 +9,12 @@ Jednoduchá natívna aplikácia pre **macOS 13 a novší**, Apple Silicon aj Int
 1. Rozbaľte `Meteo-Chat-<verzia>-macOS.zip` a presuňte **Meteo Chat.app** do
    **Applications / Aplikácie**. Spustite ju; zobrazí sa ikona papierového
    lietadla v hornej lište a okno nastavení.
-2. Vo webovom UI displeja otvorte **Notifikácie → Spárovať most / stiahnuť
-   konfiguráciu**. V aplikácii zvoľte **Importovať párovanie…** a vyberte
-   `meteoplaneradar-chat.json`. **Overiť displej** doručí skúšobnú správu.
+2. Aktualizujte displej na firmware **0.7.13 alebo novší**. Vo webovom UI
+   otvorte **Notifikácie → Vygenerovať párovací kód**. Ak má displej heslo
+   správcu, najprv ho zadajte na karte Systém. V aplikácii vyplňte adresu
+   displeja (predvolené `meteoplaneradar.local`, prípadne IP z webového UI),
+   zadajte šesťmiestny kód a kliknite **Spárovať kódom**. Žiadny párovací
+   súbor netreba. **Overiť displej** doručí skúšobnú správu.
 3. Pri prvom nastavení vytvorte v Google Cloud OAuth klienta typu **Desktop
    app** podľa postupu nižšie. Jeho stiahnutý JSON vyberte cez
    **Importovať OAuth klienta…**.
@@ -21,6 +24,12 @@ Jednoduchá natívna aplikácia pre **macOS 13 a novší**, Apple Silicon aj Int
 5. Vyberte chaty a kliknite **Zapnúť mostík**. Prvý výber začína od aktuálneho
    času, stará história sa neposiela. Načítanie je každých 15 sekúnd.
 
+Párovací kód platí 2 minúty, funguje raz a po piatich chybných pokusoch sa
+zablokuje. Vygenerovanie kódu ponechá existujúce spojenie funkčné; nový
+kľúč sa vytvorí až pri úspešnom spárovaní a nahradí pôvodný. Kód možno
+zrušiť tlačidlom na webe. Starší firmware podporuje pôvodný import súboru
+pod **Pokročilé: import párovacieho súboru**.
+
 Aplikácia je pri lokálnom zostavení podpísaná **ad-hoc**, nie Apple Developer
 ID ani notarizovaná. Ak ju macOS pri prvom otvorení zablokuje, použite jeho
 štandardnú možnosť **Otvoriť aj tak** v Systémových nastaveniach → Súkromie
@@ -29,6 +38,7 @@ Developer ID a notarizáciu účtom autora distribúcie.
 
 ## Google Cloud – iba pri prvom nastavení
 
+Kód vyššie páruje Mac s displejom, nenahrádza Google OAuth klienta.
 Prihlásenie cez prehliadač potrebuje identitu aplikácie u Googlu. Repozitár
 neobsahuje cudzí OAuth projekt ani univerzálne prihlasovacie údaje.
 

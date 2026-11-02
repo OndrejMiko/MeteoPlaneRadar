@@ -13,6 +13,8 @@ import ChatCore
     @Published var spaces: [Space] = []
     @Published var selected = Set<String>()
     @Published var deviceHost = "Displej nie je spárovaný"
+    @Published var pairAddress = "meteoplaneradar.local"
+    @Published var pairCode = ""
     @Published var hasClient = false
     @Published var signedIn = false
     @Published var lastContact: Date?
@@ -39,6 +41,9 @@ import ChatCore
         service = ChatService(secrets: secrets, preferences: preferences,
                               saveSecrets: Vault.write, savePreferences: LocalState.write)
         if let failure { storageReady = false; error = failure }
+        if let saved = secrets.pair, var address = URLComponents(string: saved.device) {
+            address.path = ""; pairAddress = address.string ?? "meteoplaneradar.local"
+        }
         sync()
     }
     func launch() {
@@ -63,6 +68,17 @@ import ChatCore
         operation = Task {
             defer { busy = false; operation = nil; sync() }
             do { try await job() } catch { self.error = describe(error) }
+        }
+    }
+    func claimPair() {
+        guard !running else { return }
+        let address = pairAddress, code = pairCode
+        perform {
+            let pair = try await Pairing.claim(address: address, code: code)
+            var next = self.service.secrets; next.pair = pair
+            try Vault.write(next); self.service.secrets = next
+            self.pairCode = ""; self.sync()
+            self.status = "Displej bol spárovaný kódom. Môžete overiť spojenie."
         }
     }
     func importPair() {

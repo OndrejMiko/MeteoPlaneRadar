@@ -11,6 +11,33 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.13] - 2026-11-02
+
+### Přidáno
+
+- Párování Macu s displejem šestimístným kódem z webového UI Notifikace.
+  Mac aplikace přijme adresu displeje a kód; párovací JSON již není potřeba.
+  Import souboru zůstává v pokročilých volbách pro starší firmware a Python.
+- Kód je pouze v RAM, platí dvě minuty, je jednorázový a má nejvýše pět
+  pokusů. Generování i zrušení chrání stejné heslo správce jako nastavení
+  notifikací. Párování je zakázáno v konfiguračním AP režimu.
+- Nový kryptografický klíč vznikne až po správném kódu; zapne notifikace
+  a nahradí předchozí párování. Samotné otevření okna starý most neodpojí.
+  Kód neuděluje přístup k nastavení ani heslo správce. Odpovědi se necachují;
+  kód a klíč se nevracejí přes běžné config/status API ani do záloh.
+- Web ukazuje kód, adresu displeje a odpočet, umožňuje kód zrušit. Texty jsou
+  česky, anglicky a slovensky; instrukce pro Python jsou v pokročilé části.
+- Google OAuth zůstává samostatné přihlášení: kód páruje pouze displej,
+  nenahrazuje identitu Desktop app u Googlu.
+
+### Ověření
+
+- Testy jednorázového použití, expirace včetně hranice a přetečení millis(),
+  pěti pokusů, zrušení a náhrady kódu. Web testuje generování, zrušení a
+  odpočet; Swift kontroluje požadavky, chybné adresy/kódy, starý firmware
+  a validaci vráceného klíče. Univerzální macOS aplikace a build ESP32-S3.
+- Skutečné ESP32 a Google účet nebyly připojeny.
+
 ## [0.7.12] - 2026-11-02
 
 ### Přidáno

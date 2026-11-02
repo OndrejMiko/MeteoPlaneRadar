@@ -26,6 +26,7 @@
 #include "Net.h"
 #include "NightMode.h"
 #include "Notifications.h"
+#include "NotificationPairing.h"
 #include "ScreenCalendar.h"
 #include "ScreenPlanes.h"
 #include "ScreenWeather.h"
@@ -41,6 +42,7 @@ static WebServer  s_srv(WEB_PORT);
 static DNSServer  s_dns;
 static uint32_t s_bridgeContact = 0;
 static bool s_bridgeSeen = false;
+static NotificationPairing s_notificationPairing;
 static bool s_apMode = false;
 static bool s_running = false;
 static bool s_wantConnect = false;
@@ -129,6 +131,7 @@ static void handlePostConfig() {
     return;
   }
   if (!doc["notifications"].isNull() && !authed(doc)) return;
+  if (!doc["notifications"].isNull()) s_notificationPairing.cancel();
   // Calendar URLs grant read access to private events. Editing them uses the
   // same optional admin password as import; URLs never round-trip through GET.
   if (!doc["calendars"].isNull() && !authed(doc)) return;
@@ -145,6 +148,7 @@ static void handlePostConfig() {
     const char* p = np.as<const char*>();
     if (p && *p) {
       if (!authed(doc)) return;                 // sends 403 and explains itself
+      s_notificationPairing.cancel();
       Settings_SetAdminPassword(p);
       // The update page checks the password on every request, so a new one is
       // live immediately - no restart needed.
@@ -281,6 +285,8 @@ static void handleStatus() {
   Status_Text(ST_FORECAST, b, sizeof(b)); doc["forecast"] = b;
   doc["notificationMemory"] = Notifications_MemoryBytes();
   doc["notificationCount"] = Notifications_Count();
+  doc["notificationPairingActive"] = s_notificationPairing.active(millis());
+  doc["notificationPairingComplete"] = s_notificationPairing.completed();
   doc["notificationRetries"] = Notifications_Dropped();
   doc["notificationBridgeAge"] =
       s_bridgeSeen ? (long)((uint32_t)(millis() - s_bridgeContact) / 1000) : -1;
@@ -619,6 +625,51 @@ static void handleCalendarRefresh() {
 // --- Lifecycle --------------------------------------------------------------
 // Notification ingress is deliberately independent of the optional admin password.
 // A random, revocable pairing key grants only delivery, never config access.
+// Pairing is explicitly opened in the authenticated web UI, never discoverable
+// through config/status. Codes expire, have a fixed guess budget and are single-use.
+static bool readPairBody(JsonDocument& doc) {
+  s_srv.sendHeader("Cache-Control", "no-store");
+  if (s_apMode) { s_srv.send(403, "application/json", "{\"error\":\"apMode\"}"); return false; }
+  if (!s_srv.hasArg("plain") || s_srv.arg("plain").length() > 512 || !readBody(doc)) {
+    s_srv.send(400, "application/json", "{\"error\":\"json\"}"); return false;
+  }
+  return true;
+}
+static void handlePairStart() {
+  JsonDocument doc;
+  if (!readPairBody(doc) || !authed(doc)) return;
+  const char* code = s_notificationPairing.begin(millis(), esp_random());
+  JsonDocument response;
+  response["code"] = code; response["expiresIn"] = NotificationPairing::TTL_MS / 1000;
+  sendJson(200, response);
+}
+static void handlePairCancel() {
+  JsonDocument doc;
+  if (!readPairBody(doc) || !authed(doc)) return;
+  s_notificationPairing.cancel();
+  s_srv.send(200, "application/json", "{\"ok\":true}");
+}
+static void handlePairClaim() {
+  JsonDocument doc;
+  if (!readPairBody(doc)) return;
+  if (!s_notificationPairing.active(millis())) {
+    s_srv.send(410, "application/json", "{\"error\":\"expired\"}"); return;
+  }
+  const char* code = doc["code"] | "";
+  if (!s_notificationPairing.take(code, millis())) {
+    s_srv.send(403, "application/json", "{\"error\":\"code\"}"); return;
+  }
+  uint8_t bytes[32]; esp_fill_random(bytes, sizeof(bytes));
+  char key[65];
+  for (unsigned i = 0; i < sizeof(bytes); ++i) snprintf(key + 2*i, 3, "%02x", bytes[i]);
+  JsonDocument settings;
+  settings["notifications"]["key"] = key;
+  settings["notifications"]["enabled"] = true;
+  Settings_FromJson(settings.as<JsonObjectConst>());
+  JsonDocument response; response["key"] = key;
+  sendJson(200, response);
+  memset(key, 0, sizeof(key)); memset(bytes, 0, sizeof(bytes));
+}
 static bool notificationAuth() {
   String header = s_srv.header("Authorization");
   if (s_apMode || !header.startsWith("Bearer ") || !Notifications_Authorized(header.c_str() + 7)) {
@@ -690,6 +741,7 @@ static void handleNotificationTest() {
 
 void WebConfig_Begin(bool apMode) {
   s_apMode = apMode;
+  if (apMode) s_notificationPairing.cancel();
 
   // The handlers are registered ONCE for the life of the process. This function
   // is called at least twice in a normal boot - first for the access point,
@@ -712,6 +764,9 @@ void WebConfig_Begin(bool apMode) {
 
   const char* headers[] = {"Authorization"};
   s_srv.collectHeaders(headers, 1);
+  s_srv.on("/api/notifications/pair/start", HTTP_POST, handlePairStart);
+  s_srv.on("/api/notifications/pair/cancel", HTTP_POST, handlePairCancel);
+  s_srv.on("/api/notifications/pair/claim", HTTP_POST, handlePairClaim);
   s_srv.on("/api/notifications", HTTP_POST, handleNotificationPush);
   s_srv.on("/api/notifications/ping", HTTP_GET, handleNotificationPing);
   s_srv.on("/api/notifications/test", HTTP_POST, handleNotificationTest);

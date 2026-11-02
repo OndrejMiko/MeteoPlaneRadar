@@ -33,3 +33,6 @@ c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoP
   MeteoPlaneRadar/ScreenClock.cpp MeteoPlaneRadar/ScreenForecast.cpp MeteoPlaneRadar/WxIcon.cpp \
   tests/screen_layout.cpp -o "$test_build_dir/screen_layout"
 "$test_build_dir/screen_layout"
+c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -IMeteoPlaneRadar \
+  MeteoPlaneRadar/NotificationPairing.cpp tests/notification_pairing.cpp -o "$test_build_dir/notification_pairing"
+"$test_build_dir/notification_pairing"
