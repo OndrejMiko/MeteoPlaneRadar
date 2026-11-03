@@ -102,8 +102,9 @@ Přístupový bod zůstane aktivní, dokud síť nezadáte. Potom najdete nastav
 **`http://meteoplaneradar.local/`** nebo na IP adrese, která je vypsaná na
 obrazovce Nastavení.
 
-Hodiny a stav map jsou oddělené v černém horním výřezu, dosah je v dolním
-výřezu. Ikony letadel a mapové popisky udržují kolem těchto údajů odstup,
+Hodiny mají jen malé černé pozadí podle šířky textu, údaje o letadlech
+kompaktní vlastní panel. Meteoradar ukazuje čas snímku a tenký posuvný indikátor
+animace dole nad dosahem; velký horní výřez mapu nezakrývá. Ikony letadel a mapové popisky udržují kolem těchto údajů odstup,
 aby byly čitelné i při hustém provozu nebo barevných srážkách.
 
 ## Nastavení v prohlížeči

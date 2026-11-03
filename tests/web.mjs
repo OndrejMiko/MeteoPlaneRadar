@@ -152,3 +152,7 @@ await run('status()');assert.equal(elements.get('ntCode').textContent,'');
 assert.equal(elements.get('ntCodeExpiry').textContent,run('D[L].ntCodeDone'));
 assert.equal(run('CFG.notifications.paired'),true);assert.equal(elements.get('ntEnabled').checked,true);
 console.log('Successful code pairing clears code and updates paired/enabled state without reloading fields');
+
+assert(!page.includes('python3 tools/google-chat-bridge'));
+assert(!page.includes('ntStep1'));
+assert(page.includes('class="notification-actions"><button type="button" class="sec" id="ntTestBtn"'));

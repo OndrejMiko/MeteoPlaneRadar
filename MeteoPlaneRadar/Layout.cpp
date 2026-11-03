@@ -93,7 +93,9 @@ void Layout_SelfTest() {
     { "LY_STATUS",     LY_STATUS - 3,    22 },
     { "LY_SUB",        LY_SUB,            8 },
     { "LY_LEGEND",     LY_LEGEND,        16 },
-    { "LY_NOTE",       LY_NOTE,          10 },
+    { "PLAYBACK_NOTE", LY_PLAYBACK_NOTE,  8 },
+    { "PLAYBACK_TIME", LY_PLAYBACK_LABEL, 8 },
+    { "PLAYBACK_THUMB",LY_PLAYBACK_TRACK-5,12 },
     { "LY_RANGE",      LY_RANGE,         16 },
     // LY_FOOTER is used on clock/settings only; those screens have no map range.
   };

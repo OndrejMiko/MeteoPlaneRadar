@@ -11,6 +11,34 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.16] - 2026-11-03
+
+### Změněno
+
+- Z webového firmware odstraněn návod a příkazy Python mostu pro Google Chat.
+  Párování kódem zůstává hlavní cesta; souborové párování je v pokročilé části.
+- Testovací tlačítko notifikací má vlastní oddělený řádek s větším odstupem,
+  v mobilu celou šířku. Hlavičky banneru i detailu jsou obecné Notifikace /
+  Notifications / Notifikacie. Test firmware používá obecný typ notification;
+  existující zprávy google-chat zůstávají kompatibilní.
+- Animace meteoradaru má čas snímku nad dosahem a tenkou vodorovnou dráhu
+  s malým obdélníkovým ukazatelem místo bodů. Poznámka o starých/stahovaných
+  datech je ve stejné spodní skupině. Body navigace a zoomu se nemění.
+- Odstraněn široký horní výřez meteoradaru. Hodiny dostaly malé pozadí měřené
+  podle textu. Také letadla používají kompaktní pozadí hodin a užší panel
+  počtu/legendy místo původního 320px obdélníku. Rezervace mapy a ikon upraveny.
+- Legenda ČHMÚ i RainViewer má 12px vnitřní okraje, větší odstup nadpisu,
+  jednotek a barevné stupnice a 18px řádky. Hodnoty i barvy zůstávají stejné.
+- Odznak nepřečtených notifikací na meteoradaru se přesunul nad přehrávání,
+  aby nepřekrýval nový ukazatel, čas ani stav stahování.
+
+### Ověření
+
+- Host testy obecných notifikací, dotykových oblastí, mapových rezervací,
+  poloh ukazatele přehrávání a skutečného vykreslení společných překryvů.
+  Prohlížeč ve třech jazycích při čtyřech šířkách včetně odstupu testovací akce.
+- Build ESP32-S3; fyzický panel zatím nebyl ověřen. Žádný nový framebuffer.
+
 ## [0.7.15] - 2026-11-03
 
 ### Změněno

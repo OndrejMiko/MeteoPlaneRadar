@@ -496,7 +496,7 @@ void ScreenPlanes_Draw() {
     }
   }
 
-  Chrome_DrawMapHeader(false);
+  Chrome_DrawPlaneMetadata();
   UI_DrawStatusLine(LY_STATUS);
 
   // The line under the clock: normally the aircraft count, but an emergency

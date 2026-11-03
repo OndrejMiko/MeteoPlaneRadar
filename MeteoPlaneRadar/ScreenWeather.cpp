@@ -336,80 +336,19 @@ static void drawOverlay() {
     }
   }
 
-  // Precipitation-intensity legend - dBZ / mm/h, on the left and vertically
-  // centred so it stays inside the circle. Can be turned off in the web UI:
-  // it covers a chunk of the map, and once you know the scale it is just in
-  // the way. The band it reserves in the layout goes with it (see
-  // ScreenWeather_Draw), so the city labels may then use that space.
-  //
-  // The palette must match the source on screen - the same yellow means 40 dBZ
-  // on one scale and 35 on the other - so each brings its own table and says
-  // which one you are reading. RainViewer's is "Universal Blue", the only
-  // scheme their API offers, from their published dBZ table; the mm/h column is
-  // the Marshall-Palmer conversion (Z = 200 R^1.6) that the CHMU scale also
-  // uses, so both read alike.
-  if (Settings_MeteoLegend()) {
-    static const uint16_t COL_CHMU[6] = { 0xA000, 0xF800, 0xFC20, 0xE6E0, 0x05E0, 0x001F };
-    static const char*    LBL_CHMU[6] = { ">56 / >100", "52 / 65", "46 / 27",
-                                          "40 / 12", "32 / 3.6", "20 / <1" };
-    // #ffaaff  #c10000  #ff4400  #ffaa00  #005588  #00a3e0
-    static const uint16_t COL_RV[6]   = { 0xFD5F, 0xC000, 0xFA20, 0xFD40, 0x02B1, 0x051C };
-    static const char*    LBL_RV[6]   = { ">55 / >100", "50 / 49", "45 / 24",
-                                          "40 / 12", "30 / 2.7", "20 / 0.7" };
-
-    const bool rv = rvMode();
-    const uint16_t*    col = rv ? COL_RV : COL_CHMU;
-    const char* const* lbl = rv ? LBL_RV : LBL_CHMU;
-
-    const int lx = 30, ly = 142, boxW = 96, boxH = 22 + 6 * 13 + 2;
-    gfx->fillRect(lx - 2, ly - 2, boxW, boxH, C_BLACK);   // readability backing
-    gfx->setTextSize(1);
-    gfx->setTextColor(rv ? C_CYAN : C_GREEN);
-    gfx->setCursor(lx, ly); gfx->print(rv ? "RainViewer" : "CHMU");
-    gfx->setTextColor(C_GRAY);
-    gfx->setCursor(lx, ly + 10); gfx->print("dBZ / mm/h");
-    for (int i = 0; i < 6; i++) {
-      int ry = ly + 22 + i * 13;
-      gfx->fillRect(lx, ry, 9, 9, col[i]);
-      gfx->drawRect(lx, ry, 9, 9, C_DKGRAY);
-      gfx->setTextColor(C_WHITE);
-      gfx->setCursor(lx + 13, ry + 1); gfx->print(lbl[i]);
-    }
-  }
-
-  Chrome_DrawMapHeader(true);
-  // Clock + outside temperature, grouped apart from animation controls.
+  if (Settings_MeteoLegend()) Chrome_DrawPrecipLegend(rvMode());
   UI_DrawStatusLine(LY_STATUS);
 
-  // Animation indicator - dots + the frame's time label. Moved down to make
-  // room for the status line above it; dots and time share the header notch.
-  {
-    int have = srcCount();
-    int n = have > 0 ? have : 1;
-    int minAgo = srcMinutesAgo(s_curFrame, n);
-    char lbl[28];
-    String hhmm = (have > 0) ? srcTimeText(s_curFrame) : String("");
-    if (minAgo <= 0) snprintf(lbl, sizeof(lbl), "%s  %s", T(S_NOW), hhmm.c_str());
-    else             snprintf(lbl, sizeof(lbl), "-%d %s  %s", minAgo, T(S_MIN), hhmm.c_str());
-    gfx->fillRect(CX - 70, LY_SUB, 140, 34, C_BLACK);   // backing
-    int gap = 16, totalW = (n - 1) * gap, sx0 = CX - totalW / 2, dy = LY_SUB + 10;
-    for (int i = 0; i < n; i++) {
-      int x = sx0 + i * gap;
-      if (i == s_curFrame) gfx->fillCircle(x, dy, 4, C_YELLOW);
-      else                 gfx->drawCircle(x, dy, 4, C_GRAY);
-    }
-    UI_TextCenteredIn(lbl, 0, LCD_WIDTH, LY_LEGEND, C_CYAN, 1);
-
-    // Small note under the frame indicator: a refresh in progress, or the fact
-    // that the last one failed and what you are looking at is the older data.
-    const char* note = s_loading  ? T(S_LOADING_NEWER)
-                     : s_lastFail ? T(S_OLD_DATA)
-                                  : nullptr;
-    if (note) {
-      gfx->fillRect(CX - 160, LY_NOTE, 320, 10, C_BLACK);
-      UI_TextCenteredIn(note, 0, LCD_WIDTH, LY_NOTE, C_YELLOW, 1);
-    }
-  }
+  // Playback is grouped with the range at the bottom, using a thin track and
+  // small thumb. Navigation dots retain their screen/zoom meaning.
+  const int have=srcCount(), count=have>0 ? have : 1;
+  const int minAgo=srcMinutesAgo(s_curFrame,count);
+  char label[28];
+  String hhmm=have>0 ? srcTimeText(s_curFrame) : String("");
+  if (minAgo<=0) snprintf(label,sizeof(label),"%s  %s",T(S_NOW),hhmm.c_str());
+  else snprintf(label,sizeof(label),"-%d %s  %s",minAgo,T(S_MIN),hhmm.c_str());
+  const char* note=s_loading ? T(S_LOADING_NEWER) : (s_lastFail ? T(S_OLD_DATA) : nullptr);
+  Chrome_DrawWeatherTimeline(s_curFrame,count,label,note);
 
   // Range readout at the bottom; temporary zoom steps on the right.
   char rbuf[16];
@@ -571,15 +510,13 @@ void ScreenWeather_Draw() {
   // Chrome owns its lines before the map draws a single city label.
   if (Navigation_ScreenDotsVisible()) Layout_ReserveBand(LY_DOTS - 6, 12);
   Layout_ReserveBand(LY_STATUS - 3, 22);
-  Layout_ReserveBand(LY_SUB, 22);            // frame dots
-  Layout_ReserveBand(LY_LEGEND - 2, 12);     // frame time label
-  Layout_ReserveBand(LY_NOTE - 2, 12);       // loading / stale note
+  Layout_Reserve(80, LY_PLAYBACK_NOTE-6, 320, 20);         // optional loading/stale note
   Layout_ReserveBand(LY_RANGE - 4, 24);
   Navigation_ReserveRangeDots(RANGE_COUNT);
   // The precipitation legend down the left-hand side. Not reserved when it is
   // switched off - otherwise turning it off would free the pixels but still
   // push the map labels away from them.
-  if (Settings_MeteoLegend()) Layout_Reserve(28, 140, 100, 22 + 6 * 13 + 6);
+  if (Settings_MeteoLegend()) Chrome_ReservePrecipLegend();
 
   const int have = srcCount();
   if (have == 0) {

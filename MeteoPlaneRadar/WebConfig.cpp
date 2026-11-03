@@ -727,7 +727,7 @@ static void handleNotificationTest() {
   char id[48];
   snprintf(id, sizeof(id), "test-%lu", (unsigned long)millis());
   doc["id"] = id;
-  doc["service"] = "google-chat";
+  doc["service"] = "notification";
   doc["sender"] = "MeteoPlaneRadar";
   doc["room"] = "Test";
   doc["text"] =

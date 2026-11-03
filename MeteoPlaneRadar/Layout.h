@@ -31,9 +31,11 @@
 // other.
 #define LY_DOTS        18    // screen selector dots (this one is a CENTRE y)
 #define LY_STATUS      36    // clock + outside temperature      (size 2)
-#define LY_SUB         76    // aircraft count / frame dots      (size 1)
-#define LY_LEGEND      98    // altitude legend / frame time     (size 1)
-#define LY_NOTE        124    // small note under the legend      (size 1)
+#define LY_SUB         76    // aircraft count / alert      (size 1)
+#define LY_LEGEND      98    // altitude legend     (size 1)
+#define LY_PLAYBACK_NOTE  375 // loading / stale note (weather only)
+#define LY_PLAYBACK_LABEL 395 // radar frame time
+#define LY_PLAYBACK_TRACK 414 // thin playback track / thumb
 
 // Bottom stack, from the rim up.
 #define LY_RANGE       (LCD_HEIGHT - 36)   // range inside the bottom black notch (size 2)

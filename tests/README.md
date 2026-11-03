@@ -76,3 +76,9 @@ address validation, unsupported firmware and invalid response keys.
 missing/placeholder refusal, normalized registration with no token fields, and
 removal of a stale bundled client when reusing an output directory. It uses only
 synthetic registration in a temporary folder; no real credentials or Keychain.
+
+Map overlays now render the real precipitation legend and bottom playback track
+with its first/last-frame thumb in the shared chrome fixture. Tests verify that
+the old wide top panel and playback dots are absent, the map beneath the clock
+is available for labels, and the notification badge avoids the new controls.
+Browser checks also enforce a separate, spaced test-notification action row.

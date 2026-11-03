@@ -10,6 +10,7 @@
 #include "Settings.h"
 #include "UI.h"
 #include "Overlay.h"
+#include "Layout.h"
 
 namespace {
 constexpr unsigned CAPACITY = 6;
@@ -32,8 +33,9 @@ struct BadgeBox {
 BadgeBox badgeBox() {
   switch (Settings_Screen()) {
     case SCREEN_PLANES_I:
+      return {208, 391, 64, 48};
     case SCREEN_METEO_I:
-      return {208, 391, 64, 48};  // above the lower range notch
+      return {208, LY_PLAYBACK_NOTE - 55, 64, 40}; // clear of playback and loading note  // above the lower range notch
     case SCREEN_CALENDAR_I:
       return {366, 134, 48, 40};  // beside view tabs, clear of Today
     default:
@@ -130,7 +132,9 @@ const char* Notifications_Validate(JsonObjectConst n) {
     if (strlen(s) > f.max || (!*s && (!strcmp(f.name, "id") || !strcmp(f.name, "text"))))
       return f.name;
   }
-  if (!n["service"].is<const char*>() || strcmp(n["service"], "google-chat")) return "service";
+  if (!n["service"].is<const char*>()) return "service";
+  const char* service = n["service"];
+  if (strcmp(service, "google-chat") && strcmp(service, "notification")) return "service";
   return nullptr;
 }
 bool Notifications_Authorized(const char* token) {
@@ -196,7 +200,7 @@ void Notifications_Draw() {
   if (!expanded) {
     gfx->fillRoundRect(43, 115, 394, 197, 20, PANEL);
     gfx->fillCircle(66, 139, 4, C_GREEN);
-    text("Google Chat", 80, 132, C_GRAY);
+    text(label("Notifikace", "Notifications", "Notifikacie"), 80, 132, C_GRAY);
     snprintf(b, sizeof(b), "%u/%u", 1, count);
     text(b, 294, 132, C_GRAY, 2);
     Overlay_DrawClose(368, 120);
@@ -208,8 +212,10 @@ void Notifications_Draw() {
     text(label("Tukni pro detail", "Tap for details", "Tukni pre detail"), 63, 275, C_GRAY, 2);
   } else {
     gfx->fillScreen(C_BLACK);
-    gfx->fillCircle(166, 82, 4, C_GREEN);
-    text("Google Chat", 180, 75, C_GRAY, 2);
+    const char* title = label("Notifikace", "Notifications", "Notifikacie");
+    const int titleX = (480 - (int)strlen(title) * 12) / 2;
+    gfx->fillCircle(titleX - 14, 82, 4, C_GREEN);
+    text(title, titleX, 75, C_GRAY, 2);
     Overlay_DrawClose(359, 95);
     clipped(m.sender, 85, 120, 22, C_WHITE);
     clipped(m.room, 85, 147, 25, C_GRAY);

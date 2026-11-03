@@ -28,6 +28,10 @@ const status={version,screen:1,enabled:[true,true,true,true,true,true],range:'10
     await page.locator('[data-tab="'+id+'"]').click();
     const fit=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,selected:document.querySelectorAll('[role=tab][aria-selected=true]').length,panels:document.querySelectorAll('section.tab:not(.hide)').length}));
     assert(fit.scroll<=fit.width,`page overflow ${width} ${lang} ${id}: ${fit.scroll}`);assert.equal(fit.selected,1);assert.equal(fit.panels,1);
+    if(id==='tNotify'){
+     const statusBox=await page.locator('#ntStatus').boundingBox(),buttonBox=await page.locator('#ntTestBtn').boundingBox();
+     assert(buttonBox.y-statusBox.y-statusBox.height>=24,`crowded notification test action ${width} ${lang}`);
+    }
     const manual=['tLoc','tScr','tCal','tNotify','tSys'].includes(id);
     assert.equal(await page.locator('#saveButton').isVisible(),manual);
     if(manual){

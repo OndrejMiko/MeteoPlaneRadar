@@ -68,6 +68,7 @@ int main() {
   Notifications_Draw();
   std::string all;
   for (const auto& s : display.texts) all += s;
+  assert(all.find("Google Chat")==std::string::npos && all.find("Notifikacie")!=std::string::npos);
   assert(all.find("Matus") != std::string::npos && all.find("C:\\new") != std::string::npos);
   assert(Notifications_Touch(359, 95, true));
   assert(!Notifications_Count());  // edge of expanded X target
@@ -112,6 +113,12 @@ int main() {
   Settings_SetScreen(SCREEN_SETTINGS_I);
   assert(!Notifications_Touch(240,390,true));
   assert(Notifications_Touch(240,450,true));
+  testMillis += 15000; Notifications_Tick();
+  Settings_SetScreen(SCREEN_METEO_I);
+  assert(!Notifications_Touch(240,415,true)); // playback track remains usable
+  assert(Notifications_Touch(240,330,true));
+  auto generic=message(99);generic["service"]="notification";
+  assert(!Notifications_Validate(generic.as<JsonObjectConst>()));
   settings(false);
   assert(Notifications_Tick());
   assert(!Notifications_Count() && !Notifications_Visible() && !Notifications_MemoryBytes());

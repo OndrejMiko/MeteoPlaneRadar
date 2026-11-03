@@ -203,11 +203,26 @@ int main() {
   // The longest English brightness label and its mode suffix have a 12px gap.
   Settings_SetLanguage(LANG_EN);
   assert(Layout_TextW(T(S_BRIGHTNESS), 2) + 12 + 7 * 6 < 250);
-  // Weather overlays use the taller header and same protected range.
+  // Real shared weather overlays on a deliberately bright radar background.
   display.fillScreen(C_CYAN);
-  Chrome_DrawMapHeader(true);
+  Chrome_DrawPrecipLegend(false);
+  Chrome_DrawWeatherTimeline(2,6,"-15 min  12:30","Starsie data");
   Chrome_DrawStatus(LY_STATUS);
   Chrome_DrawRange("200 km");
   snapshot("weather-chrome");
+  svg=display.drawing.str();
+  assert(svg.find("x='80' y='-24' width='320'")==std::string::npos);
+  assert(svg.find("x='156' y='414' width='168' height='3'")!=std::string::npos);
+  assert(svg.find("x='30' y='142' width='108' height='160'")!=std::string::npos);
+  assert(svg.find("cy='86'")==std::string::npos); // playback has no dot markers
+  Layout_Begin(); Chrome_ReserveMap(true);
+  assert(Layout_Claim(140,90,200,22)); // map is free under the compact clock
+  assert(!Layout_Claim(180,395,120,24)); // timeline keeps city names out
+  for(int frame : {0,5}) {
+    display.fillScreen(C_CYAN);
+    Chrome_DrawWeatherTimeline(frame,6,"12:30",nullptr);
+    auto track=display.drawing.str();
+    assert(track.find(frame ? "x='316' y='409'" : "x='156' y='409'")!=std::string::npos);
+  }
   std::cout << "Screen chrome, icon exclusion/touch, round-panel fit and screen rendering passed\n";
 }
