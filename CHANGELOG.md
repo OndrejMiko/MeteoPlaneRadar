@@ -11,6 +11,17 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.15] - 2026-11-03
+
+### Změněno
+
+- Připravena lokální macOS sestava s autorem dodaným Desktop OAuth klientem.
+  Přihlášení přes Google je dostupné bez uživatelského importu JSON.
+  Skutečné registrační údaje jsou pouze v ignorované lokální konfiguraci
+  a sestaveném balíku aplikace, nikoli v repozitáři.
+- Uživatelské přihlášení a souhlas Googlu je ještě potřeba dokončit v prohlížeči.
+  Chování firmwaru a notifikační protokol se nemění.
+
 ## [0.7.14] - 2026-11-02
 
 ### Přidáno

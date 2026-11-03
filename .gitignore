@@ -12,3 +12,6 @@ tools/google-chat-macos/dist/
 
 # Author Google OAuth registration, embedded only by the Mac packaging script
 tools/google-chat-macos/config/google-oauth.json
+
+# Local author-provided Google registrations
+google-api/
