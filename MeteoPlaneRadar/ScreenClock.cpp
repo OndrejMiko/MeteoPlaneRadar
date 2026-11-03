@@ -32,7 +32,7 @@
 #define CLK_Y      168     // top of the HH:MM glyphs             (size 8, 64 px)
 #define WX_Y       292     // CENTRE of the weather icon row      (icon + temp + rain)
 #define WX_ICON_R   26
-#define WIND_Y     352     // wind speed on its own line          (size 2)
+#define WIND_Y     328     // centred between conditions and Claude (size 2)
 
 static int s_lastMin = -1;
 static int s_lastSec = -1;

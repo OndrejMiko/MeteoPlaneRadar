@@ -11,6 +11,13 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.18] - 2026-11-03
+
+### Změněno
+
+- Vítr na hodinách posunut o 24 px výše, přibližně doprostřed mezi teplotu
+  a blok zbývajících limitů Claude.
+
 ## [0.7.17] - 2026-11-03
 
 ### Přidáno
