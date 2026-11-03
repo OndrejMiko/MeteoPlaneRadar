@@ -76,6 +76,7 @@ public struct Checkpoint: Codable, Equatable {
 }
 public struct Preferences: Codable {
     public var enabled = false
+    public var claudeEnabled: Bool?
     public var accountID: String?
     public var spaces: [Space] = []
     public var checkpoints: [String: Checkpoint] = [:]

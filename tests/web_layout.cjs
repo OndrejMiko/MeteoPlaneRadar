@@ -60,6 +60,12 @@ const status={version,screen:1,enabled:[true,true,true,true,true,true],range:'10
  await page.locator('[data-tab=tLoc]').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('[data-tab=tScr]').getAttribute('aria-selected'),'true');await page.keyboard.press('End');assert.equal(await page.locator('[data-tab=tSys]').getAttribute('aria-selected'),'true');await page.keyboard.press('Home');assert.equal(await page.locator('[data-tab=tCtl]').getAttribute('aria-selected'),'true');
  await page.locator('[data-tab=tCal]').click();await page.locator('#saveButton').click();await page.waitForFunction(()=>!document.querySelector('#saveButton').disabled);
  const calendar=posts.find(p=>p.url==='/api/config');assert.deepEqual(calendar.body.screens,{calendar:true});assert(!('lat' in calendar.body));assert.equal(calendar.body.calendars[0].url,'');
+ await page.locator('[data-tab=tLook]').click();
+ await page.locator('#claudeUsage').check();
+ await page.waitForFunction(()=>document.querySelector('#msg').textContent.length>0);
+ await page.waitForTimeout(500);
+ const claude=posts.find(p=>p.url==='/api/config'&&p.body.claudeUsage===true);
+ assert(claude,'Claude checkbox must save immediately');assert.deepEqual(claude.body,{claudeUsage:true});
  await page.evaluate(()=>msg('Testovacia správa','ok'));assert(await page.locator('#msg').isVisible());
  assert.deepEqual(errors,[]);console.log('Web browser: 4 widths × 3 languages × 8 tabs; fixed saves, keyboard navigation, unsaved fields and calendar save and code pairing passed');
  }finally{await browser.close();}

@@ -106,6 +106,20 @@ public func formRequest(_ endpoint: String, fields: [String: String]) -> URLRequ
                               room: "Test spojenia", text: "Mostík na Macu je pripojený k displeju.")
         _ = try await device(payload)
     }
+    public func sendClaudeUsage(_ snapshot: ClaudeUsageSnapshot) async throws {
+        try Task.checkCancellation()
+        try snapshot.validate()
+        guard let pair = secrets.pair else { throw BridgeError.message("Najprv spárujte displej.") }
+        try pair.validate()
+        var url = URLComponents(string: pair.device)!
+        url.path = "/api/claude/usage"
+        var request = URLRequest(url: url.url!)
+        request.httpMethod = "POST"
+        request.setValue("Bearer " + pair.key, forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try snapshot.wireData()
+        _ = try await http.send(request)
+    }
     public func poll(_ space: Space) async throws -> Int {
         guard var checkpoint = preferences.checkpoints[space.id] else {
             throw BridgeError.message("Vyberte chat znova, aby sa nastavil začiatok odberu.")

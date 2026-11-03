@@ -8,6 +8,9 @@ import ChatCore
     static let shared = AppModel()
     @Published var status = "Mostík je vypnutý"
     @Published var error: String?
+    @Published var claudeEnabled = false
+    @Published var claudeStatus = "Claude Code nie je pripojený"
+    @Published var claudeDeliveryFailed = false
     @Published var running = false
     @Published var busy = false
     @Published var spaces: [Space] = []
@@ -25,9 +28,16 @@ import ChatCore
     var usesBundledClient: Bool { bundledClient != nil && service.secrets.client?.client_id == bundledClient?.client_id }
     private var service: ChatService
     private var worker: Task<Void, Never>?
+    private var claudeWorker: Task<Void, Never>?
     private var operation: Task<Void, Never>?
     private var window: NSWindow?
-    var configured: Bool { service.secrets.pair != nil && signedIn && !selected.isEmpty }
+    var configured: Bool { hasPair && (claudeEnabled || (signedIn && !selected.isEmpty)) }
+    private var claudeInstallation: ClaudeUsageInstallation {
+        let config = ProcessInfo.processInfo.environment["CLAUDE_CONFIG_DIR"].map { URL(fileURLWithPath: $0) }
+            ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude")
+        return ClaudeUsageInstallation(settings: config.appendingPathComponent("settings.json"), folder: LocalState.folder,
+                                       relay: LocalState.folder.appendingPathComponent("ClaudeUsageRelay"))
+    }
     var hasPair: Bool { service.secrets.pair != nil }
 
     private init() {
@@ -39,7 +49,9 @@ import ChatCore
                 secrets = OAuthConfiguration.applying(bundledClient, to: secrets)
             }
             if preferences.accountID != secrets.selfID {
+                let claude = preferences.claudeEnabled, enabled = preferences.enabled
                 preferences = Preferences(); preferences.accountID = secrets.selfID
+                preferences.claudeEnabled = claude; preferences.enabled = enabled
                 try LocalState.write(preferences)
             }
         }
@@ -51,6 +63,7 @@ import ChatCore
             address.path = ""; pairAddress = address.string ?? "meteoplaneradar.local"
         }
         sync()
+        refreshClaudeStatus()
     }
     func launch() {
         if storageReady && service.preferences.enabled && configured { start() }
@@ -59,6 +72,7 @@ import ChatCore
     private func sync() {
         deviceHost = service.secrets.pair?.host ?? "Displej nie je spárovaný"
         hasClient = service.secrets.client != nil; signedIn = service.secrets.token != nil
+        claudeEnabled = service.preferences.claudeEnabled == true
         selected = Set(service.preferences.spaces.map(\.id))
         if spaces.isEmpty { spaces = service.preferences.spaces }
     }
@@ -108,7 +122,7 @@ import ChatCore
         defer { sync() }
         if service.secrets.client != client {
             var next = service.secrets; next.client = client; next.token = nil; next.selfID = nil
-            let p = Preferences()
+            var p = Preferences(); p.claudeEnabled = service.preferences.claudeEnabled; p.enabled = service.preferences.enabled
             try LocalState.write(p); service.preferences = p; spaces = []
             try Vault.write(next); service.secrets = next
         }
@@ -145,6 +159,7 @@ import ChatCore
             var next = self.service.secrets; next.token = token; next.selfID = identity.sub
             if next.selfID != self.service.secrets.selfID {
                 var p = Preferences(); p.accountID = next.selfID
+                p.claudeEnabled = self.service.preferences.claudeEnabled; p.enabled = self.service.preferences.enabled
                 try LocalState.write(p); self.service.preferences = p; self.spaces = []
             }
             try Vault.write(next); self.service.secrets = next; self.sync()
@@ -168,7 +183,7 @@ import ChatCore
         guard !running && !busy else { return }
         do {
             var next = service.secrets; next.token = nil; next.selfID = nil
-            let p = Preferences()
+            var p = Preferences(); p.claudeEnabled = service.preferences.claudeEnabled; p.enabled = service.preferences.enabled
             try LocalState.write(p); service.preferences = p
             try Vault.write(next); service.secrets = next
             spaces = []; sync(); status = "Google je odhlásený na tomto Macu."
@@ -178,10 +193,11 @@ import ChatCore
     func toggle() {
         guard !busy else { return }
         if !running { start(); return }
-        busy = true; worker?.cancel()
-        let previous = worker
+        busy = true; worker?.cancel(); claudeWorker?.cancel()
+        let previous = worker, previousClaude = claudeWorker
         Task {
-            await previous?.value; worker = nil; running = false
+            await previous?.value; await previousClaude?.value
+            worker = nil; claudeWorker = nil; running = false
             do {
                 var p = service.preferences; p.enabled = false
                 try LocalState.write(p); service.preferences = p
@@ -196,17 +212,19 @@ import ChatCore
             var p = service.preferences; p.enabled = true
             try LocalState.write(p); service.preferences = p
         } catch { self.error = describe(error); return }
-        running = true; error = nil; status = "Pripájam displej a Google Chat…"
+        running = true; error = nil; status = "Pripájam mostík…"
+        if claudeEnabled { startClaudeWorker() }
         worker = Task {
             var failures = 0
             while !Task.isCancelled {
                 do {
-                    if try await service.device() {
+                    let notificationsOn = try await service.device()
+                    if signedIn && !service.preferences.spaces.isEmpty && notificationsOn {
                         for space in service.preferences.spaces {
                             delivered += try await service.poll(space)
                         }
                         status = "Pripojené · kontrola každých 15 sekúnd"
-                    } else { status = "Notifikácie sú vypnuté na displeji. Čakám…" }
+                    } else { status = claudeEnabled ? "Mostík je pripojený · Claude Code je zapnutý" : "Notifikácie sú vypnuté na displeji. Čakám…" }
                     lastContact = Date(); error = nil; failures = 0
                 } catch {
                     if Task.isCancelled { break }
@@ -215,6 +233,59 @@ import ChatCore
                 }
                 do { try await Task.sleep(nanoseconds: UInt64(min(300, 15 * (1 << failures))) * 1_000_000_000) }
                 catch { break }
+            }
+        }
+    }
+    func setClaudeEnabled(_ value: Bool) {
+        guard !running && !busy && storageReady else { return }
+        do {
+            let installation = claudeInstallation
+            if value {
+                guard let bundled = Bundle.main.executableURL?.deletingLastPathComponent().appendingPathComponent("ClaudeUsageRelay"),
+                      FileManager.default.isExecutableFile(atPath: bundled.path) else {
+                    throw BridgeError.message("Nainštalujte aktuálnu aplikáciu Meteo Chat s pomocníkom Claude.")
+                }
+                try FileManager.default.createDirectory(at: LocalState.folder, withIntermediateDirectories: true,
+                                                       attributes: [.posixPermissions: 0o700])
+                // Stable path: moving/updating the .app does not break Code settings.
+                let data = try Data(contentsOf: bundled)
+                try data.write(to: installation.relay, options: [.atomic])
+                try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: installation.relay.path)
+                try installation.enable()
+            } else { try installation.disable() }
+            var p = service.preferences; p.claudeEnabled = value
+            try LocalState.write(p); service.preferences = p; sync(); refreshClaudeStatus(); error = nil
+            claudeDeliveryFailed = false
+        } catch { self.error = describe(error) }
+    }
+    private func refreshClaudeStatus() {
+        guard claudeEnabled else { claudeStatus = "Claude Code nie je pripojený"; return }
+        do {
+            guard let snapshot = try ClaudeUsageFile.read(claudeInstallation.snapshot) else {
+                claudeStatus = "Čakám na údaje. Otvorte Claude Code v termináli a odošlite správu."; return
+            }
+            let date = Date(timeIntervalSince1970: Double(snapshot.observedAt))
+            let old = Date().timeIntervalSince(date) > 900 ? " · staršie údaje" : ""
+            claudeStatus = "Zostáva: 5h \(snapshot.remaining(snapshot.five_hour)) · týždeň \(snapshot.remaining(snapshot.seven_day)) · \(date.formatted(date: .abbreviated, time: .shortened))\(old)"
+        } catch { claudeStatus = "Údaje Claude sa nepodarilo načítať. Použite Claude Code na obnovenie." }
+    }
+    private func startClaudeWorker() {
+        claudeWorker = Task {
+            while !Task.isCancelled {
+                refreshClaudeStatus()
+                do {
+                    if let snapshot = try ClaudeUsageFile.read(claudeInstallation.snapshot) {
+                        try await service.sendClaudeUsage(snapshot)
+                    }
+                    claudeDeliveryFailed = false
+                } catch {
+                    if Task.isCancelled { break }
+                    claudeDeliveryFailed = true
+                    if case BridgeError.http(404) = error {
+                        claudeStatus = "Aktualizujte displej na firmware 0.7.17 alebo novší."
+                    } else { claudeStatus += " · displeju sa stav nepodarilo doručiť" }
+                }
+                do { try await Task.sleep(nanoseconds: 15_000_000_000) } catch { break }
             }
         }
     }

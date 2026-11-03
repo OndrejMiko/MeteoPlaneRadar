@@ -221,6 +221,70 @@ final class FakeHTTP: HTTPClient {
         let recovered = OAuthConfiguration.applying(client, to: orphan)
         expectNil(recovered.token); expectNil(recovered.selfID); expectEqual(recovered.pair, old.pair)
     }
+    func testClaudeCaptureInstallationAndDelivery() async throws {
+        let now = Date(), stamp = Int64(now.timeIntervalSince1970)
+        let input: [String: Any] = ["rate_limits": [
+            "five_hour": ["used_percentage": 68.5, "resets_at": stamp + 3600],
+            "seven_day": ["used_percentage": 42, "resets_at": stamp + 3 * 86400]],
+            "session_id": "synthetic", "prompt_id": "one", "cost": ["total_api_duration_ms": 100, "total_duration_ms": 200],
+            "transcript_path": "/private/not-stored", "unrelated_secret": "never-persist"]
+        let data = try JSONSerialization.data(withJSONObject: input)
+        let snapshot = try unwrap(ClaudeUsageSnapshot.capture(data, now: now))
+        expectEqual(snapshot.remaining(snapshot.five_hour, now: now), "31 %")
+        try snapshot.validate(now: now)
+        var timer = input; timer["cost"] = ["total_api_duration_ms": 100, "total_duration_ms": 999999]
+        let repeated = try ClaudeUsageSnapshot.capture(JSONSerialization.data(withJSONObject: timer), previous: snapshot, now: now.addingTimeInterval(200))
+        expectEqual(repeated, snapshot) // local timer cannot freshen cached account data
+        let expired = try unwrap(ClaudeUsageSnapshot.capture(data, now: now.addingTimeInterval(4000)))
+        expectNil(expired.five_hour); expect(expired.seven_day != nil)
+        expectNil(try ClaudeUsageSnapshot.capture(Data("{}".utf8)))
+        var malformed = input
+        malformed["rate_limits"] = ["five_hour": ["used_percentage": true, "resets_at": stamp + 3600]]
+        expectThrows(try ClaudeUsageSnapshot.capture(JSONSerialization.data(withJSONObject: malformed), now: now))
+        let http = FakeHTTP(), service = try fixture(http)
+        // Claude is independent of Google authentication and notification enablement.
+        service.secrets.token = nil; service.preferences.spaces = []
+        try await service.sendClaudeUsage(snapshot)
+        expectEqual(http.requests.last?.url?.path, "/api/claude/usage")
+        expectEqual(http.requests.last?.value(forHTTPHeaderField: "Authorization"), "Bearer " + String(repeating: "a", count: 64))
+        let wire = String(data: http.requests.last!.httpBody!, encoding: .utf8)!
+        expectFalse(wire.contains("sourceMarker")); expectFalse(wire.contains("private")); expectFalse(wire.contains("secret"))
+        let oldPreferences = try JSONDecoder().decode(Preferences.self, from: Data(#"{"enabled":true,"spaces":[],"checkpoints":{}}"#.utf8))
+        expectNil(oldPreferences.claudeEnabled); expect(oldPreferences.enabled)
+
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let settings = folder.appendingPathComponent("claude/settings.json")
+        let original: [String: Any] = ["theme": "dark", "statusLine": ["type": "command", "command": "cat", "padding": 2]]
+        try ClaudeUsageFile.write(JSONSerialization.data(withJSONObject: original), to: settings)
+        let installation = ClaudeUsageInstallation(settings: settings, folder: folder, relay: URL(fileURLWithPath: "/bin/cat"))
+        try installation.enable(); expect(installation.installed)
+        try installation.enable() // no nested wrappers on repeated enable
+        var saved = try JSONSerialization.jsonObject(with: Data(contentsOf: settings)) as! [String: Any]
+        let command = (saved["statusLine"] as! [String: Any])["command"] as! String
+        expect(command.contains("--forward 'cat'")); expectFalse(command.contains("--forward '\''"))
+        saved["theme"] = "light" // unrelated changes survive disable
+        try ClaudeUsageFile.write(JSONSerialization.data(withJSONObject: saved), to: settings)
+        try installation.disable(); expectFalse(installation.installed)
+        saved = try JSONSerialization.jsonObject(with: Data(contentsOf: settings)) as! [String: Any]
+        expectEqual(saved["theme"] as? String, "light")
+        expect(NSDictionary(dictionary: saved["statusLine"] as! [String: Any]).isEqual(to: original["statusLine"] as! [String: Any]))
+        try installation.enable()
+        saved["statusLine"] = ["type": "command", "command": "user-change"]
+        try ClaudeUsageFile.write(JSONSerialization.data(withJSONObject: saved), to: settings)
+        expectThrows(try installation.disable()) // never overwrite a later user edit
+        expectThrows(try installation.enable())
+        let unchanged = try JSONSerialization.jsonObject(with: Data(contentsOf: settings)) as! [String: Any]
+        expectEqual((unchanged["statusLine"] as? [String: String])?["command"], "user-change")
+        // A failed/interrupted install can be retried when the original line is still present.
+        try ClaudeUsageFile.write(JSONSerialization.data(withJSONObject: original), to: settings)
+        try installation.enable(); try installation.disable()
+        try ClaudeUsageFile.write(Data("{\"theme\":\"dark\"}".utf8), to: settings)
+        try installation.enable(); try installation.disable()
+        let clean = try JSONSerialization.jsonObject(with: Data(contentsOf: settings)) as! [String: Any]
+        expectNil(clean["statusLine"]); expectEqual(clean["theme"] as? String, "dark")
+
+    }
     func testSelectionAndDisabledDisplay() async throws {
         var p = Preferences(); let space = Space(name: "spaces/a")
         p.select(space, enabled: true); let checkpoint = p.checkpoints[space.id]
@@ -235,6 +299,7 @@ final class FakeHTTP: HTTPClient {
 @main struct CheckRunner {
     @MainActor static func main() async throws {
         let tests = ChatCoreChecks()
+        try await tests.testClaudeCaptureInstallationAndDelivery()
         try tests.testPairAndDesktopClientValidation()
         try tests.testPKCEStateCallbackAndForms()
         try tests.testPayloadLimitsAttachmentsAndStableIDs()
@@ -245,7 +310,7 @@ final class FakeHTTP: HTTPClient {
         try await tests.testCodePairingRequestAndErrors()
         try await tests.testLiveLoopbackOAuthAndCancellation()
         try await tests.testNativeRedirectAndCancelledDelivery()
-        print("10 native bridge checks passed: pairing, OAuth/PKCE, bounded payloads, retry/restart/pagination, token refresh and selection")
+        print("11 native bridge checks passed (including Claude capture/install/delivery): pairing, OAuth/PKCE, bounded payloads, retry/restart/pagination, token refresh and selection")
     }
 }
 

@@ -11,6 +11,7 @@
 #include "Overlay.h"
 #include "ScreenPlanes.h"
 #include "ScreenClock.h"
+#include "ClaudeUsage.h"
 #include "ScreenForecast.h"
 #include "ScreenSettings.h"
 #include "Settings.h"
@@ -195,6 +196,24 @@ int main() {
   snapshot("forecast");
   ScreenClock_Draw();
   snapshot("clock");
+  JsonDocument claude;
+  claude["observedAt"] = (int64_t)now;
+  claude["five_hour"]["used_percentage"] = 68.5;
+  claude["five_hour"]["resets_at"] = (int64_t)now + 3600;
+  claude["seven_day"]["used_percentage"] = 42;
+  claude["seven_day"]["resets_at"] = (int64_t)now + 3 * 86400;
+  assert(ClaudeUsage_Accept(claude.as<JsonObjectConst>(), now));
+  Settings_SetClaudeUsage(true);
+  assert(ScreenClock_Tick()); // update works even when the seconds ring is off
+  ScreenClock_Draw(); snapshot("clock-claude");
+  svg = display.drawing.str();
+  assert(svg.find("31%") != std::string::npos && svg.find("58%") != std::string::npos);
+  now += 901; ScreenClock_Draw(); snapshot("clock-claude-stale");
+  assert(display.drawing.str().find(" ~") != std::string::npos);
+  now += 3600; ScreenClock_Draw(); snapshot("clock-claude-reset");
+  assert(display.drawing.str().find("31%") == std::string::npos);
+  Settings_SetClaudeUsage(false); ScreenClock_Draw();
+  assert(display.drawing.str().find("Claude") == std::string::npos);
   for (uint8_t lang = 0; lang < 3; ++lang) {
     Settings_SetLanguage(lang);
     ScreenSettings_Draw();

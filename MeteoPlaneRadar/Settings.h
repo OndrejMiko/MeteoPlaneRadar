@@ -82,6 +82,9 @@ void    Settings_SetRadarSource(uint8_t s);
 bool    Settings_MeteoLegend();
 void    Settings_SetMeteoLegend(bool on);
 
+bool Settings_ClaudeUsage();
+void Settings_SetClaudeUsage(bool on);
+
 // --- Clock appearance -------------------------------------------------------
 uint8_t  Settings_SecondsStyle();          // SEC_STYLE_*
 void     Settings_SetSecondsStyle(uint8_t s);

@@ -11,6 +11,25 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.17] - 2026-11-03
+
+### Přidáno
+
+- Volitelné zbývající procento 5hodinového a týdenního limitu Claude na hodinách,
+  včetně lokálního času resetu. Zapíná se na webu v kartě Vzhled.
+- Nativní macOS most přijímá oficiální `rate_limits` z terminálového Claude Code
+  přes lokální statusLine pomocník; nepotřebuje Claude API klíč ani kopírování tokenů.
+  Instalace zachová původní statusLine a při vypnutí jej obnoví, pokud jej uživatel
+  mezitím nezměnil. Ukládají se pouze limity, čas a otisk zdroje, nikoli konverzace.
+- Claude funguje nezávisle na přihlášení Google a odběru chatů. Přenos každých 15 s
+  používá stávající párování a nové autentizované `/api/claude/usage` rozhraní.
+  Firmware drží malý snímek pouze v RAM; restart čeká na nové doručení.
+- Údaje starší 15 minut jsou šedé a označené `~`. Po známém resetu nebo bez údajů
+  se zobrazí `--`, nikoli odhad 100 %. Opakování stejného statusLine vstupu čas
+  pozorování neobnovuje. Používání samotného webu nezaručuje aktualizaci mostu.
+- Host testy vstupních limitů, časů a opakování; nativní testy instalace/obnovy,
+  zachování vlastních úprav, starších nastavení a přenosu bez Google přihlášení.
+
 ## [0.7.16] - 2026-11-03
 
 ### Změněno

@@ -30,9 +30,12 @@ c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -IMeteoPlaneRadar \
 c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoPlaneRadar -I"$ARDUINOJSON_SRC" \
   MeteoPlaneRadar/Settings.cpp MeteoPlaneRadar/Lang.cpp MeteoPlaneRadar/Layout.cpp MeteoPlaneRadar/ScreenChrome.cpp \
   MeteoPlaneRadar/Navigation.cpp MeteoPlaneRadar/ScreenPlanes.cpp MeteoPlaneRadar/ScreenSettings.cpp \
-  MeteoPlaneRadar/ScreenClock.cpp MeteoPlaneRadar/ScreenForecast.cpp MeteoPlaneRadar/WxIcon.cpp \
+  MeteoPlaneRadar/ScreenClock.cpp MeteoPlaneRadar/ClaudeUsage.cpp MeteoPlaneRadar/ScreenForecast.cpp MeteoPlaneRadar/WxIcon.cpp \
   tests/screen_layout.cpp -o "$test_build_dir/screen_layout"
 "$test_build_dir/screen_layout"
 c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -IMeteoPlaneRadar \
   MeteoPlaneRadar/NotificationPairing.cpp tests/notification_pairing.cpp -o "$test_build_dir/notification_pairing"
 "$test_build_dir/notification_pairing"
+c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -I"$ARDUINOJSON_SRC" -IMeteoPlaneRadar \
+  MeteoPlaneRadar/ClaudeUsage.cpp tests/claude_usage.cpp -o "$test_build_dir/claude_usage"
+"$test_build_dir/claude_usage"
