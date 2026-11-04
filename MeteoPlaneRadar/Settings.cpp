@@ -56,8 +56,7 @@ static uint8_t s_radarSrc = RADAR_SRC_CHMU;
 static bool    s_mtLegend = true;
 
 // --- Clock appearance ---
-static bool s_claudeUsage = false;
-static uint8_t s_secStyle = SEC_STYLE_DOTS;
+static uint8_t  s_secStyle = SEC_STYLE_DOTS;
 static uint16_t s_clockCol = 0xFFFF;   // white
 static uint16_t s_secCol   = 0x05FF;   // cyan
 
@@ -97,9 +96,10 @@ static void putStr(const char* k, const char* v) {
 }
 
 void Settings_Begin() {
-  bool migrateRotate = false, migrateCalendar = false;
+  bool migrateRotate = false, migrateCalendar = false, removeRetiredUsage = false;
   calendarDefaults();
   if (prefs.begin(NS, true)) {
+    removeRetiredUsage = prefs.isKey("clUsage");
     s_notify = prefs.getBool("ntOn", false);
     s_notifySeconds = prefs.getUShort("ntSec", 15);
     if (s_notifySeconds && (s_notifySeconds < 5 || s_notifySeconds > 120)) s_notifySeconds = 15;
@@ -128,7 +128,6 @@ void Settings_Begin() {
     }
     s_radarSrc = prefs.getUChar("radSrc", RADAR_SRC_CHMU);
     s_mtLegend = prefs.getBool("mtLeg", true);
-    s_claudeUsage = prefs.getBool("clUsage", false);
     s_secStyle = prefs.getUChar("secSt", SEC_STYLE_DOTS);
     s_clockCol = prefs.getUShort("clkC", 0xFFFF);
     s_secCol   = prefs.getUShort("secC", 0x05FF);
@@ -165,6 +164,10 @@ void Settings_Begin() {
     prefs.getString("pw", s_pw, sizeof(s_pw));
     prefs.getString("ssid", s_ssid, sizeof(s_ssid));
     prefs.getString("wpass", s_wpass, sizeof(s_wpass));
+    prefs.end();
+  }
+  if (removeRetiredUsage && prefs.begin(NS, false)) {
+    prefs.remove("clUsage");
     prefs.end();
   }
   if (s_altMax == 0) s_altMax = 60000;
@@ -299,8 +302,6 @@ bool Settings_MeteoLegend() { return s_mtLegend; }
 void Settings_SetMeteoLegend(bool on) { s_mtLegend = on; putBool("mtLeg", on); }
 
 // --- Clock appearance -------------------------------------------------------
-bool Settings_ClaudeUsage() { return s_claudeUsage; }
-void Settings_SetClaudeUsage(bool on) { s_claudeUsage = on; putBool("clUsage", on); }
 uint8_t  Settings_SecondsStyle() { return s_secStyle; }
 void     Settings_SetSecondsStyle(uint8_t s) { if (s > SEC_STYLE_COMET) s = 0; s_secStyle = s; putU8("secSt", s); }
 uint16_t Settings_ClockColor() { return s_clockCol; }
@@ -390,7 +391,6 @@ void Settings_ToJson(JsonObject o) {
   o["meteoLegend"] = s_mtLegend;
   o["autoRotate"] = s_autoRot;   // seconds
   o["topBearing"] = s_top;
-  o["claudeUsage"] = s_claudeUsage;
   o["secStyle"] = s_secStyle;
   o["clockColor"] = s_clockCol;
   o["secColor"] = s_secCol;
@@ -466,7 +466,6 @@ bool Settings_FromJson(JsonObjectConst in) {
   setIf("meteoLegend",  [](JsonVariantConst v){ Settings_SetMeteoLegend(v.as<bool>()); });
   setIf("autoRotate",   [](JsonVariantConst v){ Settings_SetAutoRotateSec(v.as<uint16_t>()); });
   setIf("topBearing",   [](JsonVariantConst v){ Settings_SetTopBearing(v.as<uint16_t>()); });
-  setIf("claudeUsage", [](JsonVariantConst v){ Settings_SetClaudeUsage(v.as<bool>()); });
   setIf("secStyle",     [](JsonVariantConst v){ Settings_SetSecondsStyle(v.as<uint8_t>()); });
   setIf("clockColor",   [](JsonVariantConst v){ Settings_SetClockColor(v.as<uint16_t>()); });
   setIf("secColor",     [](JsonVariantConst v){ Settings_SetSecondsColor(v.as<uint16_t>()); });
@@ -570,7 +569,6 @@ void Settings_ClearAll() {
   s_scrMask = (1 << SCREEN_CLOCK_I) | (1 << SCREEN_PLANES_I) |
               (1 << SCREEN_METEO_I) | (1 << SCREEN_FORECAST_I);
   s_autoRot = 0; s_radarSrc = RADAR_SRC_CHMU; s_mtLegend = true;
-  s_claudeUsage = false;
   s_secStyle = SEC_STYLE_DOTS; s_clockCol = 0xFFFF; s_secCol = 0x05FF;
   s_altMin = 0; s_altMax = 60000; s_onlyCs = false; s_sqAlert = true; s_watch[0] = '\0';
   s_rngP = 1; s_rngM = 1; s_scr = SCREEN_PLANES_I; s_top = 0;

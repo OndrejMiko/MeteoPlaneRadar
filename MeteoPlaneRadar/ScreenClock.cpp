@@ -16,7 +16,6 @@
 #include "UI.h"
 #include "Display_ST7701.h"
 #include "Config.h"
-#include "ClaudeUsage.h"
 
 #include <time.h>
 #include <math.h>
@@ -32,20 +31,14 @@
 #define CLK_Y      168     // top of the HH:MM glyphs             (size 8, 64 px)
 #define WX_Y       292     // CENTRE of the weather icon row      (icon + temp + rain)
 #define WX_ICON_R   26
-#define WIND_Y     328     // centred between conditions and Claude (size 2)
+#define WIND_Y     328     // wind speed on its own line          (size 2)
 
 static int s_lastMin = -1;
 static int s_lastSec = -1;
-static uint32_t s_usageRevision = 0;
-static bool s_usageEnabled = false;
 
 void ScreenClock_Enter() { s_lastMin = -1; s_lastSec = -1; }
 
 bool ScreenClock_Tick() {
-  bool usageChanged = s_usageRevision != ClaudeUsage_Revision() || s_usageEnabled != Settings_ClaudeUsage();
-  s_usageRevision = ClaudeUsage_Revision();
-  s_usageEnabled = Settings_ClaudeUsage();
-  if (usageChanged) return true;
   if (!Outside_TimeValid()) return false;
   time_t now = time(nullptr);
   struct tm lt; localtime_r(&now, &lt);
@@ -60,36 +53,6 @@ bool ScreenClock_Tick() {
   s_lastSec = lt.tm_sec;
   s_lastMin = lt.tm_min;
   return true;
-}
-
-static void drawClaudeUsage(time_t now) {
-  if (!Settings_ClaudeUsage()) return;
-  const auto& usage = ClaudeUsage_Get();
-  bool stale = usage.observedAt && ((int64_t)now - usage.observedAt > 900 || usage.observedAt > now + 60);
-  const char* title = Lang_Get() == LANG_EN ? "Claude - remaining" :
-                      Lang_Get() == LANG_SK ? "Claude - zostava" : "Claude - zbyva";
-  char heading[40]; snprintf(heading, sizeof(heading), "%s%s", title, stale ? " ~" : "");
-  UI_TextCentered(heading, 376, C_GRAY, 1);
-  const ClaudeWindow* windows[] = {&usage.fiveHour, &usage.sevenDay};
-  for (int i = 0; i < 2; ++i) {
-    const auto& w = *windows[i];
-    const int y = 392 + i * 22;
-    gfx->setTextSize(2); gfx->setTextColor(C_GRAY); gfx->setCursor(132, y); gfx->print(i ? "7d" : "5h");
-    bool valid = w.present && now < w.resetsAt && usage.observedAt <= now + 60;
-    char value[12];
-    // Floor remaining capacity rather than rounding it up near exhaustion.
-    if (valid) snprintf(value, sizeof(value), "%d%%", (int)floorf(100 - w.used));
-    else snprintf(value, sizeof(value), "--");
-    gfx->setTextColor(valid && !stale ? C_CYAN : C_GRAY);
-    gfx->setCursor(180, y); gfx->print(value);
-    char reset[24] = "--:--";
-    if (valid) {
-      time_t t = (time_t)w.resetsAt; struct tm lt; localtime_r(&t, &lt);
-      if (i) snprintf(reset, sizeof(reset), "%s %02d:%02d", Lang_WeekdayShort(lt.tm_wday), lt.tm_hour, lt.tm_min);
-      else snprintf(reset, sizeof(reset), "%02d:%02d", lt.tm_hour, lt.tm_min);
-    }
-    gfx->setTextSize(1); gfx->setTextColor(C_GRAY); gfx->setCursor(252, y + 4); gfx->print(reset);
-  }
 }
 
 bool ScreenClock_HandleTap(int x, int y) {
@@ -259,8 +222,6 @@ void ScreenClock_Draw() {
       }
     }
   }
-
-  drawClaudeUsage(now);
 
   // A quiet hint that a tap switches the look, but only when a tap actually
   // does something - with the automatic mode on it would be a lie.

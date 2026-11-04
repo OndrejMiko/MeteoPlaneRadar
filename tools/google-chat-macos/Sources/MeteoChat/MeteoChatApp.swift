@@ -14,8 +14,7 @@ import ChatCore
         MenuBarExtra {
             Text("Meteo Chat").font(.headline)
             Text(model.status)
-            if model.claudeEnabled { Text(model.claudeStatus) }
-            if model.error != nil { Text("Vyžaduje pozornosť – otvorte nastavenia") }
+            if model.error != nil || model.migrationWarning != nil { Text("Vyžaduje pozornosť – otvorte nastavenia") }
             Divider()
             Button(model.running ? "Pozastaviť mostík" : "Zapnúť mostík") { model.toggle() }
                 .disabled(model.busy || (!model.running && !model.configured))
@@ -26,7 +25,7 @@ import ChatCore
             Divider()
             Button("Ukončiť Meteo Chat") { NSApp.terminate(nil) }.keyboardShortcut("q")
         } label: {
-            Image(systemName: model.error != nil || model.claudeDeliveryFailed ? "exclamationmark.bubble" : (model.running ? "paperplane.fill" : "paperplane"))
+            Image(systemName: model.error != nil || model.migrationWarning != nil ? "exclamationmark.bubble" : (model.running ? "paperplane.fill" : "paperplane"))
                 .help("Meteo Chat · " + model.status)
         }
     }
@@ -41,7 +40,7 @@ struct SetupView: View {
                 HStack(alignment: .top, spacing: 14) {
                     Image(systemName: "paperplane.circle.fill").font(.system(size: 44)).foregroundStyle(.cyan)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Google Chat a Claude → displej").font(.title2.bold())
+                        Text("Google Chat → displej").font(.title2.bold())
                         Text("Mostík beží v hornej lište. Zatvorenie tohto okna ho neukončí.")
                             .foregroundStyle(.secondary)
                     }
@@ -58,6 +57,10 @@ struct SetupView: View {
                 }.padding(16).background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
                 if let error = model.error {
                     Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.orange)
+                        .textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
+                }
+                if let warning = model.migrationWarning {
+                    Label(warning, systemImage: "exclamationmark.triangle").foregroundStyle(.orange)
                         .textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
                 }
                 if model.busy {
@@ -136,20 +139,6 @@ struct SetupView: View {
                             .font(.caption).foregroundStyle(.secondary)
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(10)
                 } label: { Label("3 · Chaty", systemImage: "bubble.left.and.bubble.right") }
-                GroupBox {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Toggle("Posielať zostávajúce limity Claude na hodiny", isOn: Binding(
-                            get: { model.claudeEnabled }, set: { model.setClaudeEnabled($0) }))
-                            .disabled(locked)
-                        Text(model.claudeStatus).font(.callout).foregroundStyle(.secondary)
-                        Text("Pripojí oficiálny statusLine Claude Code v ~/.claude/settings.json. Existujúci riadok zostane funkčný a pri vypnutí sa obnoví. Nepotrebuje API kľúč ani ďalšie prihlásenie.")
-                            .font(.caption).foregroundStyle(.secondary)
-                        Text("Vo webovom UI displeja zapnite Vzhľad → Zobraziť zostávajúce limity Claude na hodinách. Potom zapnite mostík. Google účet ani výber chatov nie sú pre Claude potrebné.")
-                            .font(.caption).foregroundStyle(.secondary)
-                        Text("Údaje prichádzajú z terminálového Claude Code prihláseného cez predplatné. Zdieľané limity zahŕňajú aj web rovnakého účtu, ale samotná práca na webe stav v mostíku neobnovuje. Po 15 minútach sa označí ako starší (~).")
-                            .font(.caption).foregroundStyle(.secondary)
-                    }.frame(maxWidth: .infinity, alignment: .leading).padding(10)
-                } label: { Label("Claude · zostávajúce limity", systemImage: "gauge.with.dots.needle.50percent") }
                 Toggle("Spúšťať po prihlásení do macOS", isOn: Binding(get: { model.launchAtLogin }, set: { model.setLaunchAtLogin($0) }))
                 Text("Mac musí zostať zapnutý a mať prístup k internetu aj displeju v domácej sieti. Google môže vyžadovať Workspace účet a súhlas správcu. Kľúče a tokeny sú v macOS Kľúčenke; obsah správ sa neukladá do súborov ani logov.")
                     .font(.caption).foregroundStyle(.secondary)

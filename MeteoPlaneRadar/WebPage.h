@@ -195,8 +195,6 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
         <option value="2" data-i18n="secLine">čára</option>
         <option value="3" data-i18n="secComet">kometa</option>
       </select></div>
-    <label class="chk"><input type="checkbox" id="claudeUsage"><span data-i18n="claudeUsage"></span></label>
-    <p class="hint" data-i18n="claudeHint"></p>
     <div class="row"><label data-i18n="clockColor">Barva hodin</label><input type="color" id="clockColor"></div>
     <div class="row"><label data-i18n="secColor">Barva vteřin</label><input type="color" id="secColor"></div>
   </div>
@@ -524,9 +522,6 @@ Object.assign(D.cs,{ntCodeTitle:"Spárovat Mac kódem",ntCodeHint:"Vygenerujte k
 Object.assign(D.en,{ntCodeTitle:"Pair a Mac with a code",ntCodeHint:"Generate a code and enter it in Meteo Chat with this display's address. The code lasts 2 minutes and works once. Pairing enables notifications and replaces the previous pairing.",ntCodeStart:"Generate pairing code",ntCodeCancel:"Cancel code",ntCodeRemaining:"Code valid for (s): ",ntCodeExpired:"Code expired. Generate a new one.",ntCodeCancelled:"Pairing code cancelled.",ntCodeDone:"Mac paired successfully.",ntCodeClosed:"Pairing window closed. Generate a new code.",ntAdvanced:"Advanced file pairing"});
 Object.assign(D.sk,{ntCodeTitle:"Spárovať Mac kódom",ntCodeHint:"Vygenerujte kód a zadajte ho v aplikácii Meteo Chat spolu s adresou tohto displeja. Kód platí 2 minúty a dá sa použiť raz. Po spárovaní sa notifikácie zapnú a pôvodné párovanie sa nahradí.",ntCodeStart:"Vygenerovať párovací kód",ntCodeCancel:"Zrušiť kód",ntCodeRemaining:"Platnosť kódu (s): ",ntCodeExpired:"Kód vypršal. Vygenerujte nový.",ntCodeCancelled:"Párovací kód bol zrušený.",ntCodeDone:"Mac bol úspešne spárovaný.",ntCodeClosed:"Párovanie je ukončené. Vygenerujte nový kód.",ntAdvanced:"Pokročilé párovanie súborom"});
 let L="cs", CFG={}, TAB="tCtl";
-Object.assign(D.cs,{claudeUsage:"Zobrazit zbývající limity Claude na hodinách",claudeHint:"V aplikaci Meteo Chat na Macu zapněte Claude Code. Starší údaje jsou označené ~; po resetu se čeká na novou hodnotu. Nastavení se ukládá ihned."});
-Object.assign(D.en,{claudeUsage:"Show remaining Claude limits on the clock",claudeHint:"Enable Claude Code in Meteo Chat on your Mac. Older values are marked ~; after a reset the display waits for a new value. This setting saves immediately."});
-Object.assign(D.sk,{claudeUsage:"Zobraziť zostávajúce limity Claude na hodinách",claudeHint:"V aplikácii Meteo Chat na Macu zapnite Claude Code. Staršie údaje sú označené ~; po resete sa čaká na novú hodnotu. Nastavenie sa ukladá ihneď."});
 const $=id=>document.getElementById(id);
 
 function setLang(v){L=(v==2||v=="sk")?"sk":(v==1||v=="en")?"en":"cs";$("uiLang").value=String({cs:0,en:1,sk:2}[L]);
@@ -625,7 +620,6 @@ const AUTO = [
  ["briNight","input","briNight",e=>+e.value],
  ["nightAuto","change","nightAuto",e=>e.checked],
  ["nightOffset","change","nightOffset",e=>+e.value],
- ["claudeUsage","change","claudeUsage",e=>e.checked],
  ["secStyle","change","secStyle",e=>+e.value],
  ["clockColor","change","clockColor",e=>hexToRgb565(e.value)],
  ["secColor","change","secColor",e=>hexToRgb565(e.value)],
@@ -676,7 +670,6 @@ async function load(){
  $("briDay").value=CFG.briDay;$("briNight").value=CFG.briNight;
  $("nightAuto").checked=CFG.nightAuto;$("nightOffset").value=CFG.nightOffset;
  $("secStyle").value=CFG.secStyle;$("metric").checked=CFG.metric;$("topBearing").value=CFG.topBearing;
- $("claudeUsage").checked=!!CFG.claudeUsage;
  $("clockColor").value=rgb565ToHex(CFG.clockColor);$("secColor").value=rgb565ToHex(CFG.secColor);
  $("altMin").value=CFG.altMin;$("altMax").value=CFG.altMax;
  pwState();
@@ -723,7 +716,6 @@ function body(){return{lat:parseFloat($("lat").value),lon:parseFloat($("lon").va
  nightOffset:+$("nightOffset").value,radarSrc:+$("radarSrc").value,autoRotate:+$("autoRotate").value,
  meteoLegend:$("meteoLegend").checked,
  topBearing:+$("topBearing").value,secStyle:+$("secStyle").value,
- claudeUsage:$("claudeUsage").checked,
  clockColor:hexToRgb565($("clockColor").value),secColor:hexToRgb565($("secColor").value),
  altMin:+$("altMin").value,altMax:+$("altMax").value,onlyCallsign:$("onlyCallsign").checked,
  squawkAlert:$("squawkAlert").checked,watch:$("watch").value,

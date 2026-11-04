@@ -36,44 +36,16 @@ ID ani notarizovaná. Ak ju macOS pri prvom otvorení zablokuje, použite jeho
 a bezpečnosť. Nevypínajte Gatekeeper. Na verejnú distribúciu treba podpis
 Developer ID a notarizáciu účtom autora distribúcie.
 
-## Claude · zostávajúce limity na hodinách
+## Aktualizácia z 0.7.17–0.7.18
 
-Vyžaduje firmware a aplikáciu **0.7.17 alebo novšie**. Google Chat môže zostať
-odhlásený, Claude funguje samostatne.
-
-1. Aktualizujte firmware a Mac aplikáciu; existujúce párovanie zostáva platné.
-2. V Mac aplikácii pozastavte mostík a zapnite **Posielať zostávajúce limity
-   Claude na hodiny**. Aplikácia pridá lokálny statusLine pomocník do
-   `~/.claude/settings.json` (alebo `CLAUDE_CONFIG_DIR`, ak je nastavený pri
-   spustení aplikácie). Existujúci príkaz ostane funkčný. Pomocník sa uloží
-   do Application Support, takže presun `.app` nepoškodí jeho cestu.
-3. Otvorte **terminálový Claude Code**, aktualizovaný na verziu s oficiálnymi
-   `rate_limits`, prihlásený cez svoje predplatné, a odošlite správu.
-   Projektové nastavenie `statusLine` môže mať prednosť pred používateľským;
-   v takom projekte ho odstráňte alebo zjednoťte. Integrácia nečíta údaje
-   z VS Code rozšírenia ani z webového Claude Code priamo.
-4. Vo webovom UI displeja otvorte **Vzhľad → Hodiny → Zobraziť zostávajúce
-   limity Claude na hodinách**. Nastavenie sa uloží okamžite.
-5. V Mac aplikácii kliknite **Zapnúť mostík**. Do 15 sekúnd po novom údaji
-   sa zobrazí zostávajúce percento a čas resetu pre 5h a týždeň.
-
-Sú to percentá limitov predplatného, nie súčet tokenov konverzácií. Zdieľané
-limity zahŕňajú aj web prihlásený tým istým účtom, ale samotné používanie webu
-neobnovuje lokálny zdroj. Nové údaje musia prísť z Claude Code. Po 15 minútach
-hodiny označia posledný stav `~` a sivou farbou. Po známom čase resetu alebo
-pri chýbajúcom okne zobrazia `--`; automaticky nepredpokladajú 100 %.
-Reštart displeja vymaže snímok a ďalší prenos z mostíka ho obnoví.
-
-Na vypnutie pozastavte mostík a vypnite prepínač Claude; obnoví sa pôvodný
-statusLine. Ak ste ho medzitým sami zmenili, aplikácia ho neprepíše a upozorní
-na zálohu `~/Library/Application Support/MeteoChat/claude-install.json`.
-Na skrytie údajov na displeji vypnite aj prepínač v jeho webovom UI.
-
-Pomocník nečíta Claude OAuth tokeny ani konverzácie a nevolá Anthropic API.
-Ukladá iba normalizované limity, čas pozorovania a otlačok zdroja do
-`~/Library/Application Support/MeteoChat/claude-usage.json` s právami 600.
-Opakované spustenie s rovnakým vstupom neposúva čas pozorovania.
-Dokumentácia zdroja: [Claude Code statusLine](https://code.claude.com/docs/en/statusline).
+Od 0.7.19 bolo sledovanie limitov Claude odstránené z displeja aj mostíka.
+Ukončite starú aplikáciu, nahraďte ju novou a spustite ju. Pri prvom spustení
+sa zo zálohy obnoví pôvodný statusLine Claude Code a odstráni lokálny pomocník
+aj jeho snímok. Neskoršie vlastné úpravy statusLine sa neprepíšu. Ak upravený
+príkaz stále používa starého pomocníka, aplikácia zachová zálohu a upozorní
+na potrebné obnovenie; Google Chat bude môcť ďalej fungovať.
+Párovanie displeja, Google prihlásenie a vybrané chaty zostávajú zachované.
+Vo firmvéri po aktualizácii netreba nič vypínať.
 
 ## Google Cloud – registrácia na strane autora
 
@@ -134,7 +106,7 @@ vtedy sa zobrazí jeho identifikátor z API.
 - OAuth klient, Google tokeny a párovací kľúč sú v **macOS Kľúčenke**, služba
   `sk.meteoplaneradar.chat`. Nezapisujú sa do logov ani konfigurácie v repozitári.
 - `~/Library/Application Support/MeteoChat/state.json` uchováva len zapnutie,
-  voľbu Claude, identifikátor účtu, názvy vybraných chatov a checkpointy doručovania. Súbor má
+  identifikátor účtu, názvy vybraných chatov a checkpointy doručovania. Súbor má
   práva `0600`, adresár `0700`; **obsah správ sa doň neukladá**.
 - Odhlásenie odstráni Google tokeny z lokálnej položky Kľúčenky a vymaže výber
   chatov. Párovanie displeja a OAuth klient zostávajú pre ďalšie prihlásenie.
@@ -159,7 +131,6 @@ Nie sú potrebné knižnice z internetu.
 ```sh
 swift run --build-system native --package-path tools/google-chat-macos ChatCoreChecks
 tools/google-chat-macos/build.sh
-python3 tests/claude_relay.py "tools/google-chat-macos/dist/Meteo Chat.app/Contents/MacOS/ClaudeUsageRelay"
 ```
 
 Výstup je v ignorovanom `tools/google-chat-macos/dist/`: univerzálna `.app`
@@ -178,9 +149,7 @@ Testy používajú syntetické HTTP odpovede a skutočný lokálny HTTP server; 
 Google účet ani displej nekontaktujú. Overujú PKCE, OAuth state a návrat cez
 loopback vrátane zrušenia, odmietnutie presmerovania, obmedzenie UTF-8/JSON,
 obnovenie tokenu, zastavenie doručovania, obnovu po chybe/plnom rade,
-rovnaké časové pečiatky, stránkovanie a vynechanie vlastných správ. Claude testy
-overujú zachovanie/obnovu statusLine, sanitizáciu údajov, percentá, zastaranie
-a skutočný zabalený pomocník; používajú iba dočasné nastavenia a syntetický vstup.
+rovnaké časové pečiatky, stránkovanie a vynechanie vlastných správ.
 
 Skutočné Google OAuth prihlásenie, firemné schválenie a doručenie na fyzický
 ESP32 sa musia dokončiť s vaším účtom a displejom; offline testy ich nenahrádzajú.

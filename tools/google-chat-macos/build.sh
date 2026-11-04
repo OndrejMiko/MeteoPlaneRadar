@@ -23,13 +23,12 @@ else
 fi
 app_dir="$output_dir/Meteo Chat.app"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
+# Remove the retired helper when reusing an output directory from 0.7.17–0.7.18.
+rm -f "$app_dir/Contents/MacOS/ClaudeUsageRelay"
 for architecture in arm64 x86_64; do
   swift build --build-system native --package-path "$project_dir" -c release --triple "$architecture-apple-macosx13.0" --product MeteoChat
-  swift build --build-system native --package-path "$project_dir" -c release --triple "$architecture-apple-macosx13.0" --product ClaudeUsageRelay
  done
 /usr/bin/lipo -create "$project_dir/.build/arm64-apple-macosx/release/MeteoChat" "$project_dir/.build/x86_64-apple-macosx/release/MeteoChat" -output "$app_dir/Contents/MacOS/MeteoChat"
-/usr/bin/lipo -create "$project_dir/.build/arm64-apple-macosx/release/ClaudeUsageRelay" "$project_dir/.build/x86_64-apple-macosx/release/ClaudeUsageRelay" -output "$app_dir/Contents/MacOS/ClaudeUsageRelay"
-/usr/bin/codesign --force --sign - "$app_dir/Contents/MacOS/ClaudeUsageRelay"
 cat > "$app_dir/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

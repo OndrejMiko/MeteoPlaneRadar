@@ -266,9 +266,4 @@ API určené jen pro nekomerční použití. Podrobnosti jsou v `LICENSE.txt` �
 Nad rámec licence budeme rádi, když na obrazovce nastavení ponecháte řádek
 **chiptron.cz**.
 
-Od 0.7.17 lze na hodinách volitelně zobrazit zbývající limity Claude a časy
-resetu. Zapněte Claude v macOS mostu a na webu **Vzhled → Hodiny**.
-Podrobný postup a omezení aktuálnosti jsou v
-[README mostu](tools/google-chat-macos/README.md#claude--zostávajúce-limity-na-hodinách).
-
 Historie změn: [CHANGELOG.md](CHANGELOG.md). Verze: `MeteoPlaneRadar/Version.h`.

@@ -35,7 +35,12 @@ enum LocalState {
     static func read() throws -> Preferences {
         let file = folder.appendingPathComponent("state.json")
         guard FileManager.default.fileExists(atPath: file.path) else { return Preferences() }
-        return try JSONDecoder().decode(Preferences.self, from: Data(contentsOf: file))
+        let data = try Data(contentsOf: file)
+        let value = try JSONDecoder().decode(Preferences.self, from: data)
+        if let old = try JSONSerialization.jsonObject(with: data) as? [String: Any], old["claudeEnabled"] != nil {
+            try write(value) // Drop the retired preference without changing Google state.
+        }
+        return value
     }
     static func write(_ value: Preferences) throws {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true,

@@ -221,69 +221,70 @@ final class FakeHTTP: HTTPClient {
         let recovered = OAuthConfiguration.applying(client, to: orphan)
         expectNil(recovered.token); expectNil(recovered.selfID); expectEqual(recovered.pair, old.pair)
     }
-    func testClaudeCaptureInstallationAndDelivery() async throws {
-        let now = Date(), stamp = Int64(now.timeIntervalSince1970)
-        let input: [String: Any] = ["rate_limits": [
-            "five_hour": ["used_percentage": 68.5, "resets_at": stamp + 3600],
-            "seven_day": ["used_percentage": 42, "resets_at": stamp + 3 * 86400]],
-            "session_id": "synthetic", "prompt_id": "one", "cost": ["total_api_duration_ms": 100, "total_duration_ms": 200],
-            "transcript_path": "/private/not-stored", "unrelated_secret": "never-persist"]
-        let data = try JSONSerialization.data(withJSONObject: input)
-        let snapshot = try unwrap(ClaudeUsageSnapshot.capture(data, now: now))
-        expectEqual(snapshot.remaining(snapshot.five_hour, now: now), "31 %")
-        try snapshot.validate(now: now)
-        var timer = input; timer["cost"] = ["total_api_duration_ms": 100, "total_duration_ms": 999999]
-        let repeated = try ClaudeUsageSnapshot.capture(JSONSerialization.data(withJSONObject: timer), previous: snapshot, now: now.addingTimeInterval(200))
-        expectEqual(repeated, snapshot) // local timer cannot freshen cached account data
-        let expired = try unwrap(ClaudeUsageSnapshot.capture(data, now: now.addingTimeInterval(4000)))
-        expectNil(expired.five_hour); expect(expired.seven_day != nil)
-        expectNil(try ClaudeUsageSnapshot.capture(Data("{}".utf8)))
-        var malformed = input
-        malformed["rate_limits"] = ["five_hour": ["used_percentage": true, "resets_at": stamp + 3600]]
-        expectThrows(try ClaudeUsageSnapshot.capture(JSONSerialization.data(withJSONObject: malformed), now: now))
-        let http = FakeHTTP(), service = try fixture(http)
-        // Claude is independent of Google authentication and notification enablement.
-        service.secrets.token = nil; service.preferences.spaces = []
-        try await service.sendClaudeUsage(snapshot)
-        expectEqual(http.requests.last?.url?.path, "/api/claude/usage")
-        expectEqual(http.requests.last?.value(forHTTPHeaderField: "Authorization"), "Bearer " + String(repeating: "a", count: 64))
-        let wire = String(data: http.requests.last!.httpBody!, encoding: .utf8)!
-        expectFalse(wire.contains("sourceMarker")); expectFalse(wire.contains("private")); expectFalse(wire.contains("secret"))
-        let oldPreferences = try JSONDecoder().decode(Preferences.self, from: Data(#"{"enabled":true,"spaces":[],"checkpoints":{}}"#.utf8))
-        expectNil(oldPreferences.claudeEnabled); expect(oldPreferences.enabled)
-
+    func testRetiredIntegrationCleanup() throws {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        defer { try? FileManager.default.removeItem(at: folder) }
-        let settings = folder.appendingPathComponent("claude/settings.json")
-        let original: [String: Any] = ["theme": "dark", "statusLine": ["type": "command", "command": "cat", "padding": 2]]
-        try ClaudeUsageFile.write(JSONSerialization.data(withJSONObject: original), to: settings)
-        let installation = ClaudeUsageInstallation(settings: settings, folder: folder, relay: URL(fileURLWithPath: "/bin/cat"))
-        try installation.enable(); expect(installation.installed)
-        try installation.enable() // no nested wrappers on repeated enable
-        var saved = try JSONSerialization.jsonObject(with: Data(contentsOf: settings)) as! [String: Any]
-        let command = (saved["statusLine"] as! [String: Any])["command"] as! String
-        expect(command.contains("--forward 'cat'")); expectFalse(command.contains("--forward '\''"))
-        saved["theme"] = "light" // unrelated changes survive disable
-        try ClaudeUsageFile.write(JSONSerialization.data(withJSONObject: saved), to: settings)
-        try installation.disable(); expectFalse(installation.installed)
-        saved = try JSONSerialization.jsonObject(with: Data(contentsOf: settings)) as! [String: Any]
-        expectEqual(saved["theme"] as? String, "light")
-        expect(NSDictionary(dictionary: saved["statusLine"] as! [String: Any]).isEqual(to: original["statusLine"] as! [String: Any]))
-        try installation.enable()
-        saved["statusLine"] = ["type": "command", "command": "user-change"]
-        try ClaudeUsageFile.write(JSONSerialization.data(withJSONObject: saved), to: settings)
-        expectThrows(try installation.disable()) // never overwrite a later user edit
-        expectThrows(try installation.enable())
-        let unchanged = try JSONSerialization.jsonObject(with: Data(contentsOf: settings)) as! [String: Any]
-        expectEqual((unchanged["statusLine"] as? [String: String])?["command"], "user-change")
-        // A failed/interrupted install can be retried when the original line is still present.
-        try ClaudeUsageFile.write(JSONSerialization.data(withJSONObject: original), to: settings)
-        try installation.enable(); try installation.disable()
-        try ClaudeUsageFile.write(Data("{\"theme\":\"dark\"}".utf8), to: settings)
-        try installation.enable(); try installation.disable()
-        let clean = try JSONSerialization.jsonObject(with: Data(contentsOf: settings)) as! [String: Any]
-        expectNil(clean["statusLine"]); expectEqual(clean["theme"] as? String, "dark")
-
+        let fm = FileManager.default
+        defer { try? fm.removeItem(at: folder) }
+        let appFolder = folder.appendingPathComponent("MeteoChat")
+        let settings = folder.appendingPathComponent("custom-code-config/settings.json")
+        let fallback = folder.appendingPathComponent("unused/settings.json")
+        try fm.createDirectory(at: appFolder, withIntermediateDirectories: true)
+        try fm.createDirectory(at: settings.deletingLastPathComponent(), withIntermediateDirectories: true)
+        func write(_ value: [String: Any], _ file: URL) throws {
+            try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]).write(to: file)
+        }
+        let record = appFolder.appendingPathComponent("claude-install.json")
+        let helper = appFolder.appendingPathComponent("ClaudeUsageRelay")
+        let snapshot = appFolder.appendingPathComponent("claude-usage.json")
+        let state = appFolder.appendingPathComponent("state.json")
+        let googleState = Data(#"{"enabled":true,"accountID":"own","spaces":[{"name":"spaces/a"}],"checkpoints":{"spaces/a":{"cursor":"2026-11-01T00:00:00Z","accepted":[]}},"claudeEnabled":true}"#.utf8)
+        try googleState.write(to: state)
+        let original: [String: Any] = ["type": "command", "command": "cat", "padding": 2]
+        let installed: [String: Any] = ["type": "command", "command": "'/synthetic/ClaudeUsageRelay' --snapshot '/synthetic/usage.json' --forward 'cat'", "padding": 2]
+        func prepare(_ previous: Any = original) throws {
+            try write(["settings": settings.path, "original": previous, "installed": installed], record)
+            try Data("synthetic helper".utf8).write(to: helper)
+            try Data("{}".utf8).write(to: snapshot)
+        }
+        try prepare()
+        try write(["statusLine": installed, "theme": "light", "permissions": ["allow": ["Read"]]], settings)
+        try LegacyBridgeCleanup.remove(folder: appFolder, fallbackSettings: fallback)
+        var restored = try JSONSerialization.jsonObject(with: Data(contentsOf: settings)) as! [String: Any]
+        expect(NSDictionary(dictionary: restored["statusLine"] as! [String: Any]).isEqual(to: original))
+        expectEqual(restored["theme"] as? String, "light")
+        expectNotEqual(restored["permissions"] as? [String: [String]], nil)
+        for file in [record, helper, snapshot] { expectFalse(fm.fileExists(atPath: file.path)) }
+        try expectEqual(try Data(contentsOf: state), googleState)
+        try LegacyBridgeCleanup.remove(folder: appFolder, fallbackSettings: fallback) // idempotent
+        // Fresh installations originally had no status line.
+        try prepare(NSNull())
+        try write(["statusLine": installed, "theme": "dark"], settings)
+        try LegacyBridgeCleanup.remove(folder: appFolder, fallbackSettings: fallback)
+        restored = try JSONSerialization.jsonObject(with: Data(contentsOf: settings)) as! [String: Any]
+        expectNil(restored["statusLine"])
+        // A later unrelated user command remains exactly as saved.
+        try prepare()
+        try write(["statusLine": ["type": "command", "command": "my-own-command"]], settings)
+        let changed = try Data(contentsOf: settings)
+        try LegacyBridgeCleanup.remove(folder: appFolder, fallbackSettings: fallback)
+        try expectEqual(try Data(contentsOf: settings), changed)
+        // A user-modified wrapper still needs the helper; preserve all recovery files.
+        try prepare()
+        try write(["statusLine": ["type": "command", "command": "/synthetic/ClaudeUsageRelay --custom"]], settings)
+        let wrapper = try Data(contentsOf: settings)
+        expectThrows(try LegacyBridgeCleanup.remove(folder: appFolder, fallbackSettings: fallback))
+        try expectEqual(try Data(contentsOf: settings), wrapper)
+        for file in [record, helper, snapshot] { expect(fm.fileExists(atPath: file.path)) }
+        try Data("not json".utf8).write(to: record)
+        expectThrows(try LegacyBridgeCleanup.remove(folder: appFolder, fallbackSettings: fallback))
+        expect(fm.fileExists(atPath: helper.path))
+        // Old preference fields are ignored; all Google selections/cursors survive re-encoding.
+        let prefs = try JSONDecoder().decode(Preferences.self, from: googleState)
+        let clean = try JSONEncoder().encode(prefs)
+        let object = try JSONSerialization.jsonObject(with: clean) as! [String: Any]
+        expectNil(object["claudeEnabled"]); expect(prefs.enabled)
+        expectEqual(prefs.spaces.map(\.id), ["spaces/a"])
+        expectEqual(prefs.checkpoints["spaces/a"]?.cursor, "2026-11-01T00:00:00Z")
     }
     func testSelectionAndDisabledDisplay() async throws {
         var p = Preferences(); let space = Space(name: "spaces/a")
@@ -299,7 +300,7 @@ final class FakeHTTP: HTTPClient {
 @main struct CheckRunner {
     @MainActor static func main() async throws {
         let tests = ChatCoreChecks()
-        try await tests.testClaudeCaptureInstallationAndDelivery()
+        try tests.testRetiredIntegrationCleanup()
         try tests.testPairAndDesktopClientValidation()
         try tests.testPKCEStateCallbackAndForms()
         try tests.testPayloadLimitsAttachmentsAndStableIDs()
@@ -310,7 +311,7 @@ final class FakeHTTP: HTTPClient {
         try await tests.testCodePairingRequestAndErrors()
         try await tests.testLiveLoopbackOAuthAndCancellation()
         try await tests.testNativeRedirectAndCancelledDelivery()
-        print("11 native bridge checks passed (including Claude capture/install/delivery): pairing, OAuth/PKCE, bounded payloads, retry/restart/pagination, token refresh and selection")
+        print("11 native bridge checks passed (including retired integration cleanup): pairing, OAuth/PKCE, bounded payloads, retry/restart/pagination, token refresh and selection")
     }
 }
 

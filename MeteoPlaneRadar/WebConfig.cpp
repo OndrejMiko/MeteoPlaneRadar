@@ -19,8 +19,6 @@
 
 #include "Board.h"
 #include "Calendar.h"
-#include "ClaudeUsage.h"
-#include <time.h>
 #include "Config.h"
 #include "Display_ST7701.h"
 #include "Forecast.h"
@@ -710,17 +708,6 @@ static void handleNotificationPush() {
   }
   s_srv.send(200, "application/json", "{\"ok\":true}");
 }
-static void handleClaudeUsage() {
-  if (!notificationAuth()) return;
-  if (!s_srv.hasArg("plain") || s_srv.arg("plain").length() > 512) {
-    s_srv.send(413, "application/json", "{\"error\":\"size\"}"); return;
-  }
-  JsonDocument doc;
-  if (!readBody(doc) || !ClaudeUsage_Accept(doc.as<JsonObjectConst>(), time(nullptr))) {
-    s_srv.send(400, "application/json", "{\"error\":\"usageOrTime\"}"); return;
-  }
-  s_srv.send(200, "application/json", "{\"ok\":true}");
-}
 static void handleNotificationPing() {
   if (!notificationAuth()) return;
   JsonDocument doc;
@@ -781,7 +768,6 @@ void WebConfig_Begin(bool apMode) {
   s_srv.on("/api/notifications/pair/cancel", HTTP_POST, handlePairCancel);
   s_srv.on("/api/notifications/pair/claim", HTTP_POST, handlePairClaim);
   s_srv.on("/api/notifications", HTTP_POST, handleNotificationPush);
-  s_srv.on("/api/claude/usage", HTTP_POST, handleClaudeUsage);
   s_srv.on("/api/notifications/ping", HTTP_GET, handleNotificationPing);
   s_srv.on("/api/notifications/test", HTTP_POST, handleNotificationTest);
   s_srv.on("/", HTTP_GET, handleRoot);

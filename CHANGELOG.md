@@ -11,6 +11,20 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.7.19] - 2026-11-04
+
+### Odstraněno
+
+- Z firmwaru odstraněny limity Claude na hodinách, webové nastavení, příjem dat
+  i úložiště snímků. Při startu se odstraní také starý NVS přepínač.
+- Z macOS mostu odstraněny nastavení Claude, přenos dat, statusLine pomocník
+  a jeho balení. Google Chat a párování zůstávají zachovány.
+- Při aktualizaci most automaticky obnoví původní statusLine ze zálohy integrace
+  a odstraní pomocné soubory. Pozdější vlastní změny uživatele nepřepisuje.
+  Zůstane-li vlastní úprava závislá na starém pomocníkovi, zachová zálohu
+  a upozorní v nastavení; Google Chat může dál běžet.
+- Vítr na hodinách zůstává ve vyšší poloze z verze 0.7.18.
+
 ## [0.7.18] - 2026-11-03
 
 ### Změněno

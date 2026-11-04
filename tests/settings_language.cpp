@@ -25,13 +25,11 @@ int main() {
   }
   assert(!*T(STR_COUNT));
   assert(!*Lang_WeekdayShort(-1) && !*Lang_MonthName(12));
-  assert(!Settings_ClaudeUsage());
-  JsonDocument usage; usage["claudeUsage"] = true;
-  assert(Settings_FromJson(usage.as<JsonObjectConst>()));
-  Settings_Begin(); assert(Settings_ClaudeUsage()); // NVS persists the web setting
-  JsonDocument usageExport; Settings_ToJson(usageExport.to<JsonObject>());
-  assert(usageExport["claudeUsage"].as<bool>());
-  Settings_ClearAll(); assert(!Settings_ClaudeUsage());
+  Preferences::numbers["clUsage"] = 1;
+  Settings_Begin();
+  assert(!Preferences::numbers.count("clUsage"));
+  JsonDocument retired; Settings_ToJson(retired.to<JsonObject>());
+  assert(retired["claudeUsage"].isNull());
   Settings_SetLanguage(255);
   assert(Settings_Language() == LANG_CZ);
 
