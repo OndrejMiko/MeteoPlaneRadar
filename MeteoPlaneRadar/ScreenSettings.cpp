@@ -5,6 +5,7 @@
 //  Author:  Petr / chiptron.cz   (vyvoj / development: chiptron.cz)
 //  Board:   Waveshare ESP32-S3-Touch-LCD-2.1 (round 480x480 display, ST7701)
 // =============================================================================
+#include "AAFont.h"   // CZT(): accents with the smooth fonts
 #include "ScreenSettings.h"
 #include "Settings.h"
 #include "WiFiPortal.h"
@@ -208,7 +209,7 @@ void ScreenSettings_Draw() {
                   BTN0_Y + BTN_H / 2 - 8, C_BLACK, 2);
 
   gfx->fillRoundRect(BTN_X, BTN1_Y, BTN_W, BTN_H, 12, C_CYAN);
-  UI_TextCentered(Lang_Get() == LANG_EN ? "Language: English" : (Lang_Get() == LANG_SK ? "Jazyk: slovencina" : "Jazyk: cestina"),
+  UI_TextCentered(Lang_Get() == LANG_EN ? "Language: English" : (Lang_Get() == LANG_SK ? CZT("Jazyk: slovencina","Jazyk: slovenčina") : CZT("Jazyk: cestina","Jazyk: čeština")),
                   BTN1_Y + BTN_H / 2 - 8, C_BLACK, 2);
 
   gfx->fillRoundRect(BTN_X, BTN2_Y, BTN_W, BTN_H, 12, C_ORANGE);

@@ -13,3 +13,7 @@ inline TestSerial Serial;
 
 // Network fixture only needs the String type in Net.h declarations.
 using String = std::string;
+
+#ifndef PROGMEM
+#define PROGMEM
+#endif

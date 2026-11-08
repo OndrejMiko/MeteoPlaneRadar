@@ -8,6 +8,7 @@
 #include "CalendarIcs.h"
 #include "Lang.h"
 #include "Settings.h"
+#include "AAFont.h"
 #include "UI.h"
 #include "Overlay.h"
 #include "Layout.h"
@@ -30,8 +31,9 @@ constexpr uint16_t PANEL = OVERLAY_PANEL;
 struct BadgeBox {
   int x, y, w, h;
 };
+uint8_t currentScreen = 255;
 BadgeBox badgeBox() {
-  switch (Settings_Screen()) {
+  switch (currentScreen == 255 ? Settings_Screen() : currentScreen) {
     case SCREEN_PLANES_I:
       return {208, 391, 64, 48};
     case SCREEN_METEO_I:
@@ -185,7 +187,8 @@ bool Notifications_Tick() {
   }
   return dirty;
 }
-void Notifications_Draw() {
+void Notifications_Draw(uint8_t screen) {
+  currentScreen = screen;
   dirty = false;
   if (!count || !Settings_NotificationsEnabled()) return;
   char b[64];
@@ -200,7 +203,7 @@ void Notifications_Draw() {
   if (!expanded) {
     gfx->fillRoundRect(43, 115, 394, 197, 20, PANEL);
     gfx->fillCircle(66, 139, 4, C_GREEN);
-    text(label("Notifikace", "Notifications", "Notifikacie"), 80, 132, C_GRAY);
+    text(label("Notifikace", "Notifications", CZT("Notifikacie", "Notifikácie")), 80, 132, C_GRAY);
     snprintf(b, sizeof(b), "%u/%u", 1, count);
     text(b, 294, 132, C_GRAY, 2);
     Overlay_DrawClose(368, 120);
@@ -212,7 +215,7 @@ void Notifications_Draw() {
     text(label("Tukni pro detail", "Tap for details", "Tukni pre detail"), 63, 275, C_GRAY, 2);
   } else {
     gfx->fillScreen(C_BLACK);
-    const char* title = label("Notifikace", "Notifications", "Notifikacie");
+    const char* title = label("Notifikace", "Notifications", CZT("Notifikacie", "Notifikácie"));
     const int titleX = (480 - (int)strlen(title) * 12) / 2;
     gfx->fillCircle(titleX - 14, 82, 4, C_GREEN);
     text(title, titleX, 75, C_GRAY, 2);

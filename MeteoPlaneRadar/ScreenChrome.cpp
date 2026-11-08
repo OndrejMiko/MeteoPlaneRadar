@@ -1,4 +1,6 @@
 #include "ScreenChrome.h"
+#include "Settings.h"
+#include "AAFont.h"
 #include <string.h>
 #include "Layout.h"
 #include "Outside.h"
@@ -74,13 +76,13 @@ void Chrome_DrawWeatherTimeline(int frame,int count,const char* label,const char
 void Chrome_ReservePrecipLegend() { Layout_Reserve(30,142,108,160); }
 void Chrome_DrawPrecipLegend(bool rv) {
   static const uint16_t chmu[6]={0xA000,0xF800,0xFC20,0xE6E0,0x05E0,0x001F};
-  static const char* const chmuText[6]={">56 / >100","52 / 65","46 / 27","40 / 12","32 / 3.6","20 / <1"};
+  static const char* const chmuText[6]={">56 / >100","52 / 65","44 / 21","36 / 6.5","24 / 1.2","12 / 0.2"};
   static const uint16_t rain[6]={0xFD5F,0xC000,0xFA20,0xFD40,0x02B1,0x051C};
   static const char* const rainText[6]={">55 / >100","50 / 49","45 / 24","40 / 12","30 / 2.7","20 / 0.7"};
   constexpr int x=42,y=154;
   gfx->fillRoundRect(30,142,108,160,10,C_BLACK);
   gfx->setTextSize(1); gfx->setTextColor(rv ? C_CYAN : C_GREEN);
-  gfx->setCursor(x,y); gfx->print(rv ? "RainViewer" : "CHMU");
+  gfx->setCursor(x,y); gfx->print(rv ? "RainViewer" : Settings_RadarSource()==RADAR_SRC_CHMU_MASKED ? CZT("CHMU masked","ČHMÚ masked") : CZT("CHMU","ČHMÚ"));
   gfx->setTextColor(C_GRAY); gfx->setCursor(x,y+16); gfx->print("dBZ / mm/h");
   for (int i=0;i<6;++i) {
     int row=y+36+i*18;

@@ -50,6 +50,10 @@ String WiFi_SSID() { return "A_very_long_home_network_name_32"; }
 String WiFi_IP() { return "192.168.1.42"; }
 static Aircraft planes[5];
 bool ADSB_Fetch(double, double, float) { return true; }
+unsigned long ADSB_DataAgeMs() { return 0; }
+unsigned long ADSB_PauseLeftMs() { return 0; }
+bool ADSB_DataStale() { return false; }
+bool ADSB_DataHidden() { return false; }
 int ADSB_Count() { return 5; }
 const Aircraft* ADSB_List() { return planes; }
 int ADSB_FindByHex(const char* hex) {
@@ -94,7 +98,7 @@ static void snapshot(const char* name) {
 int main() {
   setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
   tzset();
-  Settings_ClearAll();
+  Settings_ClearAll(); Settings_SetClockFont(CLOCK_FONT_PIXEL);
   Settings_Begin();
   Settings_SetLocation(48.15, 17.11);
   Settings_SetLanguage(LANG_SK);
@@ -223,6 +227,15 @@ int main() {
     Chrome_DrawWeatherTimeline(frame,6,"12:30",nullptr);
     auto track=display.drawing.str();
     assert(track.find(frame ? "x='316' y='409'" : "x='156' y='409'")!=std::string::npos);
+  }
+  ScreenPlanes_CloseDetail();
+  Settings_SetLanguage(LANG_SK);
+  for (uint8_t face=1;face<=3;++face) {
+    Settings_SetClockFont(face);
+    ScreenClock_Draw(); assert(display.circles>60); snapshot(("clock-font-"+std::to_string(face)).c_str());
+    ScreenPlanes_Draw(); snapshot(("aircraft-font-"+std::to_string(face)).c_str());
+    ScreenSettings_Draw(); snapshot(("settings-font-"+std::to_string(face)).c_str());
+    ScreenForecast_Draw(); snapshot(("forecast-font-"+std::to_string(face)).c_str());
   }
   std::cout << "Screen chrome, icon exclusion/touch, round-panel fit and screen rendering passed\n";
 }

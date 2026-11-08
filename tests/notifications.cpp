@@ -39,7 +39,7 @@ JsonDocument message(unsigned id) {
   return doc;
 }
 int main() {
-  Settings_ClearAll();
+  Settings_ClearAll(); Settings_SetClockFont(CLOCK_FONT_PIXEL);
   Settings_SetLanguage(LANG_SK);
   auto doc = message(0);
   assert(!Notifications_Push(doc.as<JsonObjectConst>()));
@@ -100,6 +100,10 @@ int main() {
     display.fillScreen(0);
     Notifications_Draw();
     display.snapshot((std::string(snapshots) + "/detail.svg").c_str());
+    Settings_SetClockFont(CLOCK_FONT_INTER);
+    display.fillScreen(0); Notifications_Draw();
+    display.snapshot((std::string(snapshots)+"/detail-smooth.svg").c_str());
+    Settings_SetClockFont(CLOCK_FONT_PIXEL);
   }
   std::cout << "Notification queue PSRAM: " << Notifications_MemoryBytes() << " B\n";
   // Return from the intentionally persistent detail to a timed banner.
@@ -145,7 +149,7 @@ int main() {
   assert(exported["notifications"]["key"].isNull());
   Settings_Begin();
   assert(Notifications_Authorized(std::string(64, 'a').c_str()));
-  Settings_ClearAll();
+  Settings_ClearAll(); Settings_SetClockFont(CLOCK_FONT_PIXEL);
   assert(!Notifications_Authorized(std::string(64, 'a').c_str()));
   std::cout << "Notification input, queue, dedupe, touch capture, timeout, memory failure and "
                "secrets passed\n";

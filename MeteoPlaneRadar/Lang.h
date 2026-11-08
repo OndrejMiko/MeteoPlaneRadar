@@ -95,7 +95,10 @@
   X(S_CAL_TIMEZONE, "Nepodporovane casove pasmo", "Nepodporované časové pásmo", "Unsupported time zone", "Nepodporovane casove pasmo", "Nepodporované časové pásmo") \
   X(S_CAL_RULE, "Nepodporovane opakovani", "Nepodporované opakování", "Unsupported recurrence", "Nepodporovane opakovanie", "Nepodporované opakovanie") \
   X(S_CAL_MEMORY, "Nedostatek PSRAM", "Nedostatek PSRAM", "Not enough PSRAM", "Nedostatok PSRAM", "Nedostatok PSRAM") \
-  X(S_TOMORROW,      "zitra",              "zítra",              "tomorrow", "zajtra", "zajtra")
+  X(S_TOMORROW,      "zitra",              "zítra",              "tomorrow", "zajtra", "zajtra") \
+  X(S_OLD_PLANES,"stara data","stará data","old data","stare data","staré dáta") \
+  X(S_NO_PLANE_DATA,"bez dat o letadlech","bez dat o letadlech","no aircraft data","bez dat o lietadlach","bez dát o lietadlách") \
+  X(S_PAUSE,"pauza","pauza","pause","pauza","pauza")
 
 enum StrId : uint16_t {
 #define X(id, cz, czw, en, sk, skw) id,

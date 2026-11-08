@@ -91,6 +91,7 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
   <button type="button" role="tab" id="tab-tPlanes" aria-controls="tPlanes" aria-selected="false" tabindex="-1" data-tab="tPlanes" data-i18n="tabPlanes">Letadla</button>
   <button type="button" role="tab" id="tab-tCal" aria-controls="tCal" aria-selected="false" tabindex="-1" data-tab="tCal" data-i18n="scrCalendar">Kalendář</button>
   <button type="button" role="tab" id="tab-tNotify" aria-controls="tNotify" aria-selected="false" tabindex="-1" data-tab="tNotify" data-i18n="ntTitle">Notifikácie</button>
+  <button type="button" role="tab" id="tab-tHa" aria-controls="tHa" aria-selected="false" tabindex="-1" data-tab="tHa" data-i18n="tabHa">Home Assistant</button>
   <button type="button" role="tab" id="tab-tSys" aria-controls="tSys" aria-selected="false" tabindex="-1" data-tab="tSys"    data-i18n="tabSys">Systém</button>
 </nav>
 
@@ -107,6 +108,16 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
     <div class="row"><label data-i18n="password">Heslo</label><input type="password" id="wpass"></div>
     <p class="hint" id="wifiHintTxt"></p>
     <button onclick="saveWifi()" data-i18n="connect">Připojit</button>
+
+    <div id="wifiSlots">
+      <h2 style="margin-top:18px" data-i18n="wifiSaved">Uložené sítě</h2>
+      <p class="hint" data-i18n="wifiSavedHint">Zařízení si pamatuje až tři sítě.</p>
+      <datalist id="ssidList"></datalist>
+      <div class="row"><label>1.</label><input type="text" id="ws0" list="ssidList" maxlength="32" style="flex:2 1 160px"><input type="password" id="wp0" maxlength="64" style="flex:2 1 140px"></div>
+      <div class="row"><label>2.</label><input type="text" id="ws1" list="ssidList" maxlength="32" style="flex:2 1 160px"><input type="password" id="wp1" maxlength="64" style="flex:2 1 140px"></div>
+      <div class="row"><label>3.</label><input type="text" id="ws2" list="ssidList" maxlength="32" style="flex:2 1 160px"><input type="password" id="wp2" maxlength="64" style="flex:2 1 140px"></div>
+      <button class="sec" onclick="saveWifiList()" data-i18n="wifiSaveList">Uložit sítě</button>
+    </div>
   </div>
 
   <div class="card" id="cardRemote">
@@ -163,12 +174,30 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
   </div>
 
   <div class="card">
+    <h2 data-i18n="stormHdr">Meteoradar jen při bouřce</h2>
+    <div class="row"><label class="chk"><input type="checkbox" id="stormOnly"><span data-i18n="stormOnly">Meteoradar ve střídání jen když se blíží srážky/bouřka</span></label></div>
+    <div class="row"><label data-i18n="stormDbz">Práh odrazivosti (dBZ)</label><input type="number" id="stormDbz" min="4" max="60" step="1"></div>
+    <div class="row"><label data-i18n="stormKm">Vzdálenost od zařízení (km)</label><input type="number" id="stormKm" min="5" max="250" step="5"></div>
+    <p class="hint" data-i18n="stormHint"></p>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="paHdr">Letadla jen když je letadlo poblíž</h2>
+    <div class="row"><label class="chk"><input type="checkbox" id="planeAlert"><span data-i18n="planeAlert">Ukázat letadla jen když je letadlo blízko</span></label></div>
+    <div class="row"><label data-i18n="paKm">Vzdálenost (km)</label><input type="number" id="planeAlertKm" min="1" max="50" step="1"></div>
+    <div class="row"><label data-i18n="paSec">Jak dlouho ukázat (sekundy)</label><input type="number" id="planeAlertSec" min="5" max="300" step="5"></div>
+    <p class="hint" data-i18n="paHint"></p>
+  </div>
+
+  <div class="card">
     <h2 data-i18n="radar">Meteoradar</h2>
     <div class="row"><label data-i18n="radarSrc">Zdroj dat</label>
       <select id="radarSrc">
         <option value="0" data-i18n="srcChmu">ČHMÚ (ostřejší, jen ČR)</option>
+        <option value="2" data-i18n="srcChmuM">ČHMÚ masked (jen srážky dopadající na zem)</option>
         <option value="1" data-i18n="srcRv">RainViewer (Evropa i svět)</option>
       </select></div>
+    <p class="hint" data-i18n="srcDiff"></p>
     <p class="hint" data-i18n="radarHint">Mimo ČR nemá ČHMÚ data a obrazovka zůstane prázdná — použijte RainViewer.</p>
     <div class="row"><label class="chk"><input type="checkbox" id="meteoLegend"><span data-i18n="mtLegend">Zobrazit legendu (dBZ / mm/h)</span></label></div>
     <p class="hint" data-i18n="mtLegendHint">Legenda zabírá levý okraj mapy. Když stupnici znáte, dá se skrýt a je vidět víc území.</p>
@@ -195,6 +224,13 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
         <option value="2" data-i18n="secLine">čára</option>
         <option value="3" data-i18n="secComet">kometa</option>
       </select></div>
+    <div class="row"><label data-i18n="clockFont">Písmo (všechny obrazovky)</label>
+      <select id="clockFont">
+        <option value="1">Inter</option>
+        <option value="2">Poppins</option>
+        <option value="3" data-i18n="fontThin">Inter tenké</option>
+        <option value="0" data-i18n="fontPixel">pixelové (původní)</option>
+      </select></div>
     <div class="row"><label data-i18n="clockColor">Barva hodin</label><input type="color" id="clockColor"></div>
     <div class="row"><label data-i18n="secColor">Barva vteřin</label><input type="color" id="secColor"></div>
   </div>
@@ -219,6 +255,42 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
       <select id="topBearing"><option value="0">S</option><option value="45">SV</option><option value="90">V</option><option value="135">JV</option><option value="180">J</option><option value="225">JZ</option><option value="270">Z</option><option value="315">SZ</option></select></div>
     <div class="row"><label class="chk"><input type="checkbox" id="metric"><span data-i18n="metric">Metrické jednotky (m, km/h)</span></label></div>
     <p class="hint" data-i18n="planesViewHint">Nastavte směr, kterým se díváte z okna. Meteoradar se záměrně neotáčí. Jednotky platí pro detail letadla.</p>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="altHdr">Barvy podle výšky</h2>
+    <div class="row"><label data-i18n="altBelow">Pod 1. hladinou</label><input type="color" id="ac0"></div>
+    <div class="row"><label data-i18n="altB1">1. hladina (m)</label><input type="number" id="ab0" min="100" max="20000" step="100"><input type="color" id="ac1"></div>
+    <div class="row"><label data-i18n="altB2">2. hladina (m)</label><input type="number" id="ab1" min="100" max="20000" step="100"><input type="color" id="ac2"></div>
+    <div class="row"><label data-i18n="altB3">3. hladina (m)</label><input type="number" id="ab2" min="100" max="20000" step="100"><input type="color" id="ac3"></div>
+    <div class="row"><button class="sec" onclick="altDefaults()" data-i18n="altDef">Výchozí barvy a hladiny</button></div>
+    <p class="hint" data-i18n="altHint"></p>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="winHdr">Výhled z okna</h2>
+    <div class="row"><label class="chk"><input type="checkbox" id="windowOn"><span data-i18n="winOn">Používat výhled z okna</span></label></div>
+    <div class="row"><label data-i18n="winAz">Směr okna</label>
+      <select id="windowAz">
+        <option value="0" data-i18n="dir0">sever (S)</option>
+        <option value="45" data-i18n="dir45">severovýchod (SV)</option>
+        <option value="90" data-i18n="dir90">východ (V)</option>
+        <option value="135" data-i18n="dir135">jihovýchod (JV)</option>
+        <option value="180" data-i18n="dir180">jih (J)</option>
+        <option value="225" data-i18n="dir225">jihozápad (JZ)</option>
+        <option value="270" data-i18n="dir270">západ (Z)</option>
+        <option value="315" data-i18n="dir315">severozápad (SZ)</option>
+      </select></div>
+    <div class="row"><label data-i18n="winW">Šířka výhledu (°)</label><input type="number" id="windowWidth" min="10" max="300" step="5"></div>
+    <div class="row"><label data-i18n="winKm">Dohled (km)</label><input type="number" id="windowKm" min="1" max="100" step="1"></div>
+    <p class="hint" data-i18n="winHint"></p>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="iconHdr">Ikony letadel</h2>
+    <p class="hint" data-i18n="iconIntro"></p>
+    <div id="iconLegend" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 14px;margin-top:10px"></div>
+    <p class="hint" data-i18n="iconCredit"></p>
   </div>
 </section>
 
@@ -291,6 +363,20 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
 
 </section>
 
+<!-- ================= HOME ASSISTANT ================= -->
+<section id="tHa" role="tabpanel" aria-labelledby="tab-tHa" class="tab hide">
+  <div class="card">
+    <h2>Home Assistant</h2>
+    <p class="hint warn" data-i18n="haUntested"></p>
+    <div class="row"><label class="chk"><input type="checkbox" id="haEnabled"><span data-i18n="haOn">Zpřístupnit data pro Home Assistant</span></label></div>
+    <p class="hint" data-i18n="haHow"></p>
+    <p><b id="haUrl"></b> &nbsp;<a id="haLink" target="_blank" rel="noopener" data-i18n="haOpen">otevřít</a></p>
+    <p class="hint" data-i18n="haYamlHint"></p>
+    <pre id="haYaml" style="background:#0e1218;border:1px solid var(--line);border-radius:6px;padding:10px;overflow-x:auto;font-size:12px;white-space:pre"></pre>
+    <button class="sec" onclick="copyHa()" data-i18n="haCopy">Zkopírovat</button>
+  </div>
+</section>
+
 <!-- ================= SYSTÉM ================= -->
 <section id="tSys" role="tabpanel" aria-labelledby="tab-tSys" class="tab hide">
   <div class="card">
@@ -324,7 +410,8 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
       <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> ·
       <a href="https://www.geonames.org" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0) ·
       Natural Earth ·
-      <a href="http://ip-api.com" target="_blank" rel="noopener">ip-api.com</a>
+      <a href="http://ip-api.com" target="_blank" rel="noopener">ip-api.com</a> ·
+      <span data-i18n="srcIcons">ikony letadel podle</span> <a href="https://adsb-radar.com" target="_blank" rel="noopener">ADS-B Radar</a>
     </p>
   </div>
 </section>
@@ -521,13 +608,16 @@ Object.assign(D.sk,{autoMode:"Zmeny sa ukladajú priebežne"});
 Object.assign(D.cs,{ntCodeTitle:"Spárovat Mac kódem",ntCodeHint:"Vygenerujte kód a zadejte jej v aplikaci Meteo Chat spolu s adresou tohoto displeje. Kód platí 2 minuty a lze jej použít jednou. Po spárování se notifikace zapnou a původní párování se nahradí.",ntCodeStart:"Vygenerovat párovací kód",ntCodeCancel:"Zrušit kód",ntCodeRemaining:"Platnost kódu (s): ",ntCodeExpired:"Kód vypršel. Vygenerujte nový.",ntCodeCancelled:"Párovací kód byl zrušen.",ntCodeDone:"Mac byl úspěšně spárován.",ntCodeClosed:"Párování je ukončené. Vygenerujte nový kód.",ntAdvanced:"Pokročilé párování souborem"});
 Object.assign(D.en,{ntCodeTitle:"Pair a Mac with a code",ntCodeHint:"Generate a code and enter it in Meteo Chat with this display's address. The code lasts 2 minutes and works once. Pairing enables notifications and replaces the previous pairing.",ntCodeStart:"Generate pairing code",ntCodeCancel:"Cancel code",ntCodeRemaining:"Code valid for (s): ",ntCodeExpired:"Code expired. Generate a new one.",ntCodeCancelled:"Pairing code cancelled.",ntCodeDone:"Mac paired successfully.",ntCodeClosed:"Pairing window closed. Generate a new code.",ntAdvanced:"Advanced file pairing"});
 Object.assign(D.sk,{ntCodeTitle:"Spárovať Mac kódom",ntCodeHint:"Vygenerujte kód a zadajte ho v aplikácii Meteo Chat spolu s adresou tohto displeja. Kód platí 2 minúty a dá sa použiť raz. Po spárovaní sa notifikácie zapnú a pôvodné párovanie sa nahradí.",ntCodeStart:"Vygenerovať párovací kód",ntCodeCancel:"Zrušiť kód",ntCodeRemaining:"Platnosť kódu (s): ",ntCodeExpired:"Kód vypršal. Vygenerujte nový.",ntCodeCancelled:"Párovací kód bol zrušený.",ntCodeDone:"Mac bol úspešne spárovaný.",ntCodeClosed:"Párovanie je ukončené. Vygenerujte nový kód.",ntAdvanced:"Pokročilé párovanie súborom"});
+Object.assign(D.cs,{"tabHa": "Home Assistant", "wifiSaved": "Uložené sítě", "wifiSavedHint": "Zařízení si pamatuje až tři sítě. Lze je zapsat ručně i když zrovna nejsou v dosahu — třeba síť v kanceláři ještě doma. Po výpadku spojení zkusí zařízení po minutě ostatní uložené sítě, nejsilnější jako první. Prázdné pole hesla nechá uložené heslo beze změny. Uložení sítí zařízení neodpojí.", "wifiSaveList": "Uložit sítě", "passStored": "heslo uloženo", "passNone": "heslo", "ssidPh": "název sítě", "stormHdr": "Meteoradar jen při bouřce", "stormOnly": "Meteoradar ve střídání jen když se blíží srážky/bouřka", "stormDbz": "Práh odrazivosti (dBZ)", "stormKm": "Vzdálenost od zařízení (km)", "stormHint": "Každých 5 minut se zkontroluje nejnovější snímek radaru ČHMÚ. Když je v zadané vzdálenosti odraz aspoň zadané síly, meteoradar se přidá do střídání; po dvou klidných snímcích zase vypadne. Funguje i když je obrazovka Meteoradar výše vypnutá. Orientačně: 20 dBZ slabý déšť, 40 dBZ silný déšť, nad 50 dBZ bouřka s možným krupobitím. Data jsou jen z ČHMÚ, takže v ČR a kousek za hranicemi. Potřebuje zapnuté automatické střídání.", "paHdr": "Letadla jen když je letadlo poblíž", "planeAlert": "Ukázat letadla jen když je letadlo blízko (nebo ve výhledu z okna)", "paKm": "Vzdálenost (km)", "paSec": "Jak dlouho ukázat (sekundy)", "paHint": "Obrazovka Letadla se pak sama neobjevuje ve střídání. Jakmile se letadlo přiblíží na zadanou vzdálenost, zařízení na ni přepne, otevře detail toho letadla a po zadané době se vrátí tam, kde bylo. Každé letadlo se ukáže jen jednou (za 15 minut). Funguje i bez automatického střídání. Výhled z okna se nastavuje na záložce Letadla a má přednost — letadlo, které z okna vidíte, se ukáže, i když je dál než jiné za domem. Dotyk během ukázky ji ukončí a zůstane se na letadlech.", "srcChmuM": "ČHMÚ masked (jen srážky dopadající na zem)", "srcDiff": "ČHMÚ ukazuje všechno, co radary vidí, plnou barvou — včetně srážek, které se vypaří dřív, než dopadnou, a kovadlin vzdálených bouřek. ČHMÚ masked je tentýž snímek, ale plnou barvou jen tam, kde podle měření ve výšce 2 km srážky opravdu padají na zem; zbytek je bledší. Pro otázku „bude u nás pršet?“ je masked přesnější, pro sledování bouřek je lepší plný.", "clockFont": "Písmo (všechny obrazovky)", "fontThin": "Inter tenké", "fontPixel": "pixelové (původní)", "altHdr": "Barvy podle výšky", "altBelow": "Pod 1. hladinou", "altB1": "1. hladina (m)", "altB2": "2. hladina (m)", "altB3": "3. hladina (m)", "altDef": "Výchozí barvy a hladiny", "altHint": "Barva u hladiny platí od té výšky nahoru až k další hladině. Výchozí je červená pod 2 km, oranžová 2–6 km, žlutá 6–10 km a modrá nad 10 km. Hladiny musí jít vzestupně. Legenda na displeji se přizpůsobí.", "altBad": "Hladiny musí jít vzestupně", "winHdr": "Výhled z okna", "winOn": "Používat výhled z okna", "winAz": "Směr okna", "dir0": "sever (S)", "dir45": "severovýchod (SV)", "dir90": "východ (V)", "dir135": "jihovýchod (JV)", "dir180": "jih (J)", "dir225": "jihozápad (JZ)", "dir270": "západ (Z)", "dir315": "severozápad (SZ)", "winW": "Šířka výhledu (°)", "winKm": "Dohled (km)", "winHint": "Výseč oblohy, kterou z okna vidíte: kam okno míří, jak široký úhel oblohy z něj vidíte (výseč je rozložená rovnoměrně kolem směru okna — 90° u okna na SV pokryje sever až východ) a jak daleko letadlo ještě rozeznáte. Na radaru letadel se zakreslí tenkými čarami. Letadlo ve výhledu má při upozornění přednost před bližším letadlem, které z okna vidět není.", "haUntested": "Tato funkce zatím nebyla vyzkoušena se skutečným Home Assistantem. Formát odpovídá dokumentaci integrace RESTful, ale pokud něco nesedí, dejte vědět.", "haOn": "Zpřístupnit data pro Home Assistant", "haHow": "Home Assistant si data sám stahuje (zhruba jednou za minutu) z adresy níže. Nic se nikam neposílá a nepotřebujete MQTT. Data jsou jen ke čtení: teplota, vítr, srážky, bouřka v okolí, nejbližší letadlo. Dokud je to zapnuté, zařízení hlídá i bouřku (jeden snímek ČHMÚ za 5 minut) a letadla poblíž (malý dotaz každých 30 s).", "haOpen": "otevřít", "haYamlHint": "Do souboru configuration.yaml v Home Assistantu vložte tohle a Home Assistant restartujte:", "haCopy": "Zkopírovat", "copied": "Zkopírováno", "stormSt": "Bouřka", "planeWatchSt": "Letadla poblíž", "srcIcons": "ikony letadel podle", "iconHdr": "Ikony letadel", "iconIntro": "Tvar ikony na radaru podle typu letadla, velikost odpovídá hmotnosti. Typ se pozná z kódu typu (A20N, B738, EC35…), u neznámého z kategorie, kterou vysílá transpondér. Barva ikony udává výšku (viz níže).", "iconCredit": "Rozdělení typů letadel do ikon vychází ze schématu ADS-B Radar (adsb-radar.com/help/icons.html). Tvary kreslí firmware sám, soubory ikon se nepřebírají.", "icNarrow": "úzkotrupé — A320, B737, B757", "icWide": "širokotrupé dvoumotorové — A330, A350, B767, B777, B787", "icQuad": "čtyřmotorové — A340, A380, B747", "icRegional": "regionální — CRJ, Embraer E-Jet, Fokker 100", "icBizjet": "business jet — Citation, Learjet, Falcon, Gulfstream", "icTwinprop": "turbovrtulové — ATR, Dash 8, King Air, L 410", "icLight": "malá letadla — Cessna, Piper, Zlin, ultralighty", "icMiltrans": "vojenská transportní — C-130, C-160, A400M", "icFreighter": "těžká nákladní — An-124, C-17, C-5, Il-76", "icFighter": "stíhačky a cvičné proudové", "icGlider": "kluzáky a motorové kluzáky", "icTilt": "konvertoplány — V-22, AW609", "icHeli": "vrtulníky", "icBalloon": "balony a vzducholodě", "icDrone": "drony", "icGeneric": "nezjištěný typ", "icNoTrack": "neznámý směr letu"});
+Object.assign(D.en,{"tabHa": "Home Assistant", "wifiSaved": "Saved networks", "wifiSavedHint": "The device remembers up to three networks. They can be typed in even when out of range - set up the office network while still at home. When the link drops, after a minute the device tries the other saved networks, strongest first. An empty password field keeps the stored password. Saving does not disconnect the device.", "wifiSaveList": "Save networks", "passStored": "password stored", "passNone": "password", "ssidPh": "network name", "stormHdr": "Weather radar only for storms", "stormOnly": "Weather radar in the cycling only when rain/a storm is coming", "stormDbz": "Reflectivity threshold (dBZ)", "stormKm": "Distance from the device (km)", "stormHint": "Every 5 minutes the newest CHMU radar frame is checked. When an echo at least this strong lies within this distance, the weather radar joins the cycling; after two clear frames it drops out again. Works even with the Weather radar screen switched off above. Roughly: 20 dBZ light rain, 40 dBZ heavy rain, above 50 dBZ a storm with possible hail. The data is CHMU's, so Czechia and a little beyond. Needs automatic cycling on.", "paHdr": "Aircraft only when one is near", "planeAlert": "Show the aircraft only when one is near (or in the window view)", "paKm": "Distance (km)", "paSec": "How long to show it (seconds)", "paHint": "The Aircraft screen then never comes up in the cycling by itself. As soon as an aircraft comes this close, the device switches to it, opens that aircraft's detail and after the set time goes back to where it was. Each aircraft is shown once (per 15 minutes). Works without automatic cycling too. The window view is set on the Aircraft tab and takes priority - an aircraft you can see from the window is shown even if it is further away than another one behind the house. Touching the screen during the alert ends it and stays on the aircraft.", "srcChmuM": "CHMU masked (only rain reaching the ground)", "srcDiff": "CHMU shows everything the radars see at full colour - including rain that evaporates before it reaches the ground and the anvils of distant storms. CHMU masked is the same picture, but at full colour only where measurements at 2 km say the rain actually reaches the ground; the rest is paler. For 'will it rain here?' masked is more accurate, for watching storms the full one is better.", "clockFont": "Typeface (all screens)", "fontThin": "Inter thin", "fontPixel": "pixel (original)", "altHdr": "Colours by altitude", "altBelow": "Below level 1", "altB1": "Level 1 (m)", "altB2": "Level 2 (m)", "altB3": "Level 3 (m)", "altDef": "Default colours and levels", "altHint": "A level's colour applies from that altitude up to the next level. The default is red below 2 km, orange 2-6 km, yellow 6-10 km and blue above 10 km. Levels must ascend. The legend on the display follows.", "altBad": "The levels must ascend", "winHdr": "Window view", "winOn": "Use the window view", "winAz": "Window faces", "dir0": "north (N)", "dir45": "north-east (NE)", "dir90": "east (E)", "dir135": "south-east (SE)", "dir180": "south (S)", "dir225": "south-west (SW)", "dir270": "west (W)", "dir315": "north-west (NW)", "winW": "Width of the view (°)", "winKm": "Visibility (km)", "winHint": "The slice of sky you see from the window: which way the window faces, how wide an angle of sky you see from it (spread evenly around that direction - 90° on a north-east window covers north to east) and how far you can still make out an aircraft. It is drawn as thin lines on the aircraft radar. An aircraft in the view takes priority for the alert over a nearer one you cannot see.", "haUntested": "This feature has not been tested with a real Home Assistant yet. The format follows the RESTful integration's documentation, but if something does not fit, please report it.", "haOn": "Make the data available to Home Assistant", "haHow": "Home Assistant fetches the data itself (about once a minute) from the address below. Nothing is sent anywhere and no MQTT is needed. The data is read-only: temperature, wind, rain, storm nearby, nearest aircraft. While this is on, the device also watches for storms (one CHMU frame every 5 minutes) and nearby aircraft (a small request every 30 s).", "haOpen": "open", "haYamlHint": "Paste this into Home Assistant's configuration.yaml and restart Home Assistant:", "haCopy": "Copy", "copied": "Copied", "stormSt": "Storm", "planeWatchSt": "Aircraft nearby", "srcIcons": "aircraft icons after", "iconHdr": "Aircraft icons", "iconIntro": "The icon's shape follows the aircraft type and its size the weight. The type comes from the type code (A20N, B738, EC35...), or from the category the transponder sends when the type is unknown. The colour shows the altitude (see below).", "iconCredit": "The assignment of aircraft types to icons follows the scheme of ADS-B Radar (adsb-radar.com/help/icons.html). The shapes are drawn by the firmware itself; no icon files are used.", "icNarrow": "narrow-body - A320, B737, B757", "icWide": "wide-body twin - A330, A350, B767, B777, B787", "icQuad": "four-engine - A340, A380, B747", "icRegional": "regional jets - CRJ, Embraer E-Jet, Fokker 100", "icBizjet": "business jets - Citation, Learjet, Falcon, Gulfstream", "icTwinprop": "turboprops - ATR, Dash 8, King Air, L 410", "icLight": "light aircraft - Cessna, Piper, Zlin, ultralights", "icMiltrans": "military transport - C-130, C-160, A400M", "icFreighter": "heavy freighters - An-124, C-17, C-5, Il-76", "icFighter": "fighters and jet trainers", "icGlider": "gliders and motor gliders", "icTilt": "tiltrotors - V-22, AW609", "icHeli": "helicopters", "icBalloon": "balloons and airships", "icDrone": "drones", "icGeneric": "type not identified", "icNoTrack": "direction of flight unknown"});
+Object.assign(D.sk,{"tabHa": "Home Assistant", "wifiSaved": "Uložené siete", "wifiSavedHint": "Zariadenie si pamätá až tri siete. Zadajte ich ručne aj mimo dosahu. Po výpadku skúsi po minúte ostatné uložené siete, najsilnejšiu ako prvú. Prázdne heslo ponechá uložené heslo. Uloženie sietí zariadenie neodpojí.", "wifiSaveList": "Uložiť siete", "passStored": "heslo uložené", "passNone": "heslo", "ssidPh": "názov siete", "stormHdr": "Meteoradar iba pri búrke", "stormOnly": "Meteoradar v striedaní iba pri blížiacich sa zrážkach alebo búrke", "stormDbz": "Prah odrazivosti (dBZ)", "stormKm": "Vzdialenosť od zariadenia (km)", "stormHint": "Každých 5 minút sa preverí najnovšia snímka ČHMÚ. Odraz nad zvoleným prahom v zadanom okolí pridá meteoradar do striedania; po dvoch pokojných snímkach sa vynechá. Funguje aj pri vypnutej obrazovke meteoradaru. Približne: 20 dBZ slabý dážď, 40 dBZ silný dážď, nad 50 dBZ možná búrka s krúpami. Platí iba v pokrytí ČHMÚ. Vyžaduje automatické striedanie.", "paHdr": "Lietadlá iba pri blízkom lietadle", "planeAlert": "Zobraziť lietadlá iba pri blízkom lietadle alebo vo výhľade z okna", "paKm": "Vzdialenosť (km)", "paSec": "Trvanie zobrazenia (sekundy)", "paHint": "Obrazovka Lietadlá sa sama nezaradí do striedania. Pri blízkom lietadle sa otvorí jeho detail a po zadanom čase sa vráti predchádzajúca obrazovka. Každé lietadlo sa ukáže raz za 15 minút. Výhľad z okna má prednosť pred bližším lietadlom za domom. Dotyk ukážku ukončí. Funguje aj bez automatického striedania.", "srcChmuM": "ČHMÚ masked (iba zrážky dopadajúce na zem)", "srcDiff": "ČHMÚ ukazuje všetky radarové odrazy plnou farbou. ČHMÚ masked zobrazuje plnou farbou iba miesta, kde podľa merania vo výške 2 km zrážky dopadajú na zem; ostatné odrazy sú bledšie. Na sledovanie búrok je vhodný plný ČHMÚ, na otázku, či bude pršať, masked.", "clockFont": "Písmo (všetky obrazovky)", "fontThin": "Inter tenké", "fontPixel": "pixelové (pôvodné)", "altHdr": "Farby podľa výšky", "altBelow": "Pod 1. hladinou", "altB1": "1. hladina (m)", "altB2": "2. hladina (m)", "altB3": "3. hladina (m)", "altDef": "Predvolené farby a hladiny", "altHint": "Farba platí od danej výšky po ďalšiu hladinu. Predvolené: červená pod 2 km, oranžová 2–6 km, žltá 6–10 km a modrá nad 10 km. Hladiny musia byť vzostupné; legenda sa prispôsobí.", "altBad": "Hladiny musia byť vzostupné", "winHdr": "Výhľad z okna", "winOn": "Používať výhľad z okna", "winAz": "Smer okna", "dir0": "sever (S)", "dir45": "severovýchod (SV)", "dir90": "východ (V)", "dir135": "juhovýchod (JV)", "dir180": "juh (J)", "dir225": "juhozápad (JZ)", "dir270": "západ (Z)", "dir315": "severozápad (SZ)", "winW": "Šírka výhľadu (°)", "winKm": "Dohľad (km)", "winHint": "Výsek oblohy viditeľný z okna: smer, šírka uhla a vzdialenosť, na ktorú lietadlo ešte rozoznáte. Výsek je rovnomerne okolo smeru a zakreslí sa do radaru. Lietadlo vo výhľade má pri upozornení prednosť pred bližším lietadlom mimo výhľadu.", "haUntested": "Funkcia ešte nebola overená so skutočným Home Assistantom. Formát vychádza z integrácie RESTful.", "haOn": "Sprístupniť dáta pre Home Assistant", "haHow": "Home Assistant si dáta sťahuje zo zadanej adresy približne raz za minútu. Dostupné sú teplota, vietor, zrážky, búrky a najbližšie lietadlo. MQTT netreba. Zapnutá funkcia sleduje aj búrky každých 5 minút a lietadlá každých 30 sekúnd.", "haOpen": "otvoriť", "haYamlHint": "Vložte nasledujúci text do configuration.yaml a reštartujte Home Assistant:", "haCopy": "Skopírovať", "copied": "Skopírované", "stormSt": "Búrka", "planeWatchSt": "Lietadlá v okolí", "srcIcons": "ikony lietadiel podľa", "iconHdr": "Ikony lietadiel", "iconIntro": "Tvar ikony zodpovedá typu lietadla a veľkosť jeho hmotnosti. Typ sa určí z kódu alebo kategórie transpondéra. Farba označuje výšku.", "iconCredit": "Rozdelenie typov vychádza zo schémy ADS-B Radar (adsb-radar.com/help/icons.html). Tvary kreslí firmvér; súbory ikon sa nepreberajú.", "icNarrow": "úzkotrupé — A320, B737, B757", "icWide": "širokotrupé dvojmotorové — A330, A350, B767, B777, B787", "icQuad": "štvormotorové — A340, A380, B747", "icRegional": "regionálne — CRJ, Embraer E-Jet, Fokker 100", "icBizjet": "business jet — Citation, Learjet, Falcon, Gulfstream", "icTwinprop": "turbovrtuľové — ATR, Dash 8, King Air, L 410", "icLight": "malé lietadlá — Cessna, Piper, Zlin, ultralighty", "icMiltrans": "vojenské transportné — C-130, C-160, A400M", "icFreighter": "ťažké nákladné — An-124, C-17, C-5, Il-76", "icFighter": "stíhačky a cvičné prúdové", "icGlider": "klzáky a motorové klzáky", "icTilt": "konvertoplány — V-22, AW609", "icHeli": "vrtuľníky", "icBalloon": "balóny a vzducholode", "icDrone": "drony", "icGeneric": "nezistený typ", "icNoTrack": "neznámy smer letu"});
 let L="cs", CFG={}, TAB="tCtl";
 const $=id=>document.getElementById(id);
 
 function setLang(v){L=(v==2||v=="sk")?"sk":(v==1||v=="en")?"en":"cs";$("uiLang").value=String({cs:0,en:1,sk:2}[L]);
  document.documentElement.lang=L;
  document.querySelectorAll("[data-i18n]").forEach(e=>{const t=D[L][e.dataset.i18n];if(t)e.textContent=t;});
- pwState();calendarLabels();notificationLabels();updateActions();if(pairDeadline)tickPairCode();status();}
+ pwState();calendarLabels();notificationLabels();updateActions();if(pairDeadline)tickPairCode();status();if(CFG.wifi)wifiSlots();iconLegend();}
 
 // Shared fixed action area; immediate settings keep their existing autosave.
 function updateActions(){
@@ -630,8 +720,35 @@ const AUTO = [
  ["meteoLegend","change","meteoLegend",e=>e.checked],
  ["watch","change","watch",e=>e.value],
  ["autoRotate","change","autoRotate",e=>+e.value],
-  // on the next redraw and do not need the Save button or a restart.
+ ["clockFont","change","clockFont",e=>+e.value],
+ ["stormOnly","change","stormOnly",e=>e.checked],
+ ["stormDbz","change","stormDbz",e=>+e.value],
+ ["stormKm","change","stormKm",e=>+e.value],
+ ["planeAlert","change","planeAlert",e=>e.checked],
+ ["planeAlertKm","change","planeAlertKm",e=>+e.value],
+ ["planeAlertSec","change","planeAlertSec",e=>+e.value],
+ ["windowOn","change","windowOn",e=>e.checked],
+ ["windowAz","change","windowAz",e=>+e.value],
+ ["windowWidth","change","windowWidth",e=>+e.value],
+ ["windowKm","change","windowKm",e=>+e.value],
+ ["haEnabled","change","haEnabled",e=>e.checked],
 ];
+// The altitude levels and the colours each go as one set - applied one value
+// at a time, the levels would pass through an out-of-order state and be refused.
+["ab0","ab1","ab2"].forEach(id=>$(id).addEventListener("change",()=>altSave("bands")));
+["ac0","ac1","ac2","ac3"].forEach(id=>$(id).addEventListener("change",()=>altSave("colors")));
+function altBands(){return[+$("ab0").value,+$("ab1").value,+$("ab2").value];}
+function altColors(){return[0,1,2,3].map(i=>hexToRgb565($("ac"+i).value));}
+function altOk(b){return b[0]>0&&b[0]<b[1]&&b[1]<b[2];}
+function altSave(what){
+ if(what=="bands"){const b=altBands();if(!altOk(b)){msg(D[L].altBad,"warn");return;}autoSave("altBands",b);}
+ else autoSave("altColors",altColors());
+}
+function altDefaults(){
+ [2000,6000,10000].forEach((v,i)=>$("ab"+i).value=v);
+ [0xF800,0xFC00,0xFFE0,0x001F].forEach((v,i)=>$("ac"+i).value=rgb565ToHex(v));
+ autoSave("altBands",altBands());autoSave("altColors",altColors());
+}
 function wireAutoSave(){
  AUTO.forEach(([id,ev,key,get])=>{
   const el=$(id); if(!el) return;
@@ -674,6 +791,17 @@ async function load(){
  $("altMin").value=CFG.altMin;$("altMax").value=CFG.altMax;
  pwState();
  $("onlyCallsign").checked=CFG.onlyCallsign;$("squawkAlert").checked=CFG.squawkAlert;$("watch").value=CFG.watch||"";
+ $("clockFont").value=(CFG.clockFont!=null)?CFG.clockFont:1;
+ (CFG.altBands||[2000,6000,10000]).forEach((v,i)=>$("ab"+i).value=v);
+ (CFG.altColors||[0xF800,0xFC00,0xFFE0,0x001F]).forEach((v,i)=>$("ac"+i).value=rgb565ToHex(v));
+ $("stormOnly").checked=!!CFG.stormOnly;$("stormDbz").value=CFG.stormDbz||20;$("stormKm").value=CFG.stormKm||50;
+ $("planeAlert").checked=!!CFG.planeAlert;$("planeAlertKm").value=CFG.planeAlertKm||5;$("planeAlertSec").value=CFG.planeAlertSec||15;
+ $("windowOn").checked=!!CFG.windowOn;// Eight directions; an older value between them snaps to the nearest one.
+ $("windowAz").value=String((Math.round(((CFG.windowAz!=null)?CFG.windowAz:180)/45)%8)*45);
+ $("windowWidth").value=CFG.windowWidth||90;$("windowKm").value=CFG.windowKm||15;
+ $("haEnabled").checked=!!CFG.haEnabled;haInfo();
+ wifiSlots();
+ if(CFG.apMode)$("wifiSlots").classList.add("hide");
  bri();wireAutoSave();status();
 }
 // Says whether a password is actually set - more use than a static sentence,
@@ -703,6 +831,7 @@ async function status(){
   ["Heap",s.heap+" B"],["PSRAM",s.psram+" B"],["Restart",s.resetReason],
   ["ADS-B",s.adsb],["Radar",s.radar],[D[L].scrForecast,s.forecast],
   [D[L].timezone,s.timezone],[D[L].calMemory,(s.calendarMemory||0)+" B"],
+  [D[L].stormSt,s.storm],[D[L].planeWatchSt,s.planeWatch],
   ["Firmware","v"+s.version],[D[L].board,s.board]];
  $("ntStatus").textContent=D[L].ntQueue+": "+(s.notificationCount||0)+" · "+D[L].ntBridge+": "+(s.notificationBridgeAge??-1)+" · "+D[L].ntMemory+": "+(s.notificationMemory||0)+" B";
  (s.calendarSources||[]).forEach((c,i)=>{if(i<3)$("cal"+i+"Status").textContent=c.state+(c.unsupportedTimezone?" · TZID: "+c.unsupportedTimezone:"")+(c.updated?" · "+new Date(c.updated*1000).toLocaleString(L):"");});
@@ -723,6 +852,11 @@ function body(){return{lat:parseFloat($("lat").value),lon:parseFloat($("lon").va
  notifications:{enabled:$("ntEnabled").checked,seconds:+$("ntSeconds").value},
  calendarView:+$("calendarView").value,calendarRefresh:+$("calendarRefresh").value,
  calendars:calendarSources(),
+ clockFont:+$("clockFont").value,altBands:altBands(),altColors:altColors(),
+ stormOnly:$("stormOnly").checked,stormDbz:+$("stormDbz").value,stormKm:+$("stormKm").value,
+ planeAlert:$("planeAlert").checked,planeAlertKm:+$("planeAlertKm").value,planeAlertSec:+$("planeAlertSec").value,
+ windowOn:$("windowOn").checked,windowAz:+$("windowAz").value,windowWidth:+$("windowWidth").value,windowKm:+$("windowKm").value,
+ haEnabled:$("haEnabled").checked,
  screens:{clock:$("sClock").checked,planes:$("sPlanes").checked,meteo:$("sMeteo").checked,
   forecast:$("sForecast").checked,calendar:$("sCalendar").checked}};}
 
@@ -839,10 +973,85 @@ async function save(){
   if(!result.restart)await load();
  }catch(e){msg(D[L].failed,"err");}
 }
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 async function scan(){
- const s=$("ssid");s.innerHTML="<option>…</option>";
- try{const l=await(await fetch("/api/scan")).json();
- s.innerHTML=l.map(n=>"<option value='"+n.ssid+"'>"+n.ssid+" ("+n.rssi+")</option>").join("");}catch(e){s.innerHTML=""}
+ try{const networks=await(await fetch("/api/scan")).json();
+ $("ssidList").innerHTML=networks.map(n=>"<option value='"+escapeHtml(n.ssid)+"'>"+escapeHtml(n.ssid)+" ("+Number(n.rssi)+")</option>").join("");
+ }catch(e){$("ssidList").innerHTML="";}
+}
+// The three remembered networks. Passwords never come back from the device,
+// so an empty field means "keep what is stored" and the placeholder says
+// whether there is anything stored.
+function wifiSlots(){
+ (CFG.wifi||[]).forEach((w,i)=>{if(!$("ws"+i))return;$("ws"+i).value=w.ssid||"";$("wp"+i).value="";
+  $("ws"+i).placeholder=D[L].ssidPh;$("wp"+i).placeholder=w.hasPass?D[L].passStored:D[L].passNone;});
+}
+async function saveWifiList(){
+ const nets=[0,1,2].map(i=>({ssid:$("ws"+i).value.trim(),pass:$("wp"+i).value}));
+ try{const r=await fetch("/api/wifilist",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({nets})});
+ msg(r.ok?D[L].saved:D[L].failed,r.ok?"ok":"err");
+ if(r.ok){const c=await(await fetch("/api/config")).json();CFG.wifi=c.wifi;wifiSlots();}}catch(e){msg(D[L].failed,"err")}
+}
+// Home Assistant: the address to poll and a ready configuration.yaml block.
+function haInfo(){
+ const host=(CFG.ip&&CFG.ip!="0.0.0.0")?CFG.ip:"meteoplaneradar.local";
+ const url="http://"+host+"/api/ha";
+ $("haUrl").textContent=url;$("haLink").href=url;
+ const q='"';
+ const S=(n,t,u,dc,extra)=>"      - name: "+q+n+q+"\n        unique_id: "+n.toLowerCase().replace(/[^a-z0-9]+/g,"_")+
+  "\n        value_template: "+q+"{{ "+t+" }}"+q+"\n"+(u?"        unit_of_measurement: "+q+u+q+"\n":"")+
+  (dc?"        device_class: "+dc+"\n":"")+(extra||"");
+ // Weather is null until the first forecast lands - unavailable, not zero.
+ const av=k=>"        availability: "+q+"{{ value_json."+k+" is not none }}"+q+"\n";
+ $("haYaml").textContent=
+  "rest:\n  - resource: "+url+"\n    scan_interval: 60\n    sensor:\n"+
+  S("MPR Teplota","value_json.temperature","°C","temperature","        state_class: measurement\n"+av("temperature"))+
+  S("MPR Vitr","value_json.wind_kmh","km/h","wind_speed","        state_class: measurement\n"+av("wind_kmh"))+
+  S("MPR Srazky","value_json.precip_mm","mm","precipitation",av("precip_mm"))+
+  S("MPR Bourka max dBZ","value_json.storm.max_dbz | default(0)","dBZ")+
+  S("MPR Bourka vzdalenost","value_json.storm.nearest_km","km","distance",
+   "        availability: "+q+"{{ value_json.storm.nearest_km is defined and value_json.storm.nearest_km is not none }}"+q+"\n")+
+  S("MPR Letadla v okoli","value_json.aircraft.count")+
+  S("MPR Nejblizsi letadlo","value_json.aircraft.callsign | default('-', true)",null,null,
+   "        json_attributes_path: "+q+"$.aircraft"+q+"\n        json_attributes:\n"+
+   ["distance_km","altitude_m","speed_kmh","type","kind","bearing","in_window"].map(a=>"          - "+a+"\n").join(""))+
+  "    binary_sensor:\n"+
+  "      - name: "+q+"MPR Bourka"+q+"\n        unique_id: mpr_bourka\n        value_template: "+q+"{{ 'on' if value_json.storm.active else 'off' }}"+q+"\n        device_class: safety\n"+
+  "      - name: "+q+"MPR Letadlo nablizku"+q+"\n        unique_id: mpr_letadlo_nablizku\n        value_template: "+q+"{{ 'on' if value_json.aircraft.alert else 'off' }}"+q+"\n";
+}
+// --- Aircraft icon legend ----------------------------------------------------
+// The same polygon tables PlaneIcon.cpp draws on the display, so the legend
+// cannot drift from what the radar actually shows. A part is
+// [count, mirror, x0,y0, x1,y1, ...] with y pointing forward (nose up).
+const SH={"GENERIC":[10,0,0,12,3,1,13,-8,3,-5,3,-7,0,-12,-3,-7,-3,-5,-13,-8,-3,1,0],"NARROW":[7,0,0,14,2,11,2,-10,1,-14,-1,-14,-2,-10,-2,11,4,1,2,4,13,-3,13,-5,2,-1,4,1,4,1,6,0,6,-3,4,-3,4,1,1,-9,6,-12,6,-14,1,-12,0],"WIDE":[7,0,0,14,3,10,3,-10,1,-14,-1,-14,-3,-10,-3,10,4,1,3,4,15,-4,15,-6,3,-1,4,1,5,2,8,1,8,-3,5,-3,4,1,1,-9,7,-12,7,-14,1,-12,0],"QUAD":[7,0,0,14,3,10,3,-10,1,-14,-1,-14,-3,-10,-3,10,4,1,3,4,15,-4,15,-6,3,-1,4,1,5,2,7,1,7,-2,5,-2,4,1,9,-1,11,-2,11,-5,9,-5,4,1,1,-9,7,-12,7,-14,1,-12,0],"REGIONAL":[7,0,0,13,2,10,2,-9,1,-13,-1,-13,-2,-9,-2,10,4,1,2,3,11,-2,11,-4,2,-1,4,1,2,-5,4,-5,4,-9,2,-9,4,1,0,-11,6,-12,6,-13,0,-13,0],"BIZJET":[7,0,0,12,2,8,2,-8,1,-12,-1,-12,-2,-8,-2,8,4,1,2,2,10,-4,10,-5,2,-1,4,1,2,-5,4,-5,4,-8,2,-8,4,1,0,-10,5,-12,5,-13,0,-12,0],"TWINPROP":[6,0,0,13,2,10,2,-11,0,-13,-2,-11,-2,10,4,1,2,3,14,2,14,-1,2,-1,4,1,4,6,6,6,6,-1,4,-1,4,1,1,-9,6,-10,6,-12,1,-12,0],"LIGHT":[6,0,0,10,2,8,2,-9,0,-11,-2,-9,-2,8,4,1,2,5,14,5,14,2,2,2,4,1,1,-8,5,-8,5,-10,1,-10,0],"MILTRANS":[6,0,0,13,3,10,3,-10,0,-13,-3,-10,-3,10,4,1,3,4,16,3,16,0,3,0,4,1,5,7,7,7,7,0,5,0,4,1,10,6,12,6,12,0,10,0,4,1,1,-9,7,-10,7,-12,1,-12,0],"FREIGHTER":[7,0,0,14,3,10,3,-10,1,-14,-1,-14,-3,-10,-3,10,4,1,3,5,16,-1,16,-3,3,1,4,1,6,3,8,2,8,-1,6,-1,4,1,11,1,13,0,13,-3,11,-3,4,1,0,-11,7,-13,7,-14,0,-14,0],"FIGHTER":[6,0,0,13,2,8,2,-11,1,-13,-1,-13,-2,-11,3,1,1,6,10,-6,1,-6,3,1,1,-8,5,-12,1,-12,0],"GLIDER":[6,0,0,10,1,8,1,-10,0,-11,-1,-10,-1,8,4,1,1,3,17,2,17,1,1,1,4,1,0,-9,4,-9,4,-10,0,-10,0],"TILT":[6,0,0,12,2,9,2,-10,0,-12,-2,-10,-2,9,4,1,2,2,10,2,10,-1,2,-1,4,1,1,-8,5,-9,5,-11,1,-11,0]};
+const ICONS=[ // [shape, scale, key] - order and sizes as on the display
+ ["NARROW",1,"icNarrow"],["WIDE",1.25,"icWide"],["QUAD",1.4,"icQuad"],["REGIONAL",.95,"icRegional"],
+ ["BIZJET",.85,"icBizjet"],["TWINPROP",.9,"icTwinprop"],["LIGHT",.8,"icLight"],["MILTRANS",1.15,"icMiltrans"],
+ ["FREIGHTER",1.4,"icFreighter"],["FIGHTER",.9,"icFighter"],["GLIDER",.85,"icGlider"],["TILT",1,"icTilt"],
+ ["HELI",1,"icHeli"],["BALLOON",1,"icBalloon"],["DRONE",1,"icDrone"],["GENERIC",1,"icGeneric"],["UNKNOWN",1,"icNoTrack"]];
+function iconSvg(name,k){
+ const c="#e8edf4";let b="";
+ if(name=="HELI")b="<circle r='11' fill='none' stroke='"+c+"' stroke-width='1.3'/><circle r='4' fill='"+c+"'/><path d='M0 0V13M-3 13H3' stroke='"+c+"' stroke-width='2'/>";
+ else if(name=="BALLOON")b="<circle cy='-3' r='7' fill='"+c+"'/><path d='M-3 3L-2 7M3 3L2 7' stroke='"+c+"'/><rect x='-2' y='7' width='5' height='3' fill='"+c+"'/>";
+ else if(name=="DRONE")b="<path d='M-7-7L7 7M-7 7L7-7' stroke='"+c+"' stroke-width='1.3'/>"+[[-7,-7],[7,-7],[-7,7],[7,7]].map(p=>"<circle cx='"+p[0]+"' cy='"+p[1]+"' r='3' fill='none' stroke='"+c+"'/>").join("")+"<rect x='-2' y='-2' width='5' height='5' fill='"+c+"'/>";
+ else if(name=="UNKNOWN")b="<circle r='7' fill='none' stroke='"+c+"' stroke-width='1.3'/><circle r='2' fill='"+c+"'/>";
+ else{const a=SH[name];let i=0;while(a[i]){const n=a[i],m=a[i+1],v=a.slice(i+2,i+2+2*n);
+  for(const sg of (m?[1,-1]:[1]))b+="<polygon fill='"+c+"' points='"+v.map((x,j)=>j%2?(-x*k).toFixed(1):(sg*x*k).toFixed(1)).reduce((o,x,j)=>o+(j%2?","+x+" ":x),"")+"'/>";
+  i+=2+2*n;}}
+ return "<svg viewBox='-21 -21 42 42' width='42' height='42' style='flex:0 0 42px'>"+b+"</svg>";
+}
+function iconLegend(){
+ $("iconLegend").innerHTML=ICONS.map(([n,k,key])=>"<div class='chk' style='gap:10px'>"+iconSvg(n,k)+
+  "<span style='font-size:14px'>"+D[L][key]+"</span></div>").join("");
+}
+function copyHa(){
+ const t=$("haYaml").textContent;
+ if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(()=>msg(D[L].copied,"ok"));return;}
+ // Plain http on the LAN is not a secure context, where the clipboard API is
+ // missing - fall back to selecting the text the old way.
+ const r=document.createRange();r.selectNodeContents($("haYaml"));
+ const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);
+ try{document.execCommand("copy");msg(D[L].copied,"ok");}catch(e){}
 }
 async function saveWifi(){
  const r=await fetch("/api/wifi",{method:"POST",headers:{"Content-Type":"application/json"},

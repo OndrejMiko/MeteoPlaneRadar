@@ -156,3 +156,9 @@ console.log('Successful code pairing clears code and updates paired/enabled stat
 assert(!page.includes('python3 tools/google-chat-bridge'));
 assert(!page.includes('ntStep1'));
 assert(page.includes('class="notification-actions"><button type="button" class="sec" id="ntTestBtn"'));
+
+context.fetch=async()=>({json:async()=>[{ssid:"Office' <script>",rssi:-40}]});
+await run('scan()');
+assert(elements.get('ssidList').innerHTML.includes('&#39;'));
+assert(!elements.get('ssidList').innerHTML.includes('<script>'));
+console.log('WiFi scan escapes network names in datalist options');

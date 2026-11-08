@@ -5,11 +5,14 @@
 #include <vector>
 #include <fstream>
 #include <cstdint>
+#include "AAFont.h"
 
 // Record the real screen's drawing calls so host tests can inspect geometry,
 // source markers and text without an ESP32 panel.
 class Arduino_GFX {
  public:
+  int width() const { return 480; }
+  int height() const { return 480; }
   int x=0,y=0,size=1;uint16_t color=0xffff;
   int circles=0;std::vector<std::string> texts;std::ostringstream drawing;
   static std::string rgb(uint16_t c){char s[10];snprintf(s,sizeof(s),"#%02x%02x%02x",((c>>11)&31)*255/31,((c>>5)&63)*255/63,(c&31)*255/31);return s;}
@@ -17,7 +20,7 @@ class Arduino_GFX {
   void setTextColor(uint16_t c){color=c;}
   void setTextSize(uint8_t s){size=s;}
   void setCursor(int a,int b){x=a;y=b;}
-  void print(const char* s){texts.push_back(s);std::string esc;for(char c:std::string(s)){if(c=='&')esc+="&amp;";else if(c=='<')esc+="&lt;";else if(c=='>')esc+="&gt;";else esc+=c;}drawing<<"<text x='"<<x<<"' y='"<<y+7*size<<"' font-family='monospace' font-size='"<<8*size<<"' textLength='"<<strlen(s)*6*size<<"' lengthAdjust='spacingAndGlyphs' fill='"<<rgb(color)<<"'>"<<esc<<"</text>";x+=(int)strlen(s)*6*size;}
+  void print(const char* s){texts.push_back(s);if(AAText_Enabled()&&size<=5){x+=AAText_Print((const uint8_t*)s,strlen(s),x,y,size,color,color);return;}std::string esc;for(char c:std::string(s)){if(c=='&')esc+="&amp;";else if(c=='<')esc+="&lt;";else if(c=='>')esc+="&gt;";else esc+=c;}drawing<<"<text x='"<<x<<"' y='"<<y+7*size<<"' font-family='monospace' font-size='"<<8*size<<"' textLength='"<<strlen(s)*6*size<<"' lengthAdjust='spacingAndGlyphs' fill='"<<rgb(color)<<"'>"<<esc<<"</text>";x+=(int)strlen(s)*6*size;}
   void print(const std::string& s){print(s.c_str());}
   template<typename T> void print(T value){std::ostringstream stream;stream<<value;print(stream.str().c_str());}
   void fillRect(int a,int b,int w,int h,uint16_t c){fillRoundRect(a,b,w,h,0,c);}

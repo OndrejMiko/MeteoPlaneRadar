@@ -24,7 +24,7 @@ const status={version,screen:1,enabled:[true,true,true,true,true,true],range:'10
   await page.setViewportSize({width,height:900});await page.goto('http://meteoradar.test/');await page.waitForFunction(()=>document.querySelector('#ver').textContent.startsWith('v'));
   for(const lang of ['cs','en','sk']){
    await page.evaluate(l=>setLang(l),lang);
-   for(const id of ['tCtl','tLoc','tScr','tLook','tPlanes','tCal','tNotify','tSys']){
+   for(const id of ['tCtl','tLoc','tScr','tLook','tPlanes','tCal','tNotify','tHa','tSys']){
     await page.locator('[data-tab="'+id+'"]').click();
     const fit=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,selected:document.querySelectorAll('[role=tab][aria-selected=true]').length,panels:document.querySelectorAll('section.tab:not(.hide)').length}));
     assert(fit.scroll<=fit.width,`page overflow ${width} ${lang} ${id}: ${fit.scroll}`);assert.equal(fit.selected,1);assert.equal(fit.panels,1);
@@ -60,7 +60,13 @@ const status={version,screen:1,enabled:[true,true,true,true,true,true],range:'10
  await page.locator('[data-tab=tLoc]').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('[data-tab=tScr]').getAttribute('aria-selected'),'true');await page.keyboard.press('End');assert.equal(await page.locator('[data-tab=tSys]').getAttribute('aria-selected'),'true');await page.keyboard.press('Home');assert.equal(await page.locator('[data-tab=tCtl]').getAttribute('aria-selected'),'true');
  await page.locator('[data-tab=tCal]').click();await page.locator('#saveButton').click();await page.waitForFunction(()=>!document.querySelector('#saveButton').disabled);
  const calendar=posts.find(p=>p.url==='/api/config');assert.deepEqual(calendar.body.screens,{calendar:true});assert(!('lat' in calendar.body));assert.equal(calendar.body.calendars[0].url,'');
+ await page.locator('[data-tab=tLook]').click();await page.locator('#clockFont').selectOption('2');
+ await page.waitForTimeout(500);assert(posts.some(p=>p.url==='/api/config'&&p.body.clockFont===2));
+ await page.locator('[data-tab=tHa]').click();await page.locator('#haEnabled').check();
+ await page.waitForTimeout(500);assert(posts.some(p=>p.url==='/api/config'&&p.body.haEnabled===true));
+ assert(!(await page.locator('#haYaml').innerText()).includes('price_czk'));
+ assert(!(await page.locator('#haYaml').innerText()).includes('renewable'));
  await page.evaluate(()=>msg('Testovacia správa','ok'));assert(await page.locator('#msg').isVisible());
- assert.deepEqual(errors,[]);console.log('Web browser: 4 widths × 3 languages × 8 tabs; fixed saves, keyboard navigation, unsaved fields and calendar save and code pairing passed');
+ assert.deepEqual(errors,[]);console.log('Web browser: 4 widths × 3 languages × 9 tabs; fixed saves, keyboard navigation, unsaved fields and calendar save and code pairing passed');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});

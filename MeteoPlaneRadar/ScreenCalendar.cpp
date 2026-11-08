@@ -43,12 +43,23 @@ void text(const char* s, int x, int y, uint16_t color, uint8_t size) {
   gfx->print(s);
 }
 void fit(const char* s, char* out, size_t cap, int pixels, uint8_t size) {
-  size_t n = strlen(s), max = pixels / LY_CHAR_W(size);
-  if (n > max) n = max;
-  if (n >= cap) n = cap - 1;
-  memcpy(out, s, n);
-  out[n] = 0;
-  if (strlen(s) > n && n >= 3) memcpy(out + n - 3, "...", 3);
+  size_t n = 0, len = strlen(s);
+  while (n < len && n+1 < cap) {
+    size_t next = n+1;
+    while (next<len && ((unsigned char)s[next]&0xc0)==0x80) ++next;
+    if (next>=cap) break;
+    memcpy(out,s,next); out[next]=0;
+    if (Layout_TextW(out,size)>pixels) break;
+    n=next;
+  }
+  memcpy(out,s,n); out[n]=0;
+  if (n<len) {
+    while (n && (n+3>=cap || Layout_TextW(out,size)+Layout_TextW("...",size)>pixels)) {
+      --n; while (n && ((unsigned char)out[n]&0xc0)==0x80) --n;
+      out[n]=0;
+    }
+    if (n+3<cap) memcpy(out+n,"...",4);
+  }
 }
 void button(int x, int y, int w, int h, const char* label, bool active) {
   gfx->fillRoundRect(x, y, w, h, 14, active ? C_CYAN : C_DKGRAY);

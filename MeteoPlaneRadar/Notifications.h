@@ -8,7 +8,7 @@ const char* Notifications_Validate(JsonObjectConst message);
 bool Notifications_Push(JsonObjectConst message);  // false: disabled, full, no PSRAM
 bool Notifications_Authorized(const char* token);
 bool Notifications_Tick();
-void Notifications_Draw();
+void Notifications_Draw(uint8_t screen = 255);
 bool Notifications_Visible();
 // Captures every gesture over an open notification; badge captures taps only.
 bool Notifications_Touch(int x, int y, bool tap);

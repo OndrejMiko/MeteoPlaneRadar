@@ -198,3 +198,18 @@ at arm's length.
 Both energy screens are off by default, and while a screen is off the firmware
 never calls its API at all - a device showing neither of them places no load on
 either service.
+
+
+Bundled bitmap fonts (ClockFonts.h)
+-----------------------------------
+Inter / Inter Display and Poppins are distributed under the SIL Open Font
+License 1.1. See licenses/OFL-Inter.txt and licenses/OFL-Poppins.txt for the
+complete copyright notices and license. The upstream bitmap tables are
+extended for Slovak by tools/extend_slovak_fonts.py.
+Sources: https://github.com/google/fonts/tree/main/ofl/inter
+         https://github.com/google/fonts/tree/main/ofl/poppins
+
+Aircraft icon classification
+----------------------------
+Type grouping follows ADS-B Radar: https://adsb-radar.com/help/icons.html
+The firmware draws its own polygon shapes; no icon image files are copied.

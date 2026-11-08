@@ -6,7 +6,7 @@
 #include <iostream>
 
 int main() {
-  Settings_ClearAll();
+  Settings_ClearAll(); Settings_SetClockFont(CLOCK_FONT_PIXEL);
   Settings_SetLanguage(LANG_SK);
   Settings_Begin();
   assert(Settings_Language() == LANG_SK && Lang_Get() == LANG_SK);
@@ -36,7 +36,7 @@ int main() {
   // Updating a device that only enabled the removed screens must leave one
   // usable data screen. Stored screen indices outside the new set are safe.
   for (int oldScreen = 4; oldScreen <= 6; ++oldScreen) {
-    Settings_ClearAll();
+    Settings_ClearAll(); Settings_SetClockFont(CLOCK_FONT_PIXEL);
     Preferences::numbers["scrM"] = 0x30;
     Preferences::numbers["scr"] = oldScreen;
     Settings_Begin();
@@ -46,7 +46,7 @@ int main() {
     Settings_SetScreenEnabled(SCREEN_CLOCK_I, false);
     assert(Settings_ScreenEnabled(SCREEN_CLOCK_I));
   }
-  Settings_ClearAll();
+  Settings_ClearAll(); Settings_SetClockFont(CLOCK_FONT_PIXEL);
   Preferences::numbers["scrM"] = 0x3a;
   Settings_Begin();
   assert(Settings_EnabledCount() == 2);
@@ -95,7 +95,7 @@ int main() {
 
   // The calendar activation request reuses the private URL and persists the
   // screen bit through a reboot, without modifying other enabled screens.
-  Settings_ClearAll(); Settings_Begin();
+  Settings_ClearAll(); Settings_SetClockFont(CLOCK_FONT_PIXEL); Settings_Begin();
   JsonDocument activation;
   activation["calendars"][0]["url"]="webcal://example.test/private.ics";
   activation["calendars"][0]["enabled"]=true;
@@ -108,5 +108,22 @@ int main() {
   assert(Settings_ScreenEnabled(SCREEN_CALENDAR_I));
   assert(Settings_ScreenEnabled(SCREEN_PLANES_I));
   assert(!strcmp(Settings_CalendarSource(0).url,"https://example.test/private.ics"));
+  Settings_SetWifiSlot(1,"Office","synthetic-office-pass");
+  Settings_SetWifiSlot(2,"Travel","synthetic-travel-pass");
+  JsonDocument newer;
+  deserializeJson(newer,R"({"clockFont":2,"stormOnly":true,"stormDbz":35,"stormKm":70,"planeAlert":true,"planeAlertKm":8,"planeAlertSec":25,"windowOn":true,"windowAz":90,"windowWidth":110,"windowKm":20,"haEnabled":true,"radarSrc":2,"altBands":[1500,5000,9000],"altColors":[1,2,3,4]})");
+  assert(Settings_FromJson(newer.as<JsonObjectConst>())); Settings_Begin();
+  assert(Settings_ClockFont()==2 && Settings_StormOnly() && Settings_StormDbz()==35 && Settings_StormKm()==70);
+  assert(Settings_PlaneAlert() && Settings_PlaneAlertKm()==8 && Settings_PlaneAlertSec()==25);
+  assert(Settings_WindowOn() && Settings_WindowAz()==90 && Settings_WindowWidth()==110 && Settings_WindowKm()==20);
+  assert(Settings_HaEnabled() && Settings_RadarIsChmu() && Settings_RadarSource()==2);
+  assert(Settings_AltBandM(0)==1500 && Settings_AltColor(3)==4);
+  assert(Settings_ScreenEnabled(SCREEN_CALENDAR_I));
+  assert(!strcmp(Settings_WifiSsid(1),"Office") && !strcmp(Settings_WifiPass(2),"synthetic-travel-pass"));
+  Settings_SetWifiSlot(1,"Office",nullptr); assert(!strcmp(Settings_WifiPass(1),"synthetic-office-pass"));
+  JsonDocument safe; Settings_ToJson(safe.to<JsonObject>());
+  std::string serialized; serializeJson(safe,serialized);
+  assert(serialized.find("synthetic-office-pass")==std::string::npos && serialized.find("synthetic-travel-pass")==std::string::npos);
+  assert(serialized.find("private.ics")==std::string::npos && safe["calendarView"].is<int>());
   std::cout << "Settings migration, backup, calendar activation and language tests passed\n";
 }

@@ -52,7 +52,7 @@ void UI_TextCentered(const char* text, int y, uint16_t color, uint8_t size) {
 int main() {
   setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
   tzset();
-  Settings_ClearAll();
+  Settings_ClearAll(); Settings_SetClockFont(CLOCK_FONT_PIXEL);
   Settings_Begin();
   JsonDocument settings;
   deserializeJson(
@@ -157,6 +157,14 @@ int main() {
     std::string path = std::string(dir) + "/calendar-month-single.svg";
     canvas.snapshot(path.c_str());
   }
+  Settings_SetClockFont(CLOCK_FONT_INTER);
+  if (const char* dir = getenv("CALENDAR_SCREENSHOTS")) {
+    for (uint8_t view=0;view<2;++view) {
+      Settings_SetCalendarView(view); ScreenCalendar_Draw();
+      canvas.snapshot((std::string(dir)+"/calendar-smooth-"+std::to_string(view)+".svg").c_str());
+    }
+  }
+  Settings_SetClockFont(CLOCK_FONT_PIXEL);
   // A failed zone is diagnosed per source without replacing its valid cache.
   payload[0]="BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nDTSTART;TZID=Unknown/PrivateZone:20261024T100000\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
   Calendar_Refresh();Calendar_Tick();

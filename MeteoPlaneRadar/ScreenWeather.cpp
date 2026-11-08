@@ -17,6 +17,7 @@
 //  Board:   Waveshare ESP32-S3-Touch-LCD-2.1 (round 480x480 display, ST7701)
 // =============================================================================
 #include "ScreenWeather.h"
+#include "AAFont.h"
 #include "CHMU.h"
 #include "Settings.h"
 #include "Config.h"
@@ -314,7 +315,8 @@ static void loadAndBuild() {
   if (ok) s_status = T(S_OK);
   else if (s_wide) s_status = T(S_FRAME_WIDE);
   else s_status = (s_frameCount > 0) ? T(S_OK) : T(S_ERROR);
-  Status_Set(ST_RADAR, ok ? "CHMU: %d snimku" : "CHMU: chyba", s_frameCount);
+  if (CHMU_Masked()) Status_Set(ST_RADAR, ok ? "CHMU masked: %d snimku" : "CHMU masked: chyba", s_frameCount);
+  else               Status_Set(ST_RADAR, ok ? "CHMU: %d snimku" : "CHMU: chyba", s_frameCount);
 }
 
 // -----------------------------------------------------------------------------
