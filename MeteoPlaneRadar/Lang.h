@@ -98,6 +98,27 @@
   X(S_TOMORROW,      "zitra",              "zítra",              "tomorrow", "zajtra", "zajtra") \
   X(S_OLD_PLANES,"stara data","stará data","old data","stare data","staré dáta") \
   X(S_NO_PLANE_DATA,"bez dat o letadlech","bez dat o letadlech","no aircraft data","bez dat o lietadlach","bez dát o lietadlách") \
+  X(S_BIOMASS, "biomasa", "biomasa", "biomass", "biomasa", "biomasa") \
+  X(S_COAL, "uhli", "uhlí", "coal", "uhlie", "uhlie") \
+  X(S_CONSUMPTION, "spotreba", "spotřeba", "load", "spotreba", "spotreba") \
+  X(S_DATA_FROM, "data z", "data z", "as of", "data z", "data z") \
+  X(S_EXPORT, "vyvoz", "vývoz", "export", "vyvoz", "vývoz") \
+  X(S_GAS, "plyn", "plyn", "gas", "plyn", "plyn") \
+  X(S_HYDRO, "voda", "voda", "hydro", "voda", "voda") \
+  X(S_IMPORT, "dovoz", "dovoz", "import", "dovoz", "dovoz") \
+  X(S_MIX, "Vyroba CR", "Výroba ČR", "Czech generation", "Vyroba CR", "Výroba ČR") \
+  X(S_MIX_EU_ONLY, "jen pro Evropu", "jen pro Evropu", "Europe only", "iba pre Europu", "iba pre Európu") \
+  X(S_MIX_GEN, "Vyroba", "Výroba", "Generation", "Vyroba", "Výroba") \
+  X(S_NO_TOMORROW, "zitrek zatim neni", "zítřek zatím není", "tomorrow not out yet", "zajtrajsok zatial nie je", "zajtrajšok zatiaľ nie je") \
+  X(S_NUCLEAR, "jadro", "jádro", "nuclear", "jadro", "jadro") \
+  X(S_OTHER, "ostatni", "ostatní", "other", "ostatne", "ostatné") \
+  X(S_OUT_OF_AREA, "mimo oblast zdroje", "mimo oblast zdroje", "outside the source area", "mimo oblast zdroje", "mimo oblast zdroje") \
+  X(S_PRICE, "Cena elektriny", "Cena elektřiny", "Electricity price", "Cena elektriny", "Cena elektriny") \
+  X(S_PRICE_CZ_ONLY, "jen pro CR", "jen pro ČR", "Czechia only", "iba pre CR", "iba pre ČR") \
+  X(S_RENEWABLE, "OZE", "OZE", "renewable", "OZE", "OZE") \
+  X(S_SOLAR, "slunce", "slunce", "solar", "slnko", "slnko") \
+  X(S_SPOT, "burza", "burza", "spot", "burza", "burza") \
+  X(S_WIND, "vitr", "vítr", "wind", "vietor", "vietor") \
   X(S_PAUSE,"pauza","pauza","pause","pauza","pauza")
 
 enum StrId : uint16_t {

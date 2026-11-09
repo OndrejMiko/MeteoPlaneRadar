@@ -71,10 +71,17 @@ uint8_t Settings_Language();               // LANG_CZ / LANG_EN / LANG_SK
 void    Settings_SetLanguage(uint8_t l);
 
 // --- Screens ----------------------------------------------------------------
-// idx is SCREEN_CLOCK_I .. SCREEN_CALENDAR_I. Settings is always enabled.
+// idx is SCREEN_CLOCK_I .. SCREEN_MIX_I; Czech energy is visible only in CZ. Settings is always enabled.
 bool    Settings_ScreenEnabled(uint8_t idx);
 void    Settings_SetScreenEnabled(uint8_t idx, bool on);
-uint8_t Settings_EnabledCount();           // data screens currently on
+uint8_t Settings_EnabledCount();
+
+uint16_t Settings_PriceFee();
+void Settings_SetPriceFee(uint16_t czkPerMwh);
+uint8_t Settings_PriceVat();
+void Settings_SetPriceVat(uint8_t pct);
+const char* Settings_MixCountry();
+void Settings_SetMixCountry(const char* code);           // data screens currently on
 // Automatic screen cycling, in SECONDS. 0 = off.
 //
 // This was minutes up to 0.6.0 and is stored under a NEW key, because

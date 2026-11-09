@@ -11,6 +11,18 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.8.8] - 2026-11-09
+
+### Přidáno
+
+- Vráceny původní obrazovky ceny a výroby elektřiny, nastavení příplatku a DPH
+  i země výrobního mixu. Jsou volitelně dostupné pouze při českém jazyce.
+- V angličtině a slovenštině jsou skryty z webového ovládání i nastavení,
+  přeskakovány gesty a automatickým střídáním a nestahují žádná data.
+  Jejich nastavení zůstává uložené pro návrat k češtině.
+- Migrace zachovává kalendář a správně převádí uloženou obrazovku Nastavení.
+  Původní geografická omezení zdrojů zůstávají zachována.
+
 ## [0.8.7] - 2026-11-09
 
 ### Upraveno

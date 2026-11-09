@@ -313,8 +313,10 @@
 #define SCREEN_METEO_I    2
 #define SCREEN_FORECAST_I 3
 #define SCREEN_CALENDAR_I 4
-#define SCREEN_SETTINGS_I 5
-#define SCREEN_N          6
+#define SCREEN_PRICE_I    5
+#define SCREEN_MIX_I      6
+#define SCREEN_SETTINGS_I 7
+#define SCREEN_N          8
 
 // Automatic screen cycling: 0 = off, otherwise SECONDS between switches (it was
 // minutes up to 0.6.0 - see Settings.h).
@@ -591,3 +593,125 @@
 #define ADSB_RETRY_AFTER_MAX_S   900       // trust Retry-After up to 15 min
 #define ADSB_STALE_MS          60000UL     // grey after one minute
 #define ADSB_HIDE_MS          600000UL     // gone after ten
+
+// ---------------------------------------------------------------------------
+//  Energy: spot electricity price and the Czech generation mix
+//
+//  Both free, both without a key and without registration - the same bar every
+//  other source in this project has to clear.
+//
+//  PRICE: spotovaelektrina.cz republishes the OTE day-ahead result already
+//  converted to CZK, today and tomorrow in ONE answer. Going to OTE directly
+//  would mean parsing a chart-configuration object and doing the EUR conversion
+//  here, for the same numbers.
+//
+//  QUARTER HOURS, not hours. This is the -qh endpoint and the distinction is
+//  not academic: OTE trades in fifteen-minute blocks, and up to 0.7.6 the
+//  firmware used the plain get-prices-json, which the API's own documentation
+//  marks DEPRECATED because it returns hourly AVERAGES. On a flat night the two
+//  agree to a few haleru. On an afternoon ramp they do not - at 16:05 on
+//  15.9.2026 the quarter hour cost 2721 CZK/MWh while the hourly average for
+//  16:00-17:00 was 4023, and the screen confidently showed the average. Half a
+//  crown per kilowatt hour is the difference between "run the dishwasher now"
+//  and "wait fifteen minutes".
+//
+//    {"hoursToday":[{"hour":0,"minute":0,"priceEur":217.72,"priceCZK":5291,
+//                    "level":"medium","levelNum":16,"levelNum96":67}, ...],
+//     "hoursTomorrow":[ ... ]}
+//
+//  96 entries per day. priceCZK is per MEGAWATT hour. Everything below the
+//  fetcher works in CZK/MWh for that reason and only the screen divides by a
+//  thousand - which is also the unit most Czech price sites quote, so a number
+//  from the screen and a number from a website can be compared directly once
+//  you know one is per kWh and the other per MWh.
+//
+//  hoursTomorrow is empty until the day-ahead auction clears, which is around
+//  14:00 local - so "no data for tomorrow" is the normal state for most of the
+//  day and must not look like a failure.
+//
+//  MIX: the Fraunhofer ISE energy-charts API, which serves ENTSO-E data for the
+//  Czech bidding zone without the token ENTSO-E itself requires.
+//
+//    {"unix_seconds":[...], "production_types":[{"name":"Nuclear","data":[...]}]}
+//
+//  The window matters. Asked for a whole day it answers with ~150 samples for
+//  each of twenty types - well over a hundred kilobytes, which is more than the
+//  internal heap can hold as a String. Asked for the last few hours it answers
+//  with a couple of kilobytes, and since we only ever want the most recent
+//  sample, that is all that is worth asking for.
+// ---------------------------------------------------------------------------
+#define PRICE_URL "https://spotovaelektrina.cz/api/v1/price/get-prices-json-qh"
+#define MIX_URL   "https://api.energy-charts.info/public_power"
+
+// Default country code for the mix endpoint. Only the default: the actual one
+// is a setting (Settings_MixCountry), because energy-charts serves 38 European
+// countries plus "eu" for the continent as a whole, and a device in Slovakia or
+// Austria should be able to watch its own grid.
+#define MIX_COUNTRY_DEFAULT "cz"
+
+// ---------------------------------------------------------------------------
+//  Where these two screens mean anything
+//
+//  Neither source is global, and a screen that shows a foreign country's data
+//  without saying so is worse than no screen at all.
+//
+//  PRICES are the Czech day-ahead market in CZK. There is no sensible way to
+//  show them to someone in Texas, so outside this box the screen says so and
+//  the fetcher stays quiet - no point spending someone else's free API quota on
+//  numbers nobody can use.
+//
+//  THE MIX works anywhere energy-charts has a country, which is Europe. Outside
+//  that box the same treatment applies.
+//
+//  Boxes rather than borders, deliberately. A proper point-in-polygon test for
+//  Czechia would be a kilobyte of coastline to decide something the user can
+//  settle with one tick in the web UI, and the box errs towards showing the
+//  screen near the border, which is the friendlier mistake: someone in Zittau
+//  or Hainburg may well want Czech prices.
+// ---------------------------------------------------------------------------
+#define PRICE_AREA_LAT_MIN  48.3f
+#define PRICE_AREA_LAT_MAX  51.3f
+#define PRICE_AREA_LON_MIN  11.8f
+#define PRICE_AREA_LON_MAX  19.2f
+
+#define MIX_AREA_LAT_MIN    34.0f
+#define MIX_AREA_LAT_MAX    72.0f
+#define MIX_AREA_LON_MIN   -25.0f
+#define MIX_AREA_LON_MAX    45.0f
+
+// How far back to ask for. The published data USUALLY runs one to two hours
+// behind real time - but not always: on 25.10.2026 the newest Czech sample was
+// eleven hours old, a 4-hour window came back as "404 no content available"
+// and the screen sat on "loading" all day. So the window is widened step by
+// step until something comes back. The narrow one goes first because it is a
+// couple of kilobytes; 36 hours of all twenty production types is still only
+// a few tens of kB.
+#define MIX_WINDOW_H      4
+#define MIX_WINDOWS_H     { MIX_WINDOW_H, 12, 36 }
+
+// The day-ahead price is fixed for the whole day, so this is really only about
+// picking up tomorrow's prices once they appear after ~14:00.
+#define PRICE_PERIOD_MS  1800000UL   // 30 min
+#define PRICE_RETRY_MS    120000UL   // 2 min after a failure
+
+// The mix is quarter-hourly at source. Polling faster than that only repeats
+// the same sample.
+#define MIX_PERIOD_MS     900000UL   // 15 min
+#define MIX_RETRY_MS      120000UL
+
+// Ceiling for the price ring's colour scale, in CZK/MWh. Below this the colours
+// are stretched over the day's own range, which is what makes a flat day
+// readable at all; above it the scale is pinned here so that a genuinely
+// expensive day looks expensive rather than merely "red at the top".
+#define PRICE_SCALE_MAX 6000.0f
+
+// A negative price is not an error - it happens on windy Sundays and is exactly
+// when you want to hear about it. Drawn in its own colour rather than as the
+// bottom of the normal scale.
+#define PRICE_NEGATIVE_BELOW 0.0f
+
+// How far the sum of the generation slices may sit from load plus exports
+// before the status page says the mix looks incomplete. Losses and pumping put
+// a few per cent between them legitimately; a whole missing production type
+// puts far more. See the check at the end of fetchMix().
+#define MIX_SANITY_TOL 0.12f

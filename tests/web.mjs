@@ -37,11 +37,19 @@ assert.equal((elements.get('scrBtns').innerHTML.match(/<button/g) || []).length,
 assert(elements.get('scrBtns').innerHTML.includes('Nastavenia'));
 const body = run('body()');
 assert.equal(body.lang, 2);
-assert.deepEqual(Object.keys(body.screens), ['clock','planes','meteo','forecast','calendar']);
-for (const removed of ['priceFee','priceVat','mixCountry']) assert(!(removed in body));
-assert.equal(run('SCR.length'), 6);
+assert.deepEqual(Object.keys(body.screens), ['clock','planes','meteo','forecast','calendar','price','mix']);
+for (const restored of ['priceFee','priceVat','mixCountry']) assert(restored in body);
+assert.equal(run('SCR.length'), 8);
 assert.equal(run('SCR[4][1]'), 4);
-for (const removed of ['sPrice','sMix','tEnergy']) assert(!elements.has(removed));
+for (const restored of ['sPrice','sMix','energySettings']) assert(elements.has(restored));
+for (const lang of ['cs','en','sk']) {
+  run(`setLang('${lang}');drawScrBtns(1,[true,true,true,true,true,true,true,true])`);
+  const buttons=elements.get('scrBtns').innerHTML;
+  assert.equal((buttons.match(/<button/g)||[]).length,lang==='cs'?8:6);
+  assert.equal(buttons.includes('goScreen(5)'),lang==='cs');
+  assert.equal(buttons.includes('goScreen(6)'),lang==='cs');
+  assert(buttons.includes('goScreen(7)'));
+}
 
 context.fetch = async url => ({json:async()=>url === '/api/config' ? {
   version,lang:2,lat:48.15,lon:17.11,screens:{clock:true,planes:true,meteo:true,forecast:true},

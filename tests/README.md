@@ -82,3 +82,5 @@ with its first/last-frame thumb in the shared chrome fixture. Tests verify that
 the old wide top panel and playback dots are absent, the map beneath the clock
 is available for labels, and the notification badge avoids the new controls.
 Browser checks also enforce a separate, spaced test-notification action row.
+
+Energy coverage checks Czech-only screen visibility across language changes, backup and NVS migration, preventing removal of the last visible screen, zero HTTP requests while hidden or disabled, regional limits, quarter-hour price parsing, tariff calculation and generation type grouping. Real-browser checks verify that energy controls and remote buttons are hidden in English/Slovak while their saved selections are preserved.

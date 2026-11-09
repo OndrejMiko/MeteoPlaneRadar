@@ -54,8 +54,8 @@ int main() {
   assert(Settings_ScreenEnabled(SCREEN_FORECAST_I));
   assert(!Settings_ScreenEnabled(SCREEN_N));
 
-  // An older backup imports the remaining settings and cannot restore either
-  // removed feature. Export contains only the four remaining data screens.
+  // Energy preferences survive language changes, but cannot become visible
+  // in Slovak or English, including after importing a backup and restarting.
   JsonDocument backup;
   deserializeJson(backup, R"({"lang":2,"priceFee":100,"priceVat":20,"mixCountry":"sk","screens":{"clock":true,"price":true,"mix":true}})");
   Settings_FromJson(backup.as<JsonObjectConst>());
@@ -64,10 +64,37 @@ int main() {
   JsonDocument exported;
   Settings_ToJson(exported.to<JsonObject>());
   assert(exported["lang"] == LANG_SK);
-  assert(exported["screens"].as<JsonObjectConst>().size() == 5);
-  assert(exported["priceFee"].isNull() && exported["priceVat"].isNull());
-  assert(exported["mixCountry"].isNull());
-  assert(exported["screens"]["price"].isNull() && exported["screens"]["mix"].isNull());
+  assert(exported["screens"].as<JsonObjectConst>().size() == 7);
+  assert(exported["priceFee"] == 100 && exported["priceVat"] == 20);
+  assert(!strcmp(exported["mixCountry"], "sk"));
+  assert(exported["screens"]["price"] == true && exported["screens"]["mix"] == true);
+  for (uint8_t lang : {LANG_SK, LANG_EN, LANG_CZ, LANG_SK, LANG_CZ}) {
+    Settings_SetLanguage(lang); Settings_Begin();
+    assert(Settings_ScreenEnabled(SCREEN_PRICE_I) == (lang == LANG_CZ));
+    assert(Settings_ScreenEnabled(SCREEN_MIX_I) == (lang == LANG_CZ));
+    assert(Settings_ScreenEnabled(SCREEN_SETTINGS_I));
+  }
+  // An update from our calendar firmware must preserve calendar bit 4 and
+  // translate the old Settings index 5 rather than open electricity prices.
+  Settings_ClearAll();
+  Preferences::numbers["calV"] = 1;
+  Preferences::numbers["scrM"] = 0x10;
+  Preferences::numbers["scr"] = 5;
+  Settings_Begin();
+  assert(Settings_ScreenEnabled(SCREEN_CALENDAR_I));
+  assert(!Settings_ScreenEnabled(SCREEN_PRICE_I));
+  assert(Settings_Screen() == SCREEN_SETTINGS_I);
+  Settings_SetScreenEnabled(SCREEN_PRICE_I, true);
+  Settings_SetScreenEnabled(SCREEN_CALENDAR_I, false);
+  Settings_SetLanguage(LANG_SK);
+  assert(Settings_ScreenEnabled(SCREEN_CLOCK_I));
+  Settings_SetScreenEnabled(SCREEN_CLOCK_I, false);
+  assert(Settings_ScreenEnabled(SCREEN_CLOCK_I));
+  Settings_Begin();
+  assert(!Settings_ScreenEnabled(SCREEN_PRICE_I));
+  Settings_SetLanguage(LANG_CZ);
+  assert(Settings_ScreenEnabled(SCREEN_PRICE_I));
+  Settings_SetLanguage(LANG_SK);
   // Saved links are write-only, survive reboot, normalize webcal and are not
   // overwritten when a browser submits blank fields after loading config.
   JsonDocument cal;

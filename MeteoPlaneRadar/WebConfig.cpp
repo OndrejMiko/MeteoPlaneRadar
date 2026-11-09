@@ -28,6 +28,8 @@
 #include "Notifications.h"
 #include "NotificationPairing.h"
 #include "ScreenCalendar.h"
+#include "Energy.h"
+#include "ScreenPrice.h"
 #include "ScreenPlanes.h"
 #include "ScreenWeather.h"
 #include "Settings.h"
@@ -180,6 +182,7 @@ static void handlePostConfig() {
   const uint8_t oldMask = screenMask();
 
   Settings_FromJson(doc.as<JsonObjectConst>());
+  if (!doc["mixCountry"].isNull()) Energy_Invalidate();
 
   // Applied straight away - these are the ones you want to see change while
   // you are still looking at the slider.
@@ -190,6 +193,7 @@ static void handlePostConfig() {
                      (fabs(oldLon - Settings_Lon()) > 1e-6);
   if (moved) {
     Forecast_Invalidate();
+    Energy_Invalidate();
   }
 
   // These reach too far into cached state (decoded radar frames, allocated
@@ -292,6 +296,7 @@ static void handleStatus() {
   char rb[24] = "";
   if      (scr == SCREEN_PLANES_I) ScreenPlanes_RangeText(rb, sizeof(rb));
   else if (scr == SCREEN_METEO_I)  ScreenWeather_RangeText(rb, sizeof(rb));
+  else if (scr == SCREEN_PRICE_I) ScreenPrice_RangeText(rb, sizeof(rb));
   else if (scr == SCREEN_CALENDAR_I)
     ScreenCalendar_RangeText(rb, sizeof(rb));
   doc["range"] = rb;                       // empty on screens without one
@@ -303,6 +308,10 @@ static void handleStatus() {
   Status_Text(ST_ADSB, b, sizeof(b));     doc["adsb"] = b;
   Status_Text(ST_RADAR, b, sizeof(b));    doc["radar"] = b;
   Status_Text(ST_FORECAST, b, sizeof(b)); doc["forecast"] = b;
+  if (Settings_Language() == LANG_CZ) {
+    Status_Text(ST_PRICE, b, sizeof(b)); doc["price"] = b;
+    Status_Text(ST_MIX, b, sizeof(b)); doc["mix"] = b;
+  }
   doc["notificationMemory"] = Notifications_MemoryBytes();
   doc["notificationCount"] = Notifications_Count();
   doc["notificationPairingActive"] = s_notificationPairing.active(millis());
@@ -349,7 +358,7 @@ static void handleWifiList() {
 // Home Assistant: the shape follows the documented REST sensor, but nobody has
 // pointed one at it yet.
 static const char* const SCREEN_KEYS[SCREEN_N] = {
-  "clock", "planes", "meteo", "forecast", "calendar", "settings" };
+  "clock", "planes", "meteo", "forecast", "calendar", "price", "mix", "settings" };
 
 static void handleHa() {
   if (!Settings_HaEnabled()) {

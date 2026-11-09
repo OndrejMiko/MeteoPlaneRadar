@@ -359,7 +359,9 @@ Nad rámec licence budeme rádi, když na obrazovce nastavení ponecháte řáde
 Tato větev od verze 0.8.6 spojuje původní projekt 0.8.5 s našimi úpravami:
 kalendář, slovenština, globální notifikace, macOS Google Chat most a webové taby.
 Gesta zůstávají vlevo/vpravo pro obrazovky a nahoru/dolů pro přiblížení map;
-dlouhý stisk obou polovin displeje funguje dál. Elektřina ani Claude nejsou součástí.
+dlouhý stisk obou polovin displeje funguje dál. Claude není součástí. Od verze 0.8.8 lze při českém jazyce na webu v záložce
+**Obrazovky** zapnout **Cenu elektřiny** a **Výrobu elektřiny**. V jiných jazycích
+jsou jejich ovládání i nastavení skryta a data se nestahují.
 Vyhlazená písma lze přepnout ve **Vzhled → Písmo (všechny obrazovky)**.
 Slovenské doplňky bitmap lze po nové aktualizaci autora obnovit skriptem
 `python3 tools/extend_slovak_fonts.py` (bez dalších balíčků).

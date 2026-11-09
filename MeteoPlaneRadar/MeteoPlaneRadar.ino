@@ -89,6 +89,9 @@
 #include "CHMU.h"
 #include "RainViewer.h"
 #include "ScreenWeather.h"
+#include "Energy.h"
+#include "ScreenPrice.h"
+#include "ScreenMix.h"
 #include "ScreenClock.h"
 #include "ScreenForecast.h"
 #include "ScreenCalendar.h"
@@ -324,6 +327,8 @@ static void drawActive() {
     case SCREEN_METEO_I:    ScreenWeather_Draw();  break;
     case SCREEN_FORECAST_I: ScreenForecast_Draw(); break;
     case SCREEN_CALENDAR_I: ScreenCalendar_Draw(); break;
+    case SCREEN_PRICE_I: ScreenPrice_Draw(); break;
+    case SCREEN_MIX_I: ScreenMix_Draw(); break;
     case SCREEN_SETTINGS_I: ScreenSettings_Draw(); break;
   }
   drawScreenDots();
@@ -339,6 +344,8 @@ static void enterActive() {
     case SCREEN_METEO_I:    ScreenWeather_Enter();  break;
     case SCREEN_FORECAST_I: ScreenForecast_Enter(); break;
     case SCREEN_CALENDAR_I: ScreenCalendar_Enter(); break;
+    case SCREEN_PRICE_I: ScreenPrice_Enter(); break;
+    case SCREEN_MIX_I: ScreenMix_Enter(); break;
     case SCREEN_SETTINGS_I: ScreenSettings_Enter(); break;
   }
   Navigation_ScreenChanged();
@@ -379,6 +386,8 @@ static bool activeTick() {
     case SCREEN_METEO_I:    return ScreenWeather_Tick();
     case SCREEN_FORECAST_I: return ScreenForecast_Tick();
     case SCREEN_CALENDAR_I: return ScreenCalendar_Tick();
+    case SCREEN_PRICE_I: return ScreenPrice_Tick();
+    case SCREEN_MIX_I: return ScreenMix_Tick();
     case SCREEN_SETTINGS_I: return ScreenSettings_Tick();
   }
   return false;
@@ -389,6 +398,7 @@ static void activeChangeRange(int dir) {
     case SCREEN_PLANES_I: ScreenPlanes_ChangeRange(dir);  break;
     case SCREEN_METEO_I:  ScreenWeather_ChangeRange(dir); break;
     case SCREEN_CALENDAR_I: ScreenCalendar_ChangeRange(dir); break;
+    case SCREEN_PRICE_I: ScreenPrice_ChangeRange(dir); break;
     default: break;   // the other screens have no range
   }
 }
@@ -398,6 +408,7 @@ static bool activeTap(int x, int y) {
     case SCREEN_CLOCK_I:    return ScreenClock_HandleTap(x, y);
     case SCREEN_PLANES_I:   return ScreenPlanes_HandleTap(x, y);
     case SCREEN_CALENDAR_I: return ScreenCalendar_HandleTap(x, y);
+    case SCREEN_PRICE_I: return ScreenPrice_HandleTap(x, y);
     case SCREEN_SETTINGS_I: return ScreenSettings_HandleTap(x, y);
     default: return false;
   }
@@ -443,7 +454,7 @@ static void dispatchTouch() {
       // With the detail open a swipe just closes it, so you cannot accidentally
       // re-scale the map behind the panel.
       if (activeModalOpen()) { ScreenPlanes_CloseDetail(); drawActive(); }
-      else if (s_screen == SCREEN_PLANES_I || s_screen == SCREEN_METEO_I) {
+      else if (s_screen == SCREEN_PLANES_I || s_screen == SCREEN_METEO_I || s_screen == SCREEN_PRICE_I) {
         activeChangeRange(a);
         drawActive();
       }
@@ -849,6 +860,7 @@ void loop() {
 
   displayWatchdog();
   Outside_Tick();     // outside temperature and the clock safety net
+  Energy_Tick();     // Czech-only screens; no requests in other languages
   Forecast_Tick();    // forecast, sun times and air quality
   Calendar_Tick();    // bounded ICS subscriptions, only while enabled
   StormWatch_Tick();  // newest radar frame near us (only when something wants it)

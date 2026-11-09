@@ -6,8 +6,8 @@ const path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const html=readFileSync(path.join(root,'MeteoPlaneRadar/WebPage.h'),'utf8').match(/R"rawliteral\(([\s\S]*?)\)rawliteral"/)[1];
 const version=readFileSync(path.join(root,'MeteoPlaneRadar/Version.h'),'utf8').match(/FW_VERSION "([^"]+)"/)[1];
-const config={version,lang:2,lat:48.15,lon:17.11,screens:{clock:true,planes:true,meteo:true,forecast:true,calendar:true},clockColor:65535,secColor:1535,hasPassword:false,calendarView:0,calendarRefresh:15,calendars:[{name:'Rodina',hasUrl:true,color:1535,enabled:true}],notifications:{enabled:true,paired:true,seconds:15},autoRotate:30,radarSrc:1,meteoLegend:true,briDay:80,briNight:20,nightAuto:true,nightOffset:0,secStyle:1,metric:true,topBearing:0,altMin:0,altMax:60000};
-const status={version,screen:1,enabled:[true,true,true,true,true,true],range:'100 km',ip:'192.168.1.42',ssid:'Domaca WiFi',rssi:-52,uptime:'2 h 34 min',heap:157096,psram:6200000,resetReason:'Power on',adsb:'OK',radar:'OK',forecast:'OK',timezone:'Europe/Bratislava',board:'Waveshare ESP32-S3 2.1',calendarSources:[{state:'OK',updated:0}],notificationCount:0,notificationBridgeAge:12,notificationMemory:7176};
+const config={version,lang:2,lat:48.15,lon:17.11,screens:{clock:true,planes:true,meteo:true,forecast:true,calendar:true,price:true,mix:true},priceFee:100,priceVat:21,mixCountry:"cz",clockColor:65535,secColor:1535,hasPassword:false,calendarView:0,calendarRefresh:15,calendars:[{name:'Rodina',hasUrl:true,color:1535,enabled:true}],notifications:{enabled:true,paired:true,seconds:15},autoRotate:30,radarSrc:1,meteoLegend:true,briDay:80,briNight:20,nightAuto:true,nightOffset:0,secStyle:1,metric:true,topBearing:0,altMin:0,altMax:60000};
+const status={version,screen:1,enabled:[true,true,true,true,true,true,true,true],range:'100 km',ip:'192.168.1.42',ssid:'Domaca WiFi',rssi:-52,uptime:'2 h 34 min',heap:157096,psram:6200000,resetReason:'Power on',adsb:'OK',radar:'OK',forecast:'OK',timezone:'Europe/Bratislava',board:'Waveshare ESP32-S3 2.1',calendarSources:[{state:'OK',updated:0}],notificationCount:0,notificationBridgeAge:12,notificationMemory:7176};
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true});
  try{
@@ -24,6 +24,13 @@ const status={version,screen:1,enabled:[true,true,true,true,true,true],range:'10
   await page.setViewportSize({width,height:900});await page.goto('http://meteoradar.test/');await page.waitForFunction(()=>document.querySelector('#ver').textContent.startsWith('v'));
   for(const lang of ['cs','en','sk']){
    await page.evaluate(l=>setLang(l),lang);
+   await page.locator('[data-tab="tScr"]').click();
+   for(const id of ['energyPriceOption','energyMixOption','energySettings'])
+    assert.equal(await page.locator('#'+id).isVisible(),lang==='cs');
+   await page.evaluate(()=>drawScrBtns(1,[true,true,true,true,true,true,true,true]));
+   assert.equal(await page.locator('#scrBtns button').count(),lang==='cs'?8:6);
+   const energyBody=await page.evaluate(()=>body());
+   assert.equal(energyBody.screens.price,true);assert.equal(energyBody.screens.mix,true);
    for(const id of ['tCtl','tLoc','tScr','tLook','tPlanes','tCal','tNotify','tHa','tSys']){
     await page.locator('[data-tab="'+id+'"]').click();
     const fit=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,selected:document.querySelectorAll('[role=tab][aria-selected=true]').length,panels:document.querySelectorAll('section.tab:not(.hide)').length}));

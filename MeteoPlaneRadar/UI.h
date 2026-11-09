@@ -58,3 +58,6 @@ void UI_DrawStatusLine(int cy);
 // enough because only the active screen is ticked, and switching screens
 // redraws everything anyway.
 bool UI_StatusLineChanged();
+
+// Filled annular sector for the price and generation dials; angles in radians.
+void UI_FillRing(int cx, int cy, int rIn, int rOut, float a0, float a1, uint16_t color);

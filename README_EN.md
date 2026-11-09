@@ -475,3 +475,5 @@ condition.
 - [mylms/ESP-MeteoRadar](https://github.com/mylms/ESP-MeteoRadar) — the CHMI precipitation radar
 
 Change history: [CHANGELOG.md](CHANGELOG.md). Version: `MeteoPlaneRadar/Version.h`.
+
+Since 0.8.8, electricity price and generation screens can be enabled under **Screens** when the device language is Czech. Their controls and settings are hidden in English and Slovak, and no electricity data is fetched while hidden. Saved selections and tariff settings survive language changes.

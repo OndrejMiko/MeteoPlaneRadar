@@ -44,3 +44,8 @@ c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoP
   "${FONT[@]}" MeteoPlaneRadar/Settings.cpp MeteoPlaneRadar/Lang.cpp MeteoPlaneRadar/PlaneIcon.cpp \
   MeteoPlaneRadar/PlaneWatch.cpp tests/plane_watch.cpp -o "$test_build_dir/plane_watch"
 "$test_build_dir/plane_watch"
+
+c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoPlaneRadar -I"$ARDUINOJSON_SRC" \
+  "${FONT[@]}" MeteoPlaneRadar/Settings.cpp MeteoPlaneRadar/Lang.cpp MeteoPlaneRadar/Energy.cpp \
+  tests/energy.cpp -o "$test_build_dir/energy"
+"$test_build_dir/energy"

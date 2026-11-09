@@ -7,6 +7,7 @@
 inline unsigned long testMillis=10000;
 inline unsigned long millis() { return testMillis; }
 struct TestSerial {
+  void println(const char*) {}
   template <typename... Args> void printf(const char*, Args...) {}
 };
 inline TestSerial Serial;
