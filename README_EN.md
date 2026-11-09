@@ -3,8 +3,12 @@
 Clock, aircraft radar, weather, calendars and notifications on a round Waveshare
 ESP32-S3 touchscreen, configured from a browser.
 
-**Version 0.8.9** · [Download firmware](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest)
+**Development version 0.8.10** · [Download firmware](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest)
 · [Česky](README.md) · [Changelog](CHANGELOG.md)
+
+**Google Chat bridge:** [Windows app](tools/google-chat-windows/README.md) ·
+[macOS app](tools/google-chat-macos/README.md). Both support display-code pairing
+and Google sign-in in your browser. The `main` source version may be newer than the latest firmware release.
 
 A fork of [petus/MeteoPlaneRadar](https://github.com/petus/MeteoPlaneRadar), originally
 created by **[chiptron.cz](https://chiptron.cz)**. The original history and integrated
@@ -29,7 +33,8 @@ photographs. The weather preview shows the controls on a test background, not li
   only with multiple active subscriptions.
 - **Notifications:** a global banner, detail view and queue. The large close icon
   has an invisible 64 × 64 px touch target. Google Chat connects through the
-  [native macOS menu-bar bridge](tools/google-chat-macos/README.md), using a short
+  [macOS menu-bar bridge](tools/google-chat-macos/README.md) or
+  [Windows system-tray app](tools/google-chat-windows/README.md), using a short
   pairing code and browser-based Google sign-in.
 - **Web and languages:** nine tabs, fixed Save at the top right, Czech/English/Slovak,
   and Slovak diacritics in the smooth fonts.
@@ -281,7 +286,8 @@ show a test**. Choose **Show pairing code** and enter the code plus the display
 address in Meteo Chat on your Mac. The single-use code lasts two minutes. Sign in
 using the app's Google button, select chats and enable the bridge. The Mac must stay running.
 
-The native app needs no Python. Authors building it configure Google OAuth once
+The native macOS app and [Windows system-tray app](tools/google-chat-windows/README.md) need no Python.
+Windows uses the same pairing code and browser sign-in, and stores credentials with per-user DPAPI. Authors building it configure Google OAuth once
 using the [complete setup guide](tools/google-chat-macos/OAUTH_SETUP.sk.md);
 users of a configured build do not import a registration JSON. The older
 [Python bridge](tools/google-chat-bridge/README.md) remains an optional alternative.
@@ -489,6 +495,7 @@ AAFont.* ClockFonts.h anti-aliased clock typefaces (0.8.0)
 Screen*.{h,cpp}       individual screens
 tools/extend_slovak_fonts.py restores Slovak bitmap glyph coverage
 tools/google-chat-macos/ native macOS bridge
+tools/google-chat-windows/ Windows system-tray application, .NET 10
 tools/render_screenshots.cjs previews from test SVG snapshots
 ```
 

@@ -3,8 +3,12 @@
 Hodiny, letadla, meteoradar, předpověď, kalendář a notifikace na kulatém dotykovém
 panelu Waveshare ESP32-S3. Nastavení probíhá z prohlížeče.
 
-**Verze 0.8.9** · [Firmware ke stažení](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest)
+**Vývojová verze 0.8.10** · [Firmware ke stažení](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest)
 · [English](README_EN.md) · [Changelog](CHANGELOG.md)
+
+**Google Chat most:** [Windows aplikace](tools/google-chat-windows/README.md) ·
+[macOS aplikace](tools/google-chat-macos/README.md). Obě podporují kód z displeje
+a přihlášení Googlu v prohlížeči. Zdrojová verze ve větvi `main` může být novější než poslední vydaný firmware.
 
 Toto je fork [petus/MeteoPlaneRadar](https://github.com/petus/MeteoPlaneRadar),
 původního projektu **[chiptron.cz](https://chiptron.cz)**. Zachovává jeho historii
@@ -29,7 +33,8 @@ zařízení. Meteoradar ukazuje ovládací vrstvu nad testovacím podkladem, nik
   zdrojů se ukazují jen při více aktivních kalendářích.
 - **Notifikace:** banner nad libovolnou obrazovkou, detail a fronta zpráv.
   Velký křížek má neviditelnou aktivní plochu 64 × 64 px. První službou je
-  Google Chat přes [macOS aplikaci v horní liště](tools/google-chat-macos/README.md),
+  Google Chat přes [macOS aplikaci v horní liště](tools/google-chat-macos/README.md)
+  nebo [Windows aplikaci u hodin](tools/google-chat-windows/README.md),
   s párováním krátkým kódem a přihlášením přes prohlížeč.
 - **Web a jazyky:** devět záložek, pevné ukládání vpravo nahoře,
   čeština/angličtina/slovenština; vyhlazené fonty se slovenskou diakritikou.
@@ -112,7 +117,8 @@ hlášena jako chyba; úplná implementace RFC 5545 to není. Přesný seznam je
 
 Ve webu otevřete **Notifikace**, nastavte zobrazení a použijte **Uložit a zobrazit test**.
 Pro Mac zvolte **Zobrazit párovací kód** a zadejte jej v aplikaci Meteo Chat spolu
-s adresou displeje. Kód je jednorázový a platí dvě minuty. Účet přihlásíte tlačítkem
+s adresou displeje. Pro Windows použijte [Windows most](tools/google-chat-windows/README.md)
+s totožným párováním a ikonou u hodin. Kód je jednorázový a platí dvě minuty. Účet přihlásíte tlačítkem
 **Prihlásiť cez Google** v aplikaci, vyberete chaty a zapnete most. Počítač musí běžet.
 Jednorázová konfigurace Google OAuth při vlastním sestavení aplikace je popsána
 v [kompletním návodu](tools/google-chat-macos/OAUTH_SETUP.sk.md); hotový build
@@ -372,6 +378,7 @@ AAFont.* ClockFonts.h vyhlazené písmo hodin (0.8.0)
 Screen*.{h,cpp}       jednotlivé obrazovky
 tools/extend_slovak_fonts.py doplnění slovenských znaků do bitmap
 tools/google-chat-macos/ nativní most pro macOS
+tools/google-chat-windows/ Windows aplikace u hodin, .NET 10
 tools/render_screenshots.cjs náhledy z testovacích SVG
 ```
 

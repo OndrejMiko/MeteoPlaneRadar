@@ -15,3 +15,9 @@ tools/google-chat-macos/config/google-oauth.json
 
 # Local author-provided Google registrations
 google-api/
+
+# Windows Google Chat bridge: build products and private author registration
+tools/google-chat-windows/**/bin/
+tools/google-chat-windows/**/obj/
+tools/google-chat-windows/dist/
+tools/google-chat-windows/config/google-oauth.json

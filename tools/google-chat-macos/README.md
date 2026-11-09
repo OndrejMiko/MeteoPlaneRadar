@@ -1,5 +1,7 @@
 # Meteo Chat pre macOS
 
+Windows verzia s rovnakým párovaním a Google prihlásením: [Meteo Chat pre Windows](../google-chat-windows/README.md).
+
 Jednoduchá natívna aplikácia pre **macOS 13 a novší**, Apple Silicon aj Intel.
 Žije v hornej lište, bez ikony v Docku. **Nepotrebuje Python, Homebrew ani
 ďalšie balíčky.** Posiela nové správy z vybraných chatov na MeteoPlaneRadar.

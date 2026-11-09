@@ -1,5 +1,7 @@
 # Google Chat → MeteoPlaneRadar (Python)
 
+Pre jednoduché ovládanie bez terminálu použite [Windows aplikáciu](../google-chat-windows/README.md) alebo [macOS aplikáciu](../google-chat-macos/README.md). Obidve podporujú párovanie krátkym kódom a Google prihlásenie v prehliadači.
+
 **Pre Mac je dostupná aj [natívna aplikácia Meteo Chat](../google-chat-macos/README.md)**
 s ikonou v hornej lište, pauzou a prihlásením cez prehliadač, bez Pythonu.
 Používa rovnaký párovací súbor a notifikačný protokol. Nespúšťajte oba

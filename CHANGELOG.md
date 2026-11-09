@@ -11,6 +11,23 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.8.10] - 2026-11-09
+
+### Přidáno
+
+- Samostatný Google Chat most pro Windows (.NET 10 / WinForms): ikona u hodin,
+  nastavení, zapnutí/pozastavení, test zprávy, volitelné spouštění po přihlášení.
+- Stejné párování šestimístným kódem jako na Macu; přihlášení Googlu přes systémový
+  prohlížeč s PKCE/S256 a lokálním návratem. Výběr chatů, automatické obnovení
+  tokenu, stránkování a opakování nedoručených zpráv po chybě nebo restartu.
+- Přihlašovací údaje i stav jsou šifrované Windows DPAPI pro aktuálního uživatele.
+  Změna účtu resetuje výběr chatů, odhlášení zachovává párování displeje.
+- Self-contained sestavení x64/ARM64 bez Pythonu; volitelná vložená OAuth registrace
+  bez uživatelského importu JSON, kontroly jádra i nativní Windows self-test.
+  Soukromá konfigurace a sestavené soubory nejsou součástí Gitu.
+- Doplněny návody a odkazy na Windows most. Firmware používá stejný notifikační
+  protokol; jeho verze zůstává společným zdrojem verzí všech aplikací.
+
 ## [0.8.9] - 2026-11-09
 
 ### Dokumentace a rozhraní

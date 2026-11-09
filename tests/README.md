@@ -101,3 +101,15 @@ synthetic grid rather than live radar; the banner preview composes the real
 notification layer over the clock fixture; expanded details replace the screen. Smooth fonts use actual firmware
 bitmaps; the host approximates the built-in pixel font. These are previews,
 not physical-device photographs or proof of real-account/network behaviour.
+
+Windows bridge core and cross-build checks (requires .NET 10 SDK):
+
+```sh
+dotnet run --project tools/google-chat-windows/Checks/Checks.csproj -c Release
+dotnet build tools/google-chat-windows/MeteoChat/MeteoChat.csproj -c Release
+```
+
+Windows-only DPAPI/persistence/UI checks are available as `MeteoChat.exe --self-test`;
+the Windows packaging script runs them. Core checks use synthetic messages and local
+loopback HTTP servers only, never real Google accounts or displays. See the
+[Windows guide](../tools/google-chat-windows/README.md) for packaging and limitations.
