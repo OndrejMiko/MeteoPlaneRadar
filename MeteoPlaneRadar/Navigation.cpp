@@ -5,6 +5,7 @@
 
 #include "Layout.h"
 #include "UI.h"
+#include "Config.h"
 
 namespace {
 constexpr uint32_t SCREEN_MS = 5000, RANGE_MS = 10000;
@@ -36,6 +37,20 @@ bool Navigation_Tick() {
   return dirty;
 }
 void Navigation_Drawn() { dirty = false; }
+int Navigation_ScreenDotsY(int screen) {
+  return screen == SCREEN_CLOCK_I ? LY_CLOCK_DOTS : LY_DOTS;
+}
+void Navigation_DrawScreenDots(int screen, const int* visible, int count) {
+  if (!screenVisible || !visible || count <= 1 || count > SCREEN_N) return;
+  const int gap = 20;
+  const int y = Navigation_ScreenDotsY(screen);
+  const int startX = LCD_WIDTH / 2 - (count - 1) * gap / 2;
+  for (int i = 0; i < count; ++i) {
+    const int x = startX + i * gap;
+    if (visible[i] == screen) gfx->fillCircle(x, y, 4, C_WHITE);
+    else gfx->drawCircle(x, y, 4, C_GRAY);
+  }
+}
 void Navigation_ReserveRangeDots(int count) {
   if (rangeVisible && count > 1)
     Layout_Reserve(LY_ZOOM_DOTS_X - 11, top(count) - 11, 22,

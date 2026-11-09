@@ -17,6 +17,7 @@
 #include "Display_ST7701.h"
 #include "Config.h"
 #include "AAFont.h"
+#include "Navigation.h"
 
 #include <time.h>
 #include <math.h>
@@ -214,7 +215,7 @@ void ScreenClock_Draw() {
 
   // The screen dots at the top belong to the screen manager - reserve their
   // band so nothing here can land on them.
-  Layout_ReserveBand(LY_DOTS - 6, 12);
+  Layout_ReserveBand(Navigation_ScreenDotsY(SCREEN_CLOCK_I) - 6, 12);
 
   if (!Outside_TimeValid()) {
     UI_TextCentered(T(S_WIFI_WAIT), CY - 8, C_YELLOW, 2);

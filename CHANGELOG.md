@@ -11,6 +11,14 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.8.11] - 2026-11-09
+
+### Opraveno
+
+- Body přepínání obrazovek na hodinách jsou o 24 px níže, mimo vteřinový prstenec.
+  I při osmi obrazovkách mají nejméně 12 px odstup od největšího bodu prstence.
+  Na ostatních obrazovkách zůstávají nad stavovým řádkem; mizení po 5 s se nemění.
+
 ## [0.8.10] - 2026-11-09
 
 ### Přidáno

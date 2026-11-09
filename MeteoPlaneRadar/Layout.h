@@ -30,6 +30,7 @@
 // tall, size-1 is 8 px, and the self-test checks these do not run into each
 // other.
 #define LY_DOTS        18    // screen selector dots (this one is a CENTRE y)
+#define LY_CLOCK_DOTS  (LY_DOTS + 24) // clear of the clock's outer seconds ring, even with 8 screens
 #define LY_STATUS      36    // clock + outside temperature      (size 2)
 #define LY_SUB         76    // aircraft count / alert      (size 1)
 #define LY_LEGEND      98    // altitude legend     (size 1)

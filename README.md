@@ -3,7 +3,7 @@
 Hodiny, letadla, meteoradar, předpověď, kalendář a notifikace na kulatém dotykovém
 panelu Waveshare ESP32-S3. Nastavení probíhá z prohlížeče.
 
-**Vývojová verze 0.8.10** · [Firmware ke stažení](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest)
+**Vývojová verze 0.8.11** · [Firmware ke stažení](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest)
 · [English](README_EN.md) · [Changelog](CHANGELOG.md)
 
 **Google Chat most:** [Windows aplikace](tools/google-chat-windows/README.md) ·

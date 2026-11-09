@@ -233,6 +233,14 @@ int main() {
   for (uint8_t face=1;face<=3;++face) {
     Settings_SetClockFont(face);
     ScreenClock_Draw(); assert(display.circles>60); snapshot(("clock-font-"+std::to_string(face)).c_str());
+    assert(!Layout_Claim(180, LY_CLOCK_DOTS-6, 120, 12));
+    const int visible[] = {0,1,2,3,4,5,6,7};
+    Navigation_ScreenChanged();
+    Navigation_DrawScreenDots(SCREEN_CLOCK_I, visible, 6);
+    snapshot(("clock-six-dots-font-"+std::to_string(face)).c_str());
+    ScreenClock_Draw();
+    Navigation_DrawScreenDots(SCREEN_CLOCK_I, visible, 8);
+    snapshot(("clock-eight-dots-font-"+std::to_string(face)).c_str());
     ScreenPlanes_Draw(); snapshot(("aircraft-font-"+std::to_string(face)).c_str());
     ScreenSettings_Draw(); snapshot(("settings-font-"+std::to_string(face)).c_str());
     ScreenForecast_Draw(); snapshot(("forecast-font-"+std::to_string(face)).c_str());

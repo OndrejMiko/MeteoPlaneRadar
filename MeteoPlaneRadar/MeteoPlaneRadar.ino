@@ -313,15 +313,7 @@ static void drawScreenDots() {
   const int n = visibleList(vis);
   if (n <= 1) return;                    // one screen - a single dot says nothing
 
-  const int gap = 20;
-  const int cx = LCD_WIDTH / 2;
-  const int y = LY_DOTS;
-  const int startX = cx - (n - 1) * gap / 2;
-  for (int i = 0; i < n; i++) {
-    int x = startX + i * gap;
-    if (vis[i] == s_screen) gfx->fillCircle(x, y, 4, C_WHITE);
-    else                    gfx->drawCircle(x, y, 4, C_GRAY);
-  }
+  Navigation_DrawScreenDots(s_screen, vis, n);
 }
 
 static void drawActive() {

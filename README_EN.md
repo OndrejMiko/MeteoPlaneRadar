@@ -3,7 +3,7 @@
 Clock, aircraft radar, weather, calendars and notifications on a round Waveshare
 ESP32-S3 touchscreen, configured from a browser.
 
-**Development version 0.8.10** · [Download firmware](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest)
+**Development version 0.8.11** · [Download firmware](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest)
 · [Česky](README.md) · [Changelog](CHANGELOG.md)
 
 **Google Chat bridge:** [Windows app](tools/google-chat-windows/README.md) ·

@@ -1,6 +1,8 @@
 #include "Navigation.h"
 #include "Layout.h"
 #include "UI.h"
+#include "Config.h"
+#include <cmath>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -17,6 +19,23 @@ int main() {
   assert(!Navigation_Tick());
   testMillis = 100;
   Navigation_ScreenChanged();
+  const int screens[] = {0,1,2,3,4,5,6,7};
+  for (int count : {6,8}) {
+    display.fillScreen(C_BLACK);
+    Navigation_DrawScreenDots(SCREEN_CLOCK_I, screens, count);
+    assert(display.circles == count);
+    assert(display.drawing.str().find("cy='42'") != std::string::npos);
+    // Even the outside dot has >=12px black between its edge and the
+    // largest (4px) comet head anywhere on the outer seconds ring.
+    const float dx = (count - 1) * 20 / 2;
+    const float dy = LCD_HEIGHT / 2 - Navigation_ScreenDotsY(SCREEN_CLOCK_I);
+    assert(LY_SEC_RING_R - std::sqrt(dx*dx + dy*dy) - 4 - 4 >= 12);
+  }
+  assert(Navigation_ScreenDotsY(SCREEN_CLOCK_I) - LY_DOTS >= 20);
+  display.fillScreen(C_BLACK);
+  Navigation_DrawScreenDots(SCREEN_PLANES_I, screens, 6);
+  assert(display.drawing.str().find("cy='18'") != std::string::npos);
+  display.fillScreen(C_BLACK);
   assert(Navigation_Tick()); Navigation_Drawn(); assert(!Navigation_Tick());
   assert(Navigation_ScreenDotsVisible() && Navigation_RangeDotsVisible());
   testMillis = 5099; assert(!Navigation_Tick());
