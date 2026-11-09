@@ -27,12 +27,13 @@
 
 // Vertical stack, read top to bottom: date, time, conditions, wind. The date
 // goes above the clock so the 64 px glyphs sit in the widest part of the
-// circle. Rows are evenly spaced and the block is centred on the panel.
-#define DATE_Y     118     // weekday + date                     (size 2, 16 px)
-#define CLK_Y      168     // top of the HH:MM glyphs             (size 8, 64 px)
-#define WX_Y       292     // CENTRE of the weather icon row      (icon + temp + rain)
+// circle. Date and time have their own breathing room; weather and wind sit
+// closer together as one group, separated from the time by a larger gap.
+#define DATE_Y     104     // weekday + date                     (size 2, 16 px)
+#define CLK_Y      164     // top of the HH:MM glyphs             (size 8, 64 px)
+#define WX_Y       310     // CENTRE of the weather icon row      (icon + temp + rain)
 #define WX_ICON_R   26
-#define WIND_Y     328     // wind speed on its own line          (size 2)
+#define WIND_Y     354     // wind speed on its own line          (size 2)
 
 static int s_lastMin = -1;
 static int s_lastSec = -1;
@@ -141,10 +142,10 @@ static void drawSecondsRing(int sec) {
 //  The date keeps its accents here: the fonts carry the Czech letters, so
 //  "Ne 25. října" no longer has to be spelled "rijna" like on the other screens.
 // -----------------------------------------------------------------------------
-#define AA_DATE_BASE  140
-#define AA_CLK_BASE   252
-#define AA_WX_Y       292     // centre of the icon row
-#define AA_WIND_BASE  348
+#define AA_DATE_BASE  112
+#define AA_CLK_BASE   240
+#define AA_WX_Y       WX_Y    // same weather group with every typeface
+#define AA_WIND_BASE  374
 
 
 static void drawSmooth(const AAFontSet* fs, const struct tm& lt) {
@@ -187,7 +188,7 @@ static void drawSmooth(const AAFontSet* fs, const struct tm& lt) {
   const int tw    = AAFont_TextW(fs->mid, tbuf);
   const int pw    = hasRain ? AAFont_TextW(fs->small, pbuf) : 0;
   const int gap   = 16;
-  const int pgap  = hasRain ? 18 : 0;
+  const int pgap  = hasRain ? 28 : 0;
   const int totalW = iconW + gap + tw + pgap + pw;
   const int x0 = CX - totalW / 2;
   if (Layout_Claim(x0 - 6, AA_WX_Y - WX_ICON_R - 3, totalW + 12, 2 * WX_ICON_R + 6)) {
@@ -275,7 +276,7 @@ void ScreenClock_Draw() {
       const int tw    = Layout_TextW(tbuf, 3);
       const int pw    = hasRain ? Layout_TextW(pbuf, 2) : 0;
       const int gap   = 14;
-      const int pgap  = hasRain ? 18 : 0;
+      const int pgap  = hasRain ? 28 : 0;
       const int totalW = iconW + gap + tw + pgap + pw;
       const int x0 = CX - totalW / 2;
 

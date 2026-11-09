@@ -11,6 +11,14 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.8.7] - 2026-11-09
+
+### Upraveno
+
+- Vzdušnější obrazovka hodin ve všech čtyřech fontech: větší odstup data od času
+  a času od počasí. Teplota, stav počasí a vítr tvoří společnou skupinu s menšími
+  vnitřními odstupy. Srážky mají větší odsazení od teploty.
+
 ## [0.8.6] - 2026-11-08
 
 ### Sloučení s původním projektem
