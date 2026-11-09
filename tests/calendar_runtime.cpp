@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <WiFi.h>
 #include <esp_heap_caps.h>
 
@@ -43,7 +44,7 @@ void UI_DrawStatusLine(int y) { Chrome_DrawStatus(y); }
 void UI_TextCenteredIn(const char* text, int x, int width, int y, uint16_t color, uint8_t size) {
   gfx->setTextSize(size);
   gfx->setTextColor(color);
-  gfx->setCursor(x + (width - (int)strlen(text) * 6 * size) / 2, y);
+  gfx->setCursor(x + (width - Layout_TextW(text, size)) / 2, y);
   gfx->print(text);
 }
 void UI_TextCentered(const char* text, int y, uint16_t color, uint8_t size) {

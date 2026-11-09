@@ -216,7 +216,7 @@ void Notifications_Draw(uint8_t screen) {
   } else {
     gfx->fillScreen(C_BLACK);
     const char* title = label("Notifikace", "Notifications", CZT("Notifikacie", "Notifikácie"));
-    const int titleX = (480 - (int)strlen(title) * 12) / 2;
+    const int titleX = (480 - Layout_TextW(title, 2)) / 2;
     gfx->fillCircle(titleX - 14, 82, 4, C_GREEN);
     text(title, titleX, 75, C_GRAY, 2);
     Overlay_DrawClose(359, 95);

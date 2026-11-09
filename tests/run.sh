@@ -19,7 +19,7 @@ c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoP
 node tests/web.mjs
 c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoPlaneRadar -I"$ARDUINOJSON_SRC" \
   "${FONT[@]}" MeteoPlaneRadar/Lang.cpp MeteoPlaneRadar/Settings.cpp MeteoPlaneRadar/CalendarIcs.cpp \
-  MeteoPlaneRadar/Notifications.cpp tests/notifications.cpp -o "$test_build_dir/notifications"
+  MeteoPlaneRadar/Layout.cpp MeteoPlaneRadar/Notifications.cpp tests/notifications.cpp -o "$test_build_dir/notifications"
 "$test_build_dir/notifications"
 python3 tests/chat_bridge.py
 c++ -std=c++17 -Wall -Wextra -fsanitize=address,undefined -Itests/stubs -IMeteoPlaneRadar \

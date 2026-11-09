@@ -1,21 +1,46 @@
-# MeteoPlaneRadar
+# MeteoPlaneRadar — OndrejMiko fork
 
-**0.7.3 – Notifications / Google Chat:** global banner, message detail and web pairing. See the [setup and memory guide](tools/google-chat-bridge/README.md) (Slovak). Google Chat requires the included bridge running on a computer/Pi and authorized Chat API access.
+Clock, aircraft radar, weather, calendars and notifications on a round Waveshare
+ESP32-S3 touchscreen, configured from a browser.
 
-**A clock, live aircraft radar, precipitation radar and weather forecast on a round
-touchscreen.** Runs on a single Waveshare
-ESP32-S3-Touch-LCD-2.1 or ESP32-S3-Touch-LCD-2.8C board and is configured from
-a browser.
+**Version 0.8.9** · [Download firmware](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest)
+· [Česky](README.md) · [Changelog](CHANGELOG.md)
 
-> Built by **[chiptron.cz](https://chiptron.cz)** with Claude AI.
-> Czech version of this document: [README.md](README.md)
+A fork of [petus/MeteoPlaneRadar](https://github.com/petus/MeteoPlaneRadar), originally
+created by **[chiptron.cz](https://chiptron.cz)**. The original history and integrated
+upstream features through 0.8.5 are retained. You can support the original author
+at [Buy Me a Coffee](https://buymeacoffee.com/chiptroncz).
 
-> Do you like this project? It is free and open-source but you may support me by **https://buymeacoffee.com/chiptroncz**
+![Current screens in this fork](obrazovky.png)
 
-![Obrazovky](https://github.com/petus/MeteoPlaneRadar/blob/main/obrazovky.png)
+These previews use the actual drawing code with synthetic data, rather than device
+photographs. The weather preview shows the controls on a test background, not live radar.
 
+## Changes from upstream
 
----
+- **Controls:** swipe left for the next screen, right for the previous; up/down
+  zooms maps. Left/right long presses remain. Screen dots hide after 5 seconds,
+  right-side zoom dots after 10 seconds. Range stays in a black bottom notch.
+- **Layout:** more space around clock information, compact map headers, padded
+  legends, a thin weather playback track and timestamp near the bottom. Aircraft
+  details share the notification panel style and large close target.
+- **Calendar:** day/month views and up to three Google/iCloud/other ICS feeds,
+  including supported iCloud VTIMEZONE definitions. Source dots and names appear
+  only with multiple active subscriptions.
+- **Notifications:** a global banner, detail view and queue. The large close icon
+  has an invisible 64 × 64 px touch target. Google Chat connects through the
+  [native macOS menu-bar bridge](tools/google-chat-macos/README.md), using a short
+  pairing code and browser-based Google sign-in.
+- **Web and languages:** nine tabs, fixed Save at the top right, Czech/English/Slovak,
+  and Slovak diacritics in the smooth fonts.
+- **Electricity:** optional price and generation screens are available **only in
+  Czech**. English/Slovak hide their controls and stop fetching while preserving
+  saved selections and tariff settings. Claude usage tracking has been removed.
+- **Retained upstream features:** three WiFi networks, Inter/Poppins/Inter thin,
+  aircraft type icons, CHMI masked, storm and aircraft watches, window view,
+  altitude colours and Home Assistant.
+
+See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
 ## Switch it to English
 
@@ -24,7 +49,7 @@ across restarts.
 
 ### On the device
 
-1. **Long-press the right half of the screen** until you reach **Nastaveni**
+1. **Swipe left or long-press the right half** until you reach **Nastaveni**
    (Settings) — it is the last screen in the cycle.
 2. Near the bottom there are three wide buttons. Press the **middle** one,
    labelled **`Jazyk: cestina`**.
@@ -35,15 +60,14 @@ across restarts.
 
 1. Open `http://meteoplaneradar.local/` (the address is also printed on the
    Settings screen).
-2. Top right there is a language selector — choose **English**.
-
-The page and the device both switch immediately; there is nothing to save.
+2. Choose **English** in the header language selector. The page changes immediately.
+3. Open **Screens** and click **Save** at the top right to persist the language on the device.
 
 The same selector appears in the setup portal during first-time WiFi
 configuration, so you can switch before anything else.
 
-> The built-in display font is 7-bit ASCII. Czech and Slovak are drawn without
-> diacritics; English renders exactly as written.
+> Smooth fonts support Czech and Slovak diacritics. The original pixel font
+> uses text without diacritics.
 
 ---
 
@@ -64,17 +88,22 @@ It is not a phone and does not try to be one.
 | **Weather radar** | animated precipitation | CHMI, CHMI masked or RainViewer |
 | **Forecast** | now, two 3-hour windows, today and six more days, air quality and pollen | Open-Meteo |
 | **Calendar** | daily agenda and month grid, up to three subscriptions | Google/iCloud/other ICS |
+| **Electricity price (CZ)** | quarter-hour prices today/tomorrow, surcharge and VAT | spotovaelektrina.cz / OTE |
+| **Generation (CZ)** | generation mix, renewable share, load and trade balance | Energy-Charts / ENTSO-E |
 | **Settings** | brightness, map orientation, units, language | — |
 
-Any of the five data screens can be switched off in the browser; Settings is
+Any of the seven data screens can be switched off in the browser; electricity
+is available only in Czech. Calendar and electricity are not automatically enabled when first added;
+normal updates preserve their saved selections. Settings is
 always reachable. The interface supports Czech, English and Slovak. Select
 **Slovenčina** in the browser, or cycle the language button on the device through
-Czech → English → Slovak. The choice persists across restarts. Slovak uses ASCII
-on the display and full diacritics in the browser.
+Czech → English → Slovak. The choice persists across restarts. Smooth display fonts and the browser
+support Slovak diacritics; the pixel font uses ASCII labels.
 
 ### Clock
 
 Date, large time, current weather with temperature and rain, wind speed below.
+Larger gaps separate the date, time and weather; related weather values stay closer together.
 A **seconds ring** runs around the rim — off, dots, a continuous line, or a
 comet with a fading tail. Clock and seconds colours are configurable.
 
@@ -245,6 +274,36 @@ a bounded subset of RFC 5545; see `CalendarIcs.cpp` for the exact rules.
 Build and host tests have passed; physical display/touch and real accounts still
 need validation on the device.
 
+## Notifications and Google Chat
+
+Open **Notifications** in the web UI, set the banner duration and use **Save and
+show a test**. Choose **Show pairing code** and enter the code plus the display
+address in Meteo Chat on your Mac. The single-use code lasts two minutes. Sign in
+using the app's Google button, select chats and enable the bridge. The Mac must stay running.
+
+The native app needs no Python. Authors building it configure Google OAuth once
+using the [complete setup guide](tools/google-chat-macos/OAUTH_SETUP.sk.md);
+users of a configured build do not import a registration JSON. The older
+[Python bridge](tools/google-chat-bridge/README.md) remains an optional alternative.
+
+Tap the banner to open details. The large X dismisses the local message only;
+it does not reply or mark the Google Chat message as read. After a banner times
+out, the message stays behind the count badge. Details stay open until dismissed.
+Notifications take precedence over screen gestures and automatic aircraft alerts.
+
+## Electricity in Czech only
+
+Select Czech and save it, then enable **Cena elektřiny** and/or **Výroba elektřiny**
+on **Screens** and save. The same tab contains the supplier surcharge in CZK/MWh,
+VAT and the two-letter generation country code (`cz`, `sk`, `de`, etc.). With both
+surcharge and VAT at zero, the dial shows the exchange price, not a total utility
+bill or data from a ČEZ account. Original source area limits remain: Czech-market
+prices and European generation data.
+
+English and Slovak hide both screens from remote controls, settings, gestures
+and automatic cycling, and stop their HTTP requests. Saved selections and tariff
+settings survive switching back to Czech.
+
 ## Hardware
 
 **Waveshare ESP32-S3-Touch-LCD-2.1** or **ESP32-S3-Touch-LCD-2.8C** — ESP32-S3R8
@@ -274,17 +333,19 @@ IP address printed on the Settings screen.
 
 ## Configuration in a browser
 
-The web interface runs permanently and is split into seven tabs so it works on a
+The web interface runs permanently and is split into nine tabs so it works on a
 phone: **Control** (switch screens and range remotely, device status),
 **Location** (manual or by searching for a town name), **Screens** (which to
 show, auto-cycling, radar source), **Appearance** (day and night brightness,
 sun-driven night mode, seconds ring, colours), **Aircraft** (filters, squawks,
-watched callsign, map orientation, units), **Calendar** (ICS subscriptions) and **System** (password, firmware update,
+watched callsign, map orientation, units), **Calendar** (ICS subscriptions), **Notifications** (pairing and tests),
+**Home Assistant** (read-only integration) and **System** (password, firmware update,
 settings backup, restart, factory reset, data sources).
 
-Most settings are **saved the moment you change them**. The Save button is only
-needed for the location, the set of screens and the radar source, because those
-restart the device.
+Most settings are **saved the moment you change them**. The fixed Save button at the top right commits location, screen selection,
+calendars, notifications and system changes. Location, screen selection and
+radar-source changes restart the device. Appearance and Aircraft keep their
+existing autosave. Tabs scroll horizontally on narrow screens.
 
 The status page reports IP, signal strength, uptime, free memory, the reason for
 the last restart and the outcome of the last fetch from each source — diagnostics
@@ -309,10 +370,16 @@ startup**, which is a factory reset and also erases WiFi.
 
 | Gesture | Action |
 | --- | --- |
-| **Swipe** left/right | Next / previous screen |
+| **Swipe left** | Next enabled screen |
+| **Swipe right** | Previous enabled screen |
 | **Swipe up on a map** | Zoom in |
 | **Swipe down on a map** | Zoom out |
-| **Short tap** | Select an aircraft; on the clock, toggle day/night |
+| **Tap an aircraft** | Open details and route |
+| **Tap the clock** | Toggle day/night when automatic night mode is off |
+| **Calendar: Day/Month, arrows, date, TODAY** | Change view, browse and return to today; tap the agenda to page through more events |
+| **Electricity price (CZ): up/down or centre tap** | Today/tomorrow, when published; tap the ring to select a quarter-hour |
+| **Notification banner / badge** | Open details; X dismisses the local message |
+| **X in aircraft details** | Close details; invisible 64 × 64 px target, content taps leave the panel open |
 | **Long press, left half** | Previous screen |
 | **Long press, right half** | Next screen |
 | **Hold BOOT at startup (~3 s)** | Factory reset |
@@ -320,7 +387,11 @@ startup**, which is a factory reset and also erases WiFi.
 Screen dots appear for 5 seconds after switching. Zoom dots form a vertical
 column on the right of both maps, visible for 10 seconds after entering or
 changing zoom. The range in kilometres stays at the bottom, in the former dot
-row. Zoom stops at its limits. Use the calendar arrows to browse dates.
+row. Zoom stops at its limits. Use the calendar arrows to browse dates; horizontal
+swipes still change screens. With aircraft details open, a swipe or long press
+first closes the panel. Open notifications capture gestures.
+Manual navigation pauses cycling for three times the interval (at least 30 s,
+at most 10 min). Automatic cycling never leaves Settings.
 
 Screens and range can also be changed from the browser, without touching the
 glass.
@@ -329,7 +400,12 @@ glass.
 
 ## Flashing
 
-**Over USB** (first flash and rescue): download `*.merged.bin` from Releases,
+Use this fork’s binaries. Choose a custom file in the flasher rather than its
+default upstream image. The merged USB image starts at address `0x0`. Normal OTA
+updates retain settings, WiFi and calendars; a factory reset erases them.
+
+
+**Over USB** (first flash and rescue): download `*.merged.bin` from [this fork’s releases](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest),
 connect the board to the connector marked **USB**, and flash it at
 [esp32flasher.chiptron.cz](https://esp32flasher.chiptron.cz) in Chrome or Edge.
 
@@ -380,11 +456,10 @@ frame per 5 minutes) and a small aircraft poll (every 30 s) run too.
 
 ## For developers
 
-Arduino IDE with **ESP32 core 3.x** (built with 3.3.10). Libraries: **GFX
-Library for Arduino** (1.5.3 or newer, built with 1.6.9), **PNGdec** (1.1.4 or
-newer, built with 1.1.7), **ArduinoJson v7**; QRCode is bundled. `WebServer`, `DNSServer`,
-`ESPmDNS`, `Update` and `Preferences` come with the core. WiFiManager was
-dropped in 0.6.0, ElegantOTA in 0.6.2.
+The reproducible build uses `MeteoPlaneRadar/sketch.yaml`: **ESP32 core 3.0.7**,
+**GFX Library for Arduino 1.4.9**, **PNGdec 1.0.1** and **ArduinoJson 7.1.0**.
+QRCode is bundled; `WebServer`, `DNSServer`, `ESPmDNS`, `Update` and `Preferences`
+come with the core. WiFiManager and ElegantOTA are not used.
 
 Board settings: ESP32S3 Dev Module, **PSRAM: OPI** (without this the display
 stays black), Flash 16 MB QIO, **Partition Scheme: Custom** (`partitions.csv`,
@@ -400,6 +475,10 @@ Layout.*              screen bands and collision checking
 WebConfig.* WebPage.h web server, API, captive portal, OTA
 Net.*                 shared HTTPS fetching
 Calendar.* CalendarIcs.* ICS subscriptions, bounded PSRAM cache and parser
+Notifications.* NotificationPairing.* global messages and bridge pairing
+Navigation.*          transient screen and zoom indicators
+ScreenChrome.*        compact map chrome and weather timeline
+Energy.*              price and generation mix, Czech only
 Forecast.*            Open-Meteo: forecast, sun times, air quality
 TimeZone.*            time zone from the location
 RainViewer.*          tile radar
@@ -408,7 +487,9 @@ PlaneWatch.*          aircraft-nearby watch and window view (0.8.0)
 PlaneIcon.*           aircraft icons by type (0.8.0)
 AAFont.* ClockFonts.h anti-aliased clock typefaces (0.8.0)
 Screen*.{h,cpp}       individual screens
-tools/make_fonts.py   generates ClockFonts.h from TTF/OTF
+tools/extend_slovak_fonts.py restores Slovak bitmap glyph coverage
+tools/google-chat-macos/ native macOS bridge
+tools/render_screenshots.cjs previews from test SVG snapshots
 ```
 
 **Why nothing overlaps:** each screen reserves its chrome before the map is
@@ -476,4 +557,6 @@ condition.
 
 Change history: [CHANGELOG.md](CHANGELOG.md). Version: `MeteoPlaneRadar/Version.h`.
 
-Since 0.8.8, electricity price and generation screens can be enabled under **Screens** when the device language is Czech. Their controls and settings are hidden in English and Slovak, and no electricity data is fetched while hidden. Saved selections and tariff settings survive language changes.
+Build, host checks, browser checks and screenshot generation are described in
+[tests/README.md](tests/README.md). Previews use synthetic data. Private ICS URLs,
+pairing keys and Google registration credentials are excluded from the repository.

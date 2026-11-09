@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include "Notifications.h"
 
 #include <esp_heap_caps.h>
@@ -17,7 +18,7 @@ Arduino_GFX* gfx = &display;
 void UI_TextCenteredIn(const char* s, int x, int w, int y, uint16_t c, uint8_t size) {
   gfx->setTextSize(size);
   gfx->setTextColor(c);
-  gfx->setCursor(x + (w - (int)strlen(s) * 6 * size) / 2, y);
+  gfx->setCursor(x + (w - Layout_TextW(s, size)) / 2, y);
   gfx->print(s);
 }
 void UI_TextCentered(const char* s, int y, uint16_t c, uint8_t size) {
@@ -96,6 +97,10 @@ int main() {
     display.fillScreen(0);
     Notifications_Draw();
     display.snapshot((std::string(snapshots) + "/banner.svg").c_str());
+    Settings_SetClockFont(CLOCK_FONT_INTER);
+    display.fillScreen(0); Notifications_Draw();
+    display.snapshot((std::string(snapshots) + "/banner-smooth.svg").c_str());
+    Settings_SetClockFont(CLOCK_FONT_PIXEL);
     Notifications_Touch(100, 200, true);
     display.fillScreen(0);
     Notifications_Draw();

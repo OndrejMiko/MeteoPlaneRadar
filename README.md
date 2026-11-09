@@ -1,21 +1,46 @@
-# MeteoPlaneRadar
+# MeteoPlaneRadar — OndrejMiko fork
 
-**0.7.3 – Notifikácie / Google Chat:** globálny banner, detail a webové párovanie. Postup zapojenia a výsledky pamäte: [Google Chat bridge](tools/google-chat-bridge/README.md). Google Chat potrebuje spustený most na počítači/Pi a povolený prístup k Chat API.
+Hodiny, letadla, meteoradar, předpověď, kalendář a notifikace na kulatém dotykovém
+panelu Waveshare ESP32-S3. Nastavení probíhá z prohlížeče.
 
-**macOS aplikace:** [Meteo Chat](tools/google-chat-macos/README.md) běží v horní liště, umí párovat displej krátkým kódem z webového UI, zapnout/pozastavit most, přihlásit Google přes prohlížeč a vybrat chaty. Nevyžaduje Python; používá současné párování displeje. Jednorázová registrace Googlu a sestavení aplikace bez importu JSON pro uživatele: [kompletní postup](tools/google-chat-macos/OAUTH_SETUP.sk.md).
+**Verze 0.8.9** · [Firmware ke stažení](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest)
+· [English](README_EN.md) · [Changelog](CHANGELOG.md)
 
+Toto je fork [petus/MeteoPlaneRadar](https://github.com/petus/MeteoPlaneRadar),
+původního projektu **[chiptron.cz](https://chiptron.cz)**. Zachovává jeho historii
+a funkce do integrované verze 0.8.5 a přidává vlastní ovládání a rozhraní.
+Autora původního projektu lze podpořit na [Buy Me a Coffee](https://buymeacoffee.com/chiptroncz).
 
-**Hodiny, radar letadel, srážkový meteoradar, předpověď počasí na kulatém dotykovém displeji.** Běží na deskách Waveshare
-ESP32-S3-Touch-LCD-2.1 a ESP32-S3-Touch-LCD-2.8C a nastavuje se z prohlížeče.
+![Aktuální obrazovky tohoto forku](obrazovky.png)
 
-> Vyvíjí **[chiptron.cz](https://chiptron.cz)** a Claude AI.
-> English version: **[README_EN.md](README_EN.md)**
+Náhledy jsou vykreslené skutečným kódem s ukázkovými daty, nejsou fotografiemi
+zařízení. Meteoradar ukazuje ovládací vrstvu nad testovacím podkladem, nikoli živé srážky.
 
-> Líbí se ti tenhle projekt? Jdeš do něj? Je totiž kompletně zdarma. Podpořit mě ale můžeš, pokud chceš, tím, že mi koupíš kafe na **https://buymeacoffee.com/chiptroncz**
+## Co je v tomto forku jinak
 
----
+- **Ovládání:** vlevo další obrazovka, vpravo předchozí; nahoru/dolů na mapách zoom.
+  Dlouhý stisk levé/pravé poloviny dál funguje. Body obrazovek mizí po 5 s,
+  body zoomu vpravo po 10 s, dosah zůstává dole na černém pozadí.
+- **Vzhled:** vzdušnější hodiny, kompaktní černé podklady údajů na mapách,
+  odsazené legendy, čas animace a tenký posuvný pásek dole na meteoradaru.
+  Detail letadla používá stejné okno a velký křížek jako notifikace.
+- **Kalendář:** denní a měsíční pohled, až tři Google/iCloud/jiné ICS odběry,
+  podpora běžných časových pásem včetně iCloud VTIMEZONE. Barevné tečky a názvy
+  zdrojů se ukazují jen při více aktivních kalendářích.
+- **Notifikace:** banner nad libovolnou obrazovkou, detail a fronta zpráv.
+  Velký křížek má neviditelnou aktivní plochu 64 × 64 px. První službou je
+  Google Chat přes [macOS aplikaci v horní liště](tools/google-chat-macos/README.md),
+  s párováním krátkým kódem a přihlášením přes prohlížeč.
+- **Web a jazyky:** devět záložek, pevné ukládání vpravo nahoře,
+  čeština/angličtina/slovenština; vyhlazené fonty se slovenskou diakritikou.
+- **Elektřina:** cena a výrobní mix jsou volitelné **jen při češtině**.
+  V SK/EN zmizí z nabídky i nastavení a nestahují data; konfigurace se zachová.
+  Sledování limitů Claude bylo z firmwaru i mostu odstraněno.
+- **Zachované novinky autora:** tři WiFi sítě, Inter/Poppins/Inter thin,
+  typové ikony letadel, ČHMÚ masked, hlídání bouřek a letadel, výhled z okna,
+  výškové barvy a Home Assistant.
 
-![Obrazovky](https://github.com/petus/MeteoPlaneRadar/blob/main/obrazovky.png)
+Úplná historie změn je v [CHANGELOG.md](CHANGELOG.md).
 
 ## Co to umí
 
@@ -26,12 +51,18 @@ ESP32-S3-Touch-LCD-2.1 a ESP32-S3-Touch-LCD-2.8C a nastavuje se z prohlížeče.
 | **Meteoradar** | animovaná srážková situace | ČHMÚ, ČHMÚ masked nebo RainViewer |
 | **Předpověď** | nyní, +3 h, +6 h, dnes, zítra, pozítří a další dny, ovzduší a pyl | Open-Meteo |
 | **Kalendář** | denní agenda, měsíční přehled, až tři odběry | Google/iCloud/jiné ICS |
+| **Cena elektřiny (CZ)** | čtvrthodinové ceny dnes/zítra, příplatek a DPH | spotovaelektrina.cz / OTE |
+| **Výroba elektřiny (CZ)** | výrobní mix, OZE, spotřeba a přeshraniční bilance | Energy-Charts / ENTSO-E |
 | **Nastavení** | jas, orientace mapy, jednotky, jazyk | — |
 
-Prvních pět obrazovek lze vypnout, Nastavení je dostupné vždy. Rozhraní je
+Všech sedm datových obrazovek lze vypnout; elektřina je dostupná pouze v češtině.
+Nastavení je dostupné vždy. Kalendář ani elektřina se při prvním přidání do firmwaru samy nezapnou;
+běžné aktualizace zachovávají jejich uložené volby. Rozhraní je
 česky, anglicky nebo slovensky. Jazyk zvolíte v horní části webového nastavení
 nebo tlačítkem Jazyk na displeji (cyklus čeština → angličtina → slovenština).
-Volba se zachová po restartu. Displej používá text bez diakritiky, web s diakritikou.
+V prohlížeči výběr změní jazyk stránky; pro uložení do zařízení přejděte na
+**Obrazovky → Uložit**. Volba se zachová po restartu. Vyhlazené fonty podporují
+českou i slovenskou diakritiku; původní pixelové písmo používá text bez diakritiky.
 
 ## Kalendář
 
@@ -41,7 +72,8 @@ iCloud: Veřejný kalendář → Kopírovat odkaz (`webcal://` se převede na HT
 Kdokoli s iCloud odkazem může kalendář číst. Používá se pouze odběr pro zobrazení,
 bez přihlášení OAuth/CalDAV a bez vytváření či úprav událostí.
 
-Nastavení uložte a na kartě **Obrazovky** zapněte Kalendář (po aktualizaci je vypnutý).
+Na kartě **Kalendář** klikněte vpravo nahoře na **Uložit a zapnout kalendář**.
+Kalendář lze také zapnout nebo vypnout na kartě **Obrazovky**.
 Je-li nastaveno heslo správce, vyplňte jej před uložením na kartě Systém.
 Odkazy se nevracejí na web ani do exportu; prázdné pole ponechá uložený odkaz,
 zaškrtnutí „Smazat uložený odkaz“ ho odstraní. Po obnově zálohy do nového zařízení
@@ -74,13 +106,40 @@ Europe/Bratislava, Europe/Prague). Parser podporuje běžné denní, týdenní, 
 (včetně `1MO` / `-1FR`) a roční opakování, intervaly, COUNT/UNTIL, EXDATE/RDATE,
 přesuny a rušení jednotlivých výskytů. Složitější pravidla a pásma bez podporované definice jsou
 hlášena jako chyba; úplná implementace RFC 5545 to není. Přesný seznam je v kódu
-`CalendarIcs.cpp`. Tato verze byla ověřena sestavením a host testy, nikoli na hardwaru.
+`CalendarIcs.cpp`. Tato verze byla ověřena sestavením a host testy, náhledy nejsou důkazem ověření všech gest a služeb na fyzickém zařízení.
+
+## Notifikace a Google Chat
+
+Ve webu otevřete **Notifikace**, nastavte zobrazení a použijte **Uložit a zobrazit test**.
+Pro Mac zvolte **Zobrazit párovací kód** a zadejte jej v aplikaci Meteo Chat spolu
+s adresou displeje. Kód je jednorázový a platí dvě minuty. Účet přihlásíte tlačítkem
+**Prihlásiť cez Google** v aplikaci, vyberete chaty a zapnete most. Počítač musí běžet.
+Jednorázová konfigurace Google OAuth při vlastním sestavení aplikace je popsána
+v [kompletním návodu](tools/google-chat-macos/OAUTH_SETUP.sk.md); hotový build
+uživatele nevyžaduje import registračního JSON. Starší Python most zůstává jako
+[volitelná alternativa](tools/google-chat-bridge/README.md).
+
+Banner jde klepnutím rozbalit. **Křížek** zprávu zavře jen na displeji, neposílá
+odpověď ani potvrzení přečtení do Chatu. Po vypršení banneru zůstane zpráva pod
+odznakem s počtem; detail zůstává otevřený do zavření. Notifikace mají přednost
+před gesty obrazovky i automatickou ukázkou letadla.
+
+## Elektřina pouze v češtině
+
+V češtině otevřete **Obrazovky**, zapněte **Cenu elektřiny** a/nebo **Výrobu elektřiny**
+a uložte. Ve stejné záložce nastavíte příplatek v Kč/MWh, DPH a dvoupísmenný kód
+země výrobního mixu (např. `cz`, `sk`, `de`). Nula u příplatku i DPH znamená čistou
+burzovní cenu; nejde o celkovou cenu vyúčtování ani o přihlášení k účtu ČEZ.
+Původní geografická omezení zdrojů zůstávají: cena pro oblast českého trhu, mix pro Evropu.
+
+Přepnutí na angličtinu nebo slovenštinu skryje obě obrazovky z webového menu,
+nastavení, gest i automatického střídání a zastaví jejich stahování. Uložené
+volby a tarif se neztratí; po návratu k češtině jsou opět dostupné.
 
 ## Hardware
 
 **Waveshare ESP32-S3-Touch-LCD-2.1** nebo **ESP32-S3-Touch-LCD-2.8C** —
-ESP32-S3R8 (8 MB PSRAM, 16 MB flash), kulatý displej 480×480 s řadičem S
-T7701,
+ESP32-S3R8 (8 MB PSRAM, 16 MB flash), kulatý displej 480×480 s řadičem ST7701,
 expandér TCA9554. Dotyk je CST820 (2.1), respektive GT911 (2.8C).
 Stačí deska a USB-C kabel, nic se nepájí.
 
@@ -142,10 +201,15 @@ nastavení.
 
 | Gesto | Akce |
 | --- | --- |
-| **Přejetí vlevo / vpravo** | následující / předchozí obrazovka |
+| **Přejetí vlevo** | následující zapnutá obrazovka |
+| **Přejetí vpravo** | předchozí zapnutá obrazovka |
 | **Přejetí nahoru na mapě** | přiblížení mapy |
 | **Přejetí dolů na mapě** | oddálení mapy |
-| **Krátké klepnutí** | výběr letadla / přepnutí den–noc na hodinách |
+| **Krátké klepnutí na letadlo** | otevření detailu a trasy |
+| **Klepnutí na hodiny** | den/noc, pouze když je automatický noční režim vypnutý |
+| **Kalendář: Den/Měsíc, šipky, datum, DNES** | přepnutí pohledu, listování a návrat na dnešek; více událostí klepnutím stránkujete |
+| **Cena elektřiny (CZ): nahoru/dolů nebo střed** | dnes/zítra, pokud jsou zítřejší ceny dostupné; klepnutí na prstenec vybere čtvrthodinu |
+| **Klepnutí na banner / odznak notifikací** | otevření detailu; křížek zprávu zavře |
 | **Křížek v detailu letadla** | zavření detailu; neviditelná aktivní plocha 64 × 64 px, klepnutí do obsahu jej nezavře |
 | **Dlouhý stisk vlevo / vpravo** | předchozí / následující obrazovka |
 | **BOOT při startu (~3 s)** | tovární reset |
@@ -153,7 +217,11 @@ nastavení.
 Body obrazovek nahoře se zobrazí po přepnutí na 5 sekund. Ukazatel rozsahu
 vpravo na mapě se zobrazí při vstupu a při změně zoomu na 10 sekund. Údaj
 v kilometrech zůstává dole, na původním místě bodů rozsahu. Zoom na krajních
-hodnotách nepřeskakuje na opačný konec. Kalendářem se listuje jeho šipkami.
+hodnotách nepřeskakuje na opačný konec. Kalendářem se listuje jeho šipkami;
+vodorovný swipe v něm nadále přepíná celou obrazovku. Při otevřeném detailu
+letadla swipe nebo dlouhý stisk nejprve zavře detail. Otevřená notifikace gesta zachytí.
+Ruční přepnutí pozastaví automatické střídání na trojnásobek intervalu
+(nejméně 30 s, nejvýše 10 min). Nastavení se automaticky neopouští.
 
 Na obrazovce Nastavení se řádkem `Nahore` volí, **který světový směr je nahoře**
 na radaru letadel — tedy směr, kterým se díváte z okna. Meteoradar se záměrně
@@ -251,13 +319,13 @@ adresy `/api/screen` a `/api/range` jde volat přes `rest_command`.
 
 Čas se bere z hlavičky `Date` odpovědí, které zařízení stahuje tak jako tak.
 Neprochází UDP portem 123, nedá se zvlášť zablokovat a nečeká se na něj při
-startu. Časové pásmo je v `TZ_INFO` v `Config.h`.
+startu. Časové pásmo se určuje podle polohy; `TZ_INFO` v `Config.h` je záložní hodnota.
 
 ---
 
 ## Nahrání firmwaru
 
-**Přes USB** (první nahrání a záchrana): stáhněte `*.merged.bin` z Releases,
+**Přes USB** (první nahrání a záchrana): stáhněte `*.merged.bin` z [Releases tohoto forku](https://github.com/OndrejMiko/MeteoPlaneRadar/releases/latest),
 připojte desku do konektoru **USB** a nahrajte na
 [esp32flasher.chiptron.cz](https://esp32flasher.chiptron.cz) v Chrome nebo Edge.
 
@@ -265,17 +333,18 @@ připojte desku do konektoru **USB** a nahrajte na
 `http://meteoplaneradar.local/update`. Displej během zápisu zhasne — RGB panel
 čte obraz z PSRAM a zápis do flash mu data odřezává. Po dokončení se rozsvítí.
 
-Podrobnosti v [OTA_NAVOD.md](OTA_NAVOD.md).
+Pro tento fork vždy vyberte jeho vlastní binárku; výchozí obraz ve flasheru
+může patřit původnímu projektu. Sloučený USB obraz se zapisuje od adresy `0x0`.
+Kalendáře, WiFi i nastavení běžná OTA aktualizace zachovává; tovární reset je smaže.
 
 ---
 
 ## Pro vývojáře
 
-Arduino IDE, **ESP32 core 3.x** (přeloženo s 3.3.10), knihovny: **GFX Library
-for Arduino** (≥ 1.5.3, přeloženo s 1.6.9), **PNGdec** (≥ 1.1.4, přeloženo
-s 1.1.7), **ArduinoJson v7**, QRCode (přibalen).
-`WebServer`, `DNSServer`, `ESPmDNS`, `Update` a `Preferences` jsou v core.
-WiFiManager se nepoužívá od 0.6.0, ElegantOTA od 0.6.2.
+Ověřený reprodukovatelný build používá profil v `MeteoPlaneRadar/sketch.yaml`:
+**ESP32 core 3.0.7**, **GFX Library for Arduino 1.4.9**, **PNGdec 1.0.1** a
+**ArduinoJson 7.1.0**. QRCode je přibalen; `WebServer`, `DNSServer`, `ESPmDNS`,
+`Update` a `Preferences` jsou v core. WiFiManager ani ElegantOTA se nepoužívají.
 
 Nastavení IDE: ESP32S3 Dev Module, **PSRAM: OPI**, Flash 16 MB QIO,
 **Partition Scheme: Custom** (`partitions.csv`, dvě aplikační oblasti pro OTA),
@@ -290,6 +359,10 @@ Layout.*              pásy obrazovky a hlídání kolizí
 WebConfig.* WebPage.h webový server, API, portál, OTA
 Net.*                 sdílené HTTPS stahování
 Calendar.* CalendarIcs.* ICS odběry, omezená PSRAM cache, parser
+Notifications.* NotificationPairing.* globální zprávy a párování mostu
+Navigation.*          dočasné indikátory obrazovek a zoomu
+ScreenChrome.*        čitelné podklady a časová osa meteoradaru
+Energy.*              cena a výrobní mix, jen CZ
 Forecast.*            Open-Meteo: předpověď, slunce, ovzduší
 RainViewer.*          dlaždicový radar
 StormWatch.*          hlídání bouřky ze snímku ČHMÚ (0.8.0)
@@ -297,7 +370,9 @@ PlaneWatch.*          hlídání letadel poblíž a výhledu z okna (0.8.0)
 PlaneIcon.*           ikony letadel podle typu (0.8.0)
 AAFont.* ClockFonts.h vyhlazené písmo hodin (0.8.0)
 Screen*.{h,cpp}       jednotlivé obrazovky
-tools/make_fonts.py   generátor ClockFonts.h z TTF/OTF
+tools/extend_slovak_fonts.py doplnění slovenských znaků do bitmap
+tools/google-chat-macos/ nativní most pro macOS
+tools/render_screenshots.cjs náhledy z testovacích SVG
 ```
 
 **Proč se prvky nepřekrývají:** obrazovka si své pásy zabere dřív, než se kreslí
@@ -320,6 +395,8 @@ Jen pro osobní nekomerční použití — respektujte podmínky poskytovatelů.
 **počasí, ovzduší, geokódování:** [Open-Meteo](https://open-meteo.com) ·
 **poloha podle IP:** [ip-api.com](http://ip-api.com) ·
 **mapa:** hranice Natural Earth (public domain), města [GeoNames](https://www.geonames.org) (CC BY 4.0) ·
+**cena elektřiny (CZ):** [spotovaelektrina.cz](https://spotovaelektrina.cz) / OTE ·
+**výrobní mix:** [Energy-Charts](https://energy-charts.info) / Fraunhofer ISE / ENTSO-E ·
 **čas:** hlavička `Date` (bez NTP) ·
 **rozdělení ikon letadel:** [ADS-B Radar](https://adsb-radar.com/help/icons.html)
 
@@ -356,14 +433,8 @@ API určené jen pro nekomerční použití. Podrobnosti jsou v `LICENSE.txt` �
 Nad rámec licence budeme rádi, když na obrazovce nastavení ponecháte řádek
 **chiptron.cz**.
 
-Tato větev od verze 0.8.6 spojuje původní projekt 0.8.5 s našimi úpravami:
-kalendář, slovenština, globální notifikace, macOS Google Chat most a webové taby.
-Gesta zůstávají vlevo/vpravo pro obrazovky a nahoru/dolů pro přiblížení map;
-dlouhý stisk obou polovin displeje funguje dál. Claude není součástí. Od verze 0.8.8 lze při českém jazyce na webu v záložce
-**Obrazovky** zapnout **Cenu elektřiny** a **Výrobu elektřiny**. V jiných jazycích
-jsou jejich ovládání i nastavení skryta a data se nestahují.
-Vyhlazená písma lze přepnout ve **Vzhled → Písmo (všechny obrazovky)**.
-Slovenské doplňky bitmap lze po nové aktualizaci autora obnovit skriptem
-`python3 tools/extend_slovak_fonts.py` (bez dalších balíčků).
+## Ověření a náhledy
 
-Historie změn: [CHANGELOG.md](CHANGELOG.md). Verze: `MeteoPlaneRadar/Version.h`.
+Postupy host testů, kontrol webu a generování náhledů jsou v [tests/README.md](tests/README.md).
+Náhledy nejsou živá data. Soukromé ICS odkazy, párovací klíče a registrační údaje
+Googlu nejsou součástí repozitáře ani ukázkových snímků.

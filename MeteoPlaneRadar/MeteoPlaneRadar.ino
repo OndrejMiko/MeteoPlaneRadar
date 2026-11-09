@@ -12,13 +12,15 @@
 //           - CST820 capacitive touch (I2C)
 //           - TCA9554 I/O expander (LCD reset / CS / power control)
 //
-//  Screens (cycled by a LONG press; each can be switched off in the web UI):
+//  Screens (horizontal swipe or long press; each can be switched off in the web UI):
 //    1) Clock       - time, date, current temperature, seconds ring
 //    2) Aircraft    - adsb.fi, tap an aircraft for details and its route
 //    3) Weather     - animated precipitation, CHMU or RainViewer
 //    4) Forecast    - now/+3h/+6h, today/tomorrow/after, then the weekdays
 //    5) Calendar    - daily agenda and month grid from ICS subscriptions
-//    6) Settings    - always reachable, and shows the web address
+//    6) Price (CZ)  - optional Czech-market quarter-hour electricity prices
+//    7) Mix (CZ)    - optional electricity generation mix
+//    8) Settings    - always reachable, and shows the web address
 //
 //  Configuration lives in a browser. The device serves its own settings page
 //  permanently at http://meteoplaneradar.local/ once it is on the home network,
@@ -27,7 +29,9 @@
 //
 //  Controls:
 //    - swipe left/right             = next/previous screen
-//    - swipe up/down                = zoom in/out (radar screens)
+//    - swipe up/down                = map zoom; today/tomorrow on Czech prices
+//    - calendar arrows              = browse dates; Day/Month changes view
+//    - notification banner / X      = open details / dismiss local message
 //    - short tap                    = aircraft detail / day-night toggle
 //    - long press LEFT half         = previous screen
 //    - long press RIGHT half        = next screen

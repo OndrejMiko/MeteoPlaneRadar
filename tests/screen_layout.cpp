@@ -35,7 +35,7 @@ void UI_DrawStatusLine(int y) { Chrome_DrawStatus(y); }
 void UI_TextCenteredIn(const char* s, int x, int w, int y, uint16_t c, uint8_t size) {
   gfx->setTextSize(size);
   gfx->setTextColor(c);
-  gfx->setCursor(x + (w - (int)strlen(s) * 6 * size) / 2, y);
+  gfx->setCursor(x + (w - Layout_TextW(s, size)) / 2, y);
   gfx->print(s);
 }
 void UI_TextCentered(const char* s, int y, uint16_t c, uint8_t size) {

@@ -131,6 +131,7 @@ a{color:var(--acc)}pre{background:#111820;border:1px solid var(--line);border-ra
       <b id="rangeNow" style="min-width:80px;text-align:center">&ndash;</b>
       <button class="sec" id="rPlus" onclick="stepRange(1)">+</button></div>
     </div>
+    <p class="hint" data-i18n="gestureHint"></p>
     <p class="hint" data-i18n="remoteHint">Rozsah se mění jen na obrazovkách Letadla a Meteoradar. Zásah pozastaví automatické střídání.</p>
   </div>
 
@@ -626,6 +627,9 @@ let L="cs", CFG={}, TAB="tCtl";
 Object.assign(D.cs,{"scrPrice": "Cena elektřiny", "scrMix": "Výroba elektřiny", "energyTitle": "Elektřina", "energyHint": "Tyto obrazovky jsou dostupné pouze v češtině. Ceny platí pro český trh; původní geografické omezení zdrojů zůstává.", "priceFee": "Příplatek dodavatele (Kč/MWh)", "priceVat": "DPH (%)", "priceHint": "Nula znamená čistou burzovní cenu bez příplatku a DPH. Nejde o celkovou cenu vyúčtování.", "mixCountry": "Kód země výroby (cz, sk, de…)"});
 Object.assign(D.en,{"scrPrice": "Electricity price", "scrMix": "Electricity generation", "energyTitle": "Electricity", "energyHint": "These screens are available only in Czech. Prices cover the Czech market; the original geographic limits still apply.", "priceFee": "Supplier surcharge (CZK/MWh)", "priceVat": "VAT (%)", "priceHint": "Zero shows the exchange price without surcharge or VAT. This is not the total billed price.", "mixCountry": "Generation country code (cz, sk, de…)"});
 Object.assign(D.sk,{"scrPrice": "Cena elektriny", "scrMix": "Výroba elektriny", "energyTitle": "Elektrina", "energyHint": "Tieto obrazovky sú dostupné iba v češtine. Ceny platia pre český trh; pôvodné geografické obmedzenia zostávajú.", "priceFee": "Príplatok dodávateľa (Kč/MWh)", "priceVat": "DPH (%)", "priceHint": "Nula zobrazí burzovú cenu bez príplatku a DPH. Nejde o celkovú cenu vyúčtovania.", "mixCountry": "Kód krajiny výroby (cz, sk, de…)"});
+Object.assign(D.cs,{"gestureHint": "Na displeji: vlevo další obrazovka, vpravo předchozí. Nahoru/dolů na mapě přiblíží/oddálí. Dlouhý stisk levé/pravé poloviny přepíná zpět/vpřed. Body obrazovek mizí po 5 s, body zoomu vpravo po 10 s. Kalendářem listují jeho šipky.", "remoteHint": "Rozsah mění zoom map, v kalendáři listuje dny/měsíci a u ceny elektřiny (jen CZ) přepíná dnes/zítra. Ruční ovládání pozastaví automatické střídání."});
+Object.assign(D.en,{"gestureHint": "On the display: left for next screen, right for previous. Up/down zooms maps in/out. Long-press the left/right half for previous/next. Screen dots hide after 5 s, right-side zoom dots after 10 s. Use the calendar arrows to browse dates.", "remoteHint": "Range changes map zoom, browses calendar days/months, or switches electricity prices (Czech only) between today/tomorrow. Manual control pauses automatic cycling."});
+Object.assign(D.sk,{"gestureHint": "Na displeji: doľava ďalšia obrazovka, doprava predchádzajúca. Hore/dole na mape priblíži/oddiali. Dlhý stisk ľavej/pravej polovice prepína späť/vpred. Bodky obrazoviek miznú po 5 s, bodky zoomu vpravo po 10 s. V kalendári listujú jeho šípky.", "remoteHint": "Rozsah mení zoom máp, v kalendári listuje dni/mesiace a pri cene elektriny (iba CZ) prepína dnes/zajtra. Ručné ovládanie pozastaví automatické striedanie."});
 const $=id=>document.getElementById(id);
 
 function setLang(v){L=(v==2||v=="sk")?"sk":(v==1||v=="en")?"en":"cs";$("uiLang").value=String({cs:0,en:1,sk:2}[L]);

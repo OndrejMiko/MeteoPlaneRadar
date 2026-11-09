@@ -11,6 +11,20 @@ pohromadě v `MeteoPlaneRadar/Config.h`.
 
 ---
 
+## [0.8.9] - 2026-11-09
+
+### Dokumentace a rozhraní
+
+- README v češtině i angličtině popisuje tento fork, aktuální obrazovky, všechna
+  gesta, indikátory, kalendáře, notifikace, nativní most a elektřinu pouze v CZ.
+- Aktualizován obrázkový přehled obrazovek ze skutečného kreslicího kódu
+  s ukázkovými daty; doplněn postup jeho opětovného vygenerování.
+- Webové ovládání obsahuje stručný návod gest ve všech třech jazycích a přesný
+  popis tlačítek rozsahu pro mapy, kalendář i elektřinu.
+- Nadpis detailu notifikace se centruje skutečnou šířkou zvoleného písma.
+- Opraveny návody ukládání jazyka a kalendářů, počet webových záložek, údaje
+  reprodukovatelného buildu a odkazy na vlastní firmware. Zachován kredit autora.
+
 ## [0.8.8] - 2026-11-09
 
 ### Přidáno

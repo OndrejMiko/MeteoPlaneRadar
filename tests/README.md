@@ -84,3 +84,20 @@ is available for labels, and the notification badge avoids the new controls.
 Browser checks also enforce a separate, spaced test-notification action row.
 
 Energy coverage checks Czech-only screen visibility across language changes, backup and NVS migration, preventing removal of the last visible screen, zero HTTP requests while hidden or disabled, regional limits, quarter-hour price parsing, tariff calculation and generation type grouping. Real-browser checks verify that energy controls and remote buttons are hidden in English/Slovak while their saved selections are preserved.
+
+Regenerate the repository's screen gallery using the real drawing fixtures and
+synthetic data (requires the same ArduinoJson setup plus Playwright and Chrome):
+
+```sh
+preview_dir=$(mktemp -d)
+SCREEN_LAYOUT_SCREENSHOTS="$preview_dir" CALENDAR_SCREENSHOTS="$preview_dir" \
+NOTIFICATION_SCREENSHOTS="$preview_dir" tests/run.sh
+NODE_PATH=/absolute/path/to/node_modules node tools/render_screenshots.cjs "$preview_dir"
+```
+
+This updates `obrazovky.png` and `docs/screens/`. Calendar and notification
+fixtures contain synthetic data. The weather image shows real controls over a
+synthetic grid rather than live radar; the banner preview composes the real
+notification layer over the clock fixture; expanded details replace the screen. Smooth fonts use actual firmware
+bitmaps; the host approximates the built-in pixel font. These are previews,
+not physical-device photographs or proof of real-account/network behaviour.
